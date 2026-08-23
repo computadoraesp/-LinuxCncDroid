@@ -1,0 +1,6 @@
+{
+  "name": "LinuxCncDroid",
+  "description": "Universal industrial HMI interface for LinuxCNC machines with Mesa FPGA, EtherCAT, and Parallel Port support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

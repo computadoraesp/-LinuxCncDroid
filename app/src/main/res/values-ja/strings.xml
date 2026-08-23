@@ -1,0 +1,115 @@
+<resources>
+    <string name="app_name">LinuxCNC Droid HMI</string>
+    <string name="app_description">LinuxCNC 向け汎用産業用 HMI インターフェース</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_control">制御</string>
+    <string name="tab_toolpath">ツールパス</string>
+    <string name="tab_probing">プロービング</string>
+    <string name="tab_ethercat">ETHERCAT</string>
+    <string name="tab_mdi">MDI</string>
+    <string name="tab_logs">ログ</string>
+    <string name="tab_config">設定</string>
+
+    <!-- Header & Top Bar -->
+    <string name="state_estop">非常停止 (ESTOP)</string>
+    <string name="state_on">機械稼働準備完了</string>
+    <string name="state_off">機械電源 OFF</string>
+    <string name="state_running">プログラム実行中</string>
+    <string name="state_paused">フィードホールド / 一時停止</string>
+    <string name="state_error">障害 / アラーム</string>
+    <string name="role_operator">オペレーター</string>
+    <string name="role_technician">技術者</string>
+    <string name="role_admin">管理者</string>
+    <string name="simulated_badge">シミュレーション</string>
+    <string name="hardware_badge">実機接続</string>
+
+    <!-- DRO Panel -->
+    <string name="dro_title">デジタル表示器 (DRO)</string>
+    <string name="dro_zero_all">全軸ゼロセット (G92)</string>
+    <string name="dro_home_all">全軸原点復帰 (G28)</string>
+    <string name="dro_work_pos">ワーク座標 (G54-G59)</string>
+    <string name="dro_mach_pos">機械座標 (G53)</string>
+    <string name="dro_dtg">残り移動量</string>
+    <string name="dro_servo_torque">サーボ負荷 / トルク</string>
+
+    <!-- Jog & MPG Controls -->
+    <string name="jog_title">手動ジョグ送り (JOG)</string>
+    <string name="jog_mode_pad">ボタンパッド</string>
+    <string name="jog_mode_mpg">仮想 MPG 手輪</string>
+    <string name="jog_cont">連続送り</string>
+    <string name="jog_step">ステップ送り</string>
+    <string name="jog_feedrate">ジョグ速度</string>
+    <string name="mpg_header">仮想電子パルス手輪 (MPG)</string>
+    <string name="mpg_detents">100 クリック / 360°</string>
+    <string name="mpg_axis_select">軸選択</string>
+    <string name="mpg_multiplier">倍率</string>
+    <string name="mpg_step_pos">+ ステップ</string>
+    <string name="mpg_step_neg">− ステップ</string>
+
+    <!-- Spindle & Feed Controls -->
+    <string name="spindle_title">主軸および送り速度制御</string>
+    <string name="spindle_rpm">回転数 RPM</string>
+    <string name="spindle_load">負荷</string>
+    <string name="spindle_temp">温度</string>
+    <string name="spindle_override">主軸オーバーライド</string>
+    <string name="feed_override">送りオーバーライド</string>
+    <string name="rapid_override">早送りオーバーライド</string>
+    <string name="btn_cycle_start">サイクルスタート (G-CODE)</string>
+    <string name="btn_feed_hold">フィードホールド / 一時停止</string>
+    <string name="btn_cycle_stop">中断 / 停止</string>
+    <string name="coolant_mist">ミスト (M7)</string>
+    <string name="coolant_flood">切削油 (M8)</string>
+
+    <!-- Tool Table & ATC -->
+    <string name="tool_table_title">工具補正テーブルとマガジン (tool.tbl)</string>
+    <string name="tool_active_mounted">装着中の工具</string>
+    <string name="tool_diameter">刃径 (D)</string>
+    <string name="tool_length_offset">長さ補正 (H)</string>
+    <string name="tool_touch_off">Z 測定オフセット (G43.1)</string>
+    <string name="tool_set_current_z">現在 Z 値設定</string>
+    <string name="tool_mount">工具装着 (M6)</string>
+    <string name="tool_new">新規工具</string>
+    <string name="tool_life">工具寿命</string>
+
+    <!-- Toolpath 3D View -->
+    <string name="toolpath_title">3D リアルタイムツールパス &amp; ツールヘッド</string>
+    <string name="view_top">上面</string>
+    <string name="view_iso">等角 3D</string>
+    <string name="view_front">正面</string>
+    <string name="toolpath_load_scan">読み込み / 検査</string>
+    <string name="toolpath_run_time">経過時間</string>
+    <string name="toolpath_rem_time">残り時間</string>
+    <string name="toolpath_block">ブロック</string>
+
+    <!-- Probing & Calibration -->
+    <string name="probing_title">3D タッチプローブ &amp; ワーク座標系 (WCS)</string>
+    <string name="probe_status_clear">正常 / 待機</string>
+    <string name="probe_status_tripped">接触 / 検出</string>
+    <string name="probe_bore">内径 / ポケット中心 (X/Y)</string>
+    <string name="probe_boss">円柱外径中心 (X/Y)</string>
+    <string name="probe_corner_xy">コーナー検出 (XY 原点)</string>
+    <string name="probe_surface_z">上面高さ測定 (Z 測定)</string>
+
+    <!-- EtherCAT & Telemetry -->
+    <string name="ethercat_title">ETHERCAT 産業用バス テレメトリ</string>
+    <string name="ethercat_master_state">マスタ状態: OP (稼働中)</string>
+    <string name="ethercat_cycle_jitter">リアルタイム ジッター</string>
+    <string name="ethercat_lost_frames">フレーム損失</string>
+
+    <!-- MDI & Macros -->
+    <string name="mdi_title">手動データ入力 (MDI)</string>
+    <string name="mdi_execute">実行 (ENTER)</string>
+    <string name="mdi_quick_macros">クイック産業用マクロ</string>
+
+    <!-- Alarms & Event Logs -->
+    <string name="logs_title">産業用システム診断およびアラーム</string>
+    <string name="logs_clear">ログ消去</string>
+    <string name="logs_simulate_alarm">障害シミュレーション</string>
+
+    <!-- Machine Config & Profiles -->
+    <string name="config_title">機械設定および IP プロファイル</string>
+    <string name="config_architecture">制御アーキテクチャ</string>
+    <string name="config_connect">LinuxCNC ホストに接続</string>
+    <string name="config_save_profile">プロファイル保存</string>
+</resources>

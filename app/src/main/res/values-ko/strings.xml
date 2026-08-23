@@ -1,0 +1,115 @@
+<resources>
+    <string name="app_name">LinuxCNC Droid HMI</string>
+    <string name="app_description">LinuxCNC 범용 산업용 HMI 제어 인터페이스</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_control">제어</string>
+    <string name="tab_toolpath">가공경로</string>
+    <string name="tab_probing">프로빙</string>
+    <string name="tab_ethercat">ETHERCAT</string>
+    <string name="tab_mdi">MDI</string>
+    <string name="tab_logs">로그</string>
+    <string name="tab_config">설정</string>
+
+    <!-- Header & Top Bar -->
+    <string name="state_estop">비상 정지 (ESTOP)</string>
+    <string name="state_on">기계 준비 완료 / 전원 ON</string>
+    <string name="state_off">기계 전원 OFF</string>
+    <string name="state_running">가공 사이클 동작 중</string>
+    <string name="state_paused">이송 유지 / 일시 정지</string>
+    <string name="state_error">장애 / 경보</string>
+    <string name="role_operator">작업자</string>
+    <string name="role_technician">기술자</string>
+    <string name="role_admin">관리자</string>
+    <string name="simulated_badge">시뮬레이션</string>
+    <string name="hardware_badge">실제 하드웨어</string>
+
+    <!-- DRO Panel -->
+    <string name="dro_title">디지털 표시기 (DRO)</string>
+    <string name="dro_zero_all">전체 영점 설정 (G92)</string>
+    <string name="dro_home_all">전체 원점 복귀 (G28)</string>
+    <string name="dro_work_pos">공작물 좌표 (G54-G59)</string>
+    <string name="dro_mach_pos">기계 절대 좌표 (G53)</string>
+    <string name="dro_dtg">남은 이동 거리</string>
+    <string name="dro_servo_torque">서보 부하 / 토크</string>
+
+    <!-- Jog & MPG Controls -->
+    <string name="jog_title">수동 이송 제어 (JOG)</string>
+    <string name="jog_mode_pad">버튼 패드</string>
+    <string name="jog_mode_mpg">가상 MPG 핸드휠</string>
+    <string name="jog_cont">연속 이송</string>
+    <string name="jog_step">단계별 이송</string>
+    <string name="jog_feedrate">조그 속도</string>
+    <string name="mpg_header">가상 전자식 핸드휠 (MPG)</string>
+    <string name="mpg_detents">100 펄스 / 360°</string>
+    <string name="mpg_axis_select">축 선택</string>
+    <string name="mpg_multiplier">배율</string>
+    <string name="mpg_step_pos">+ 스텝</string>
+    <string name="mpg_step_neg">− 스텝</string>
+
+    <!-- Spindle & Feed Controls -->
+    <string name="spindle_title">주축 및 이송 속도 제어</string>
+    <string name="spindle_rpm">RPM</string>
+    <string name="spindle_load">부하</string>
+    <string name="spindle_temp">온도</string>
+    <string name="spindle_override">주축 배율</string>
+    <string name="feed_override">이송 배율</string>
+    <string name="rapid_override">급이송 배율</string>
+    <string name="btn_cycle_start">가공 시작 (G-CODE)</string>
+    <string name="btn_feed_hold">이송 정지 / 일시 중지</string>
+    <string name="btn_cycle_stop">작업 중단 / 정지</string>
+    <string name="coolant_mist">오일 미스트 (M7)</string>
+    <string name="coolant_flood">절삭유 (M8)</string>
+
+    <!-- Tool Table & ATC -->
+    <string name="tool_table_title">공구 보정표 및 매거진 (tool.tbl)</string>
+    <string name="tool_active_mounted">장착된 공구</string>
+    <string name="tool_diameter">직경 (D)</string>
+    <string name="tool_length_offset">길이 보정 (H)</string>
+    <string name="tool_touch_off">Z 측정 보정 (G43.1)</string>
+    <string name="tool_set_current_z">현재 Z 설정</string>
+    <string name="tool_mount">공구 장착 (M6)</string>
+    <string name="tool_new">새 공구</string>
+    <string name="tool_life">공구 수명</string>
+
+    <!-- Toolpath 3D View -->
+    <string name="toolpath_title">3D 실시간 공구 경로 및 툴헤드</string>
+    <string name="view_top">평면</string>
+    <string name="view_iso">등각 3D</string>
+    <string name="view_front">정면</string>
+    <string name="toolpath_load_scan">불러오기 / 검사</string>
+    <string name="toolpath_run_time">진행 시간</string>
+    <string name="toolpath_rem_time">남은 시간</string>
+    <string name="toolpath_block">블록</string>
+
+    <!-- Probing & Calibration -->
+    <string name="probing_title">3D 터치 프로브 및 공작물 좌표계 (WCS)</string>
+    <string name="probe_status_clear">정상 / 대기</string>
+    <string name="probe_status_tripped">접촉 / 감지됨</string>
+    <string name="probe_bore">구멍 / 포켓 중심 (X/Y)</string>
+    <string name="probe_boss">원통 중심 (X/Y)</string>
+    <string name="probe_corner_xy">모서리 탐색 (XY 원점)</string>
+    <string name="probe_surface_z">표면 높이 측정 (Z 원점)</string>
+
+    <!-- EtherCAT & Telemetry -->
+    <string name="ethercat_title">ETHERCAT 산업용 버스 텔레메트리</string>
+    <string name="ethercat_master_state">마스터 상태: OP (운영 중)</string>
+    <string name="ethercat_cycle_jitter">실시간 지터</string>
+    <string name="ethercat_lost_frames">손실 프레임</string>
+
+    <!-- MDI & Macros -->
+    <string name="mdi_title">수동 데이터 입력 (MDI)</string>
+    <string name="mdi_execute">실행 (ENTER)</string>
+    <string name="mdi_quick_macros">빠른 산업용 매크로</string>
+
+    <!-- Alarms & Event Logs -->
+    <string name="logs_title">산업용 시스템 진단 및 경보</string>
+    <string name="logs_clear">로그 삭제</string>
+    <string name="logs_simulate_alarm">장애 시뮬레이션</string>
+
+    <!-- Machine Config & Profiles -->
+    <string name="config_title">기계 설정 및 IP 프로필</string>
+    <string name="config_architecture">제어기 아키텍처</string>
+    <string name="config_connect">LinuxCNC 호스트 연결</string>
+    <string name="config_save_profile">프로필 저장</string>
+</resources>

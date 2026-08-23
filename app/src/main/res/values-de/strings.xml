@@ -1,0 +1,115 @@
+<resources>
+    <string name="app_name">LinuxCNC Droid HMI</string>
+    <string name="app_description">Universelle Industrie-HMI Schnittstelle für LinuxCNC</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_control">STEUERUNG</string>
+    <string name="tab_toolpath">WERKZEUGWEG</string>
+    <string name="tab_probing">TASTSYSTEM</string>
+    <string name="tab_ethercat">ETHERCAT</string>
+    <string name="tab_mdi">MDI</string>
+    <string name="tab_logs">PROTOKOLLE</string>
+    <string name="tab_config">KONFIG</string>
+
+    <!-- Header & Top Bar -->
+    <string name="state_estop">NOT-AUS (ESTOP)</string>
+    <string name="state_on">MASCHINE EIN / BEREIT</string>
+    <string name="state_off">MASCHINE AUS</string>
+    <string name="state_running">ZYKLUS LÄUFT</string>
+    <string name="state_paused">VORSCHUBHALT / PAUSE</string>
+    <string name="state_error">STÖRUNG / ALARM</string>
+    <string name="role_operator">BEDIENER</string>
+    <string name="role_technician">TECHNIKER</string>
+    <string name="role_admin">ADMINISTRATOR</string>
+    <string name="simulated_badge">SIMULATION</string>
+    <string name="hardware_badge">HARDWARE</string>
+
+    <!-- DRO Panel -->
+    <string name="dro_title">DIGITALE POSITIONSANZEIGE (DRO)</string>
+    <string name="dro_zero_all">ALLE NULLEN (G92)</string>
+    <string name="dro_home_all">ALLE REFERENZIEREN (G28)</string>
+    <string name="dro_work_pos">WERKSTÜCK (G54-G59)</string>
+    <string name="dro_mach_pos">MASCHINE ABS (G53)</string>
+    <string name="dro_dtg">RESTWEG</string>
+    <string name="dro_servo_torque">SERVOLAST / DREHMOMENT</string>
+
+    <!-- Jog & MPG Controls -->
+    <string name="jog_title">MANUELLE ACHSBEWEGUNG (JOG)</string>
+    <string name="jog_mode_pad">TASTENFELD</string>
+    <string name="jog_mode_mpg">VIRTUELLER MPG-HANDRAD</string>
+    <string name="jog_cont">KONTINUIERLICH</string>
+    <string name="jog_step">SCHRITTWEISE</string>
+    <string name="jog_feedrate">Jog-Vorschub</string>
+    <string name="mpg_header">VIRTUELLER ELEKTRONISCHER HANDRAD (MPG)</string>
+    <string name="mpg_detents">100 RASTEN / 360°</string>
+    <string name="mpg_axis_select">ACHSE WÄHLEN</string>
+    <string name="mpg_multiplier">MULTIPLIKATOR</string>
+    <string name="mpg_step_pos">+ SCHRITT</string>
+    <string name="mpg_step_neg">− SCHRITT</string>
+
+    <!-- Spindle & Feed Controls -->
+    <string name="spindle_title">SPINDEL- &amp; VORSCHUBSTEUERUNG</string>
+    <string name="spindle_rpm">U/MIN</string>
+    <string name="spindle_load">LAST</string>
+    <string name="spindle_temp">TEMP</string>
+    <string name="spindle_override">SPINDEL OVERRIDE</string>
+    <string name="feed_override">VORSCHUB OVERRIDE</string>
+    <string name="rapid_override">EILGANG OVERRIDE</string>
+    <string name="btn_cycle_start">ZYKLUSSTART (G-CODE)</string>
+    <string name="btn_feed_hold">VORSCHUBHALT / PAUSE</string>
+    <string name="btn_cycle_stop">ABBRECHEN / STOPP</string>
+    <string name="coolant_mist">NEBEL (M7)</string>
+    <string name="coolant_flood">KÜHLMITTEL (M8)</string>
+
+    <!-- Tool Table & ATC -->
+    <string name="tool_table_title">WERKZEUGTABELLE &amp; MAGAZIN (tool.tbl)</string>
+    <string name="tool_active_mounted">Eingewechseltes Werkzeug</string>
+    <string name="tool_diameter">DURCHMESSER (D)</string>
+    <string name="tool_length_offset">LÄNGENKORREKTUR (H)</string>
+    <string name="tool_touch_off">ANTASTEN Z (G43.1)</string>
+    <string name="tool_set_current_z">AKTUELLES Z SETZEN</string>
+    <string name="tool_mount">EINWECHSELN</string>
+    <string name="tool_new">NEUES WERKZEUG</string>
+    <string name="tool_life">Standzeit</string>
+
+    <!-- Toolpath 3D View -->
+    <string name="toolpath_title">3D ECHTZEIT-BAHN &amp; FRÄSKOPF</string>
+    <string name="view_top">DRAUFSICHT</string>
+    <string name="view_iso">ISO 3D</string>
+    <string name="view_front">VORDERANSICHT</string>
+    <string name="toolpath_load_scan">LADEN / PRÜFEN</string>
+    <string name="toolpath_run_time">LAUFZEIT</string>
+    <string name="toolpath_rem_time">RESTZEIT</string>
+    <string name="toolpath_block">SATZ</string>
+
+    <!-- Probing & Calibration -->
+    <string name="probing_title">3D-MESSTASTER &amp; NULLPUNKTSYSTEME</string>
+    <string name="probe_status_clear">FREI / BEREIT</string>
+    <string name="probe_status_tripped">KONTAKT / AUSGELÖST</string>
+    <string name="probe_bore">BOHRUNGSMITTE (X/Y)</string>
+    <string name="probe_boss">ZYLINDERMITTE (X/Y)</string>
+    <string name="probe_corner_xy">ECKENFINDER (XY-NULLPUNKT)</string>
+    <string name="probe_surface_z">OBERFLÄCHENHÖHE (Z-NULLPUNKT)</string>
+
+    <!-- EtherCAT & Telemetry -->
+    <string name="ethercat_title">ETHERCAT INDUSTRIEBUS TELEMETRIE</string>
+    <string name="ethercat_master_state">Master-Status: OP (Betriebsbereit)</string>
+    <string name="ethercat_cycle_jitter">Echtzeit-Jitter</string>
+    <string name="ethercat_lost_frames">Verlorene Frames</string>
+
+    <!-- MDI & Macros -->
+    <string name="mdi_title">MANUELLE DATENEINGABE (MDI)</string>
+    <string name="mdi_execute">AUSFÜHREN (ENTER)</string>
+    <string name="mdi_quick_macros">SCHNELLE INDUSTRIEMAKROS</string>
+
+    <!-- Alarms & Event Logs -->
+    <string name="logs_title">INDUSTRIEDIAGNOSE &amp; ALARME</string>
+    <string name="logs_clear">LOGS LÖSCHEN</string>
+    <string name="logs_simulate_alarm">FEHLER SIMULIEREN</string>
+
+    <!-- Machine Config & Profiles -->
+    <string name="config_title">MASCHINENKONFIGURATION &amp; IP-PROFILE</string>
+    <string name="config_architecture">STEUERUNGSARCHITEKTUR</string>
+    <string name="config_connect">MIT LINUXCNC-HOST VERBINDEN</string>
+    <string name="config_save_profile">PROFIL SPEICHERN</string>
+</resources>

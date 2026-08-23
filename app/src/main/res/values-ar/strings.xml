@@ -1,0 +1,115 @@
+<resources>
+    <string name="app_name">LinuxCNC Droid HMI</string>
+    <string name="app_description">واجهة تحكم صناعية شاملة لأنظمة LinuxCNC</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_control">التحكم</string>
+    <string name="tab_toolpath">المسار</string>
+    <string name="tab_probing">المجس</string>
+    <string name="tab_ethercat">ETHERCAT</string>
+    <string name="tab_mdi">MDI</string>
+    <string name="tab_logs">السجلات</string>
+    <string name="tab_config">الإعدادات</string>
+
+    <!-- Header & Top Bar -->
+    <string name="state_estop">إيقاف الطوارئ (ESTOP)</string>
+    <string name="state_on">الآلة جاهزة / تعمل</string>
+    <string name="state_off">الآلة مطفأة</string>
+    <string name="state_running">دورة التشغيل جارية</string>
+    <string name="state_paused">إيقاف مؤقت للتغذية</string>
+    <string name="state_error">عطل / إنذار</string>
+    <string name="role_operator">مشغل</string>
+    <string name="role_technician">فني</string>
+    <string name="role_admin">مسؤول</string>
+    <string name="simulated_badge">محاكاة</string>
+    <string name="hardware_badge">عتاد حقيقي</string>
+
+    <!-- DRO Panel -->
+    <string name="dro_title">شاشة القراءة الرقمية (DRO)</string>
+    <string name="dro_zero_all">تصفير الكل (G92)</string>
+    <string name="dro_home_all">إرجاع الكل للمرجع (G28)</string>
+    <string name="dro_work_pos">إحداثيات القطعة (G54-G59)</string>
+    <string name="dro_mach_pos">إحداثيات الآلة (G53)</string>
+    <string name="dro_dtg">المسافة المتبقية</string>
+    <string name="dro_servo_torque">حمل السيرفو / العزم</string>
+
+    <!-- Jog & MPG Controls -->
+    <string name="jog_title">التحكم اليدوي بالمحاور (JOG)</string>
+    <string name="jog_mode_pad">لوحة الأزرار</string>
+    <string name="jog_mode_mpg">عجلة MPG الافتراضية</string>
+    <string name="jog_cont">مستمر</string>
+    <string name="jog_step">خطوة بخطوة</string>
+    <string name="jog_feedrate">سرعة التحريك</string>
+    <string name="mpg_header">عجلة اليد الإلكترونية الافتراضية (MPG)</string>
+    <string name="mpg_detents">100 سن / 360°</string>
+    <string name="mpg_axis_select">اختر المحور</string>
+    <string name="mpg_multiplier">المعامل</string>
+    <string name="mpg_step_pos">+ خطوة</string>
+    <string name="mpg_step_neg">− خطوة</string>
+
+    <!-- Spindle & Feed Controls -->
+    <string name="spindle_title">التحكم بالمغزل وسرعة التغذية</string>
+    <string name="spindle_rpm">دورة/دقيقة</string>
+    <string name="spindle_load">الحمل</string>
+    <string name="spindle_temp">الحرارة</string>
+    <string name="spindle_override">تجاوز سرعة المغزل</string>
+    <string name="feed_override">تجاوز سرعة التغذية</string>
+    <string name="rapid_override">تجاوز الحركة السريعة</string>
+    <string name="btn_cycle_start">بدء التشغيل (G-CODE)</string>
+    <string name="btn_feed_hold">إيقاف مؤقت / FEED HOLD</string>
+    <string name="btn_cycle_stop">إلغاء / إيقاف</string>
+    <string name="coolant_mist">رذاذ الزيت (M7)</string>
+    <string name="coolant_flood">سائل التبريد (M8)</string>
+
+    <!-- Tool Table & ATC -->
+    <string name="tool_table_title">جدول الأدوات ومخزن العدد (tool.tbl)</string>
+    <string name="tool_active_mounted">الأداة المثبتة</string>
+    <string name="tool_diameter">القطر (D)</string>
+    <string name="tool_length_offset">إزاحة الطول (H)</string>
+    <string name="tool_touch_off">معايرة الارتفاع Z (G43.1)</string>
+    <string name="tool_set_current_z">تعيين قيمة Z الحالية</string>
+    <string name="tool_mount">تثبيت</string>
+    <string name="tool_new">أداة جديدة</string>
+    <string name="tool_life">عمر الأداة</string>
+
+    <!-- Toolpath 3D View -->
+    <string name="toolpath_title">المسار ثلاثي الأبعاد ورأس القطع في الوقت الفعلي</string>
+    <string name="view_top">علوي</string>
+    <string name="view_iso">منظوري 3D</string>
+    <string name="view_front">أمامي</string>
+    <string name="toolpath_load_scan">تحميل / فحص</string>
+    <string name="toolpath_run_time">الوقت المنقضي</string>
+    <string name="toolpath_rem_time">الوقت المتبقي</string>
+    <string name="toolpath_block">السطر</string>
+
+    <!-- Probing & Calibration -->
+    <string name="probing_title">المجس ثلاثي الأبعاد ونظام إحداثيات العمل WCS</string>
+    <string name="probe_status_clear">جاهز / لا يوجد تلامس</string>
+    <string name="probe_status_tripped">تلامس / تم التفعيل</string>
+    <string name="probe_bore">مركز الثقب / التجويف (X/Y)</string>
+    <string name="probe_boss">مركز الأسطوانة (X/Y)</string>
+    <string name="probe_corner_xy">تحديد الزاوية (نقطة الأصل XY)</string>
+    <string name="probe_surface_z">ارتفاع السطح (معايرة Z)</string>
+
+    <!-- EtherCAT & Telemetry -->
+    <string name="ethercat_title">مراقبة ناقل ETHERCAT الصناعي</string>
+    <string name="ethercat_master_state">حالة المشرف: OP (يعمل)</string>
+    <string name="ethercat_cycle_jitter">الارتعاش في الوقت الفعلي</string>
+    <string name="ethercat_lost_frames">الإطارات المفقودة</string>
+
+    <!-- MDI & Macros -->
+    <string name="mdi_title">إدخال البيانات يدوياً (MDI)</string>
+    <string name="mdi_execute">تنفيذ (ENTER)</string>
+    <string name="mdi_quick_macros">أوامر ماكرو سريعة</string>
+
+    <!-- Alarms & Event Logs -->
+    <string name="logs_title">التشخيص وإنذارات النظام الصناعية</string>
+    <string name="logs_clear">مسح السجلات</string>
+    <string name="logs_simulate_alarm">محاكاة عطل</string>
+
+    <!-- Machine Config & Profiles -->
+    <string name="config_title">إعدادات الآلة وملفات تعريف IP</string>
+    <string name="config_architecture">بنية التحكم</string>
+    <string name="config_connect">الاتصال بخادم LinuxCNC</string>
+    <string name="config_save_profile">حفظ الإعدادات</string>
+</resources>

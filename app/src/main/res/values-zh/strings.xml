@@ -1,0 +1,115 @@
+<resources>
+    <string name="app_name">LinuxCNC Droid HMI</string>
+    <string name="app_description">通用工业级 LinuxCNC 人机交互控制界面</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_control">控制</string>
+    <string name="tab_toolpath">刀路轨迹</string>
+    <string name="tab_probing">对刀寻边</string>
+    <string name="tab_ethercat">ETHERCAT</string>
+    <string name="tab_mdi">MDI指令</string>
+    <string name="tab_logs">报警日志</string>
+    <string name="tab_config">机床配置</string>
+
+    <!-- Header & Top Bar -->
+    <string name="state_estop">急停状态 (ESTOP)</string>
+    <string name="state_on">机床就绪 / 上电</string>
+    <string name="state_off">机床断电</string>
+    <string name="state_running">程序运行中</string>
+    <string name="state_paused">进给保持 / 暂停</string>
+    <string name="state_error">故障报警</string>
+    <string name="role_operator">操作员</string>
+    <string name="role_technician">技术员</string>
+    <string name="role_admin">管理员</string>
+    <string name="simulated_badge">仿真模式</string>
+    <string name="hardware_badge">实体硬件</string>
+
+    <!-- DRO Panel -->
+    <string name="dro_title">数显读数系统 (DRO)</string>
+    <string name="dro_zero_all">全部清零 (G92)</string>
+    <string name="dro_home_all">全轴回原点 (G28)</string>
+    <string name="dro_work_pos">工件坐标 (G54-G59)</string>
+    <string name="dro_mach_pos">机械绝对坐标 (G53)</string>
+    <string name="dro_dtg">剩余移动距离</string>
+    <string name="dro_servo_torque">伺服负载 / 扭矩</string>
+
+    <!-- Jog & MPG Controls -->
+    <string name="jog_title">手动点动控制 (JOG)</string>
+    <string name="jog_mode_pad">按键控制</string>
+    <string name="jog_mode_mpg">虚拟手轮 (MPG)</string>
+    <string name="jog_cont">连续点动</string>
+    <string name="jog_step">增量步进</string>
+    <string name="jog_feedrate">点动速度</string>
+    <string name="mpg_header">工业虚拟电子手轮 (MPG)</string>
+    <string name="mpg_detents">100 脉冲齿格 / 360°</string>
+    <string name="mpg_axis_select">选择轴</string>
+    <string name="mpg_multiplier">倍率</string>
+    <string name="mpg_step_pos">+ 步进</string>
+    <string name="mpg_step_neg">− 步进</string>
+
+    <!-- Spindle & Feed Controls -->
+    <string name="spindle_title">主轴与进给倍率控制</string>
+    <string name="spindle_rpm">转速 RPM</string>
+    <string name="spindle_load">负载</string>
+    <string name="spindle_temp">温度</string>
+    <string name="spindle_override">主轴倍率</string>
+    <string name="feed_override">进给倍率</string>
+    <string name="rapid_override">快移倍率</string>
+    <string name="btn_cycle_start">启动加工 (G-CODE)</string>
+    <string name="btn_feed_hold">进给保持 / 暂停</string>
+    <string name="btn_cycle_stop">终止 / 停止</string>
+    <string name="coolant_mist">微量油雾 (M7)</string>
+    <string name="coolant_flood">切削液喷淋 (M8)</string>
+
+    <!-- Tool Table & ATC -->
+    <string name="tool_table_title">刀具表与刀库管理 (tool.tbl)</string>
+    <string name="tool_active_mounted">当前装载刀具</string>
+    <string name="tool_diameter">刀具直径 (D)</string>
+    <string name="tool_length_offset">长度补偿 (H)</string>
+    <string name="tool_touch_off">对刀测长 (G43.1)</string>
+    <string name="tool_set_current_z">设定当前 Z 坐标</string>
+    <string name="tool_mount">装刀 (M6)</string>
+    <string name="tool_new">新建刀具</string>
+    <string name="tool_life">刀具寿命</string>
+
+    <!-- Toolpath 3D View -->
+    <string name="toolpath_title">3D 实时刀路与刀柄动态仿真</string>
+    <string name="view_top">俯视图</string>
+    <string name="view_iso">等轴 3D</string>
+    <string name="view_front">主视图</string>
+    <string name="toolpath_load_scan">载入 / 扫描</string>
+    <string name="toolpath_run_time">已用时间</string>
+    <string name="toolpath_rem_time">预计剩余</string>
+    <string name="toolpath_block">行号</string>
+
+    <!-- Probing & Calibration -->
+    <string name="probing_title">3D 寻边器与工件坐标系 (WCS)</string>
+    <string name="probe_status_clear">正常 / 待命</string>
+    <string name="probe_status_tripped">触发 / 接触中</string>
+    <string name="probe_bore">内孔 / 型腔定心 (X/Y)</string>
+    <string name="probe_boss">外圆柱定心 (X/Y)</string>
+    <string name="probe_corner_xy">直角角点寻边 (XY 原点)</string>
+    <string name="probe_surface_z">表面高度测定 (Z 对刀)</string>
+
+    <!-- EtherCAT & Telemetry -->
+    <string name="ethercat_title">ETHERCAT 工业总线实时遥测</string>
+    <string name="ethercat_master_state">主站状态: OP (运行中)</string>
+    <string name="ethercat_cycle_jitter">实时抖动 (Jitter)</string>
+    <string name="ethercat_lost_frames">丢包帧数</string>
+
+    <!-- MDI & Macros -->
+    <string name="mdi_title">手动数据输入 (MDI)</string>
+    <string name="mdi_execute">执行命令 (ENTER)</string>
+    <string name="mdi_quick_macros">常用工业快捷宏指令</string>
+
+    <!-- Alarms & Event Logs -->
+    <string name="logs_title">系统诊断与工业报警日志</string>
+    <string name="logs_clear">清除日志</string>
+    <string name="logs_simulate_alarm">模拟故障</string>
+
+    <!-- Machine Config & Profiles -->
+    <string name="config_title">机床参数配置与通信配置文件</string>
+    <string name="config_architecture">控制器通讯架构</string>
+    <string name="config_connect">连接到 LinuxCNC 主机</string>
+    <string name="config_save_profile">保存配置方案</string>
+</resources>
