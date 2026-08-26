@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.HardwareArchitecture
 import com.example.model.MachineStateEnum
+import com.example.model.UnitSystem
 import com.example.model.UserRole
 import com.example.ui.theme.*
 
@@ -33,6 +34,8 @@ fun IndustrialTopBar(
     isSimulated: Boolean,
     latencyMs: Int = 2,
     errorCount: Int = 0,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
+    onToggleUnitSystem: () -> Unit = {},
     onToggleEstop: () -> Unit,
     onPowerOn: () -> Unit,
     onPowerOff: () -> Unit,
@@ -301,6 +304,29 @@ fun IndustrialTopBar(
                             modifier = Modifier.size(17.dp)
                         )
                     }
+                }
+
+                // Unit System Toggle Button (G21 MM / G20 INCH)
+                OutlinedButton(
+                    onClick = onToggleUnitSystem,
+                    shape = RoundedCornerShape(6.dp),
+                    contentPadding = PaddingValues(horizontal = 7.dp, vertical = 2.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = if (unitSystem == UnitSystem.METRIC) CncCyberCyan else CncWarningAmber,
+                        containerColor = if (unitSystem == UnitSystem.METRIC) CncCyberCyan.copy(alpha = 0.12f) else CncWarningAmber.copy(alpha = 0.12f)
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(
+                        width = 1.dp,
+                        color = if (unitSystem == UnitSystem.METRIC) CncCyberCyan.copy(alpha = 0.8f) else CncWarningAmber.copy(alpha = 0.8f)
+                    ),
+                    modifier = Modifier.height(34.dp)
+                ) {
+                    Text(
+                        text = "${unitSystem.code} ${unitSystem.shortLabel}",
+                        fontWeight = FontWeight.Black,
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
                 }
 
                 // Coordinate System Dropdown (G54 - G59.3)

@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.AxisCoord
+import com.example.model.UnitSystem
 import com.example.ui.theme.*
 import java.util.Locale
 
@@ -23,6 +24,7 @@ import java.util.Locale
 fun MiniDroBar(
     axes: Map<String, AxisCoord>,
     currentCoordSystem: String,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
     onZeroAxis: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -48,7 +50,7 @@ fun MiniDroBar(
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
-                    text = currentCoordSystem,
+                    text = "$currentCoordSystem (${unitSystem.shortLabel})",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Black,
                     color = CncCyberCyan,
@@ -56,7 +58,7 @@ fun MiniDroBar(
                 )
             }
 
-            // X, Y, Z, A Mini Coordinates
+            // X, Y, Z Mini Coordinates
             listOf("X" to AxisXColor, "Y" to AxisYColor, "Z" to AxisZColor).forEach { (axisName, color) ->
                 val axisData = axes[axisName]
                 val pos = axisData?.workPos ?: 0.0
@@ -76,7 +78,7 @@ fun MiniDroBar(
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = String.format(Locale.US, "%+07.3f", pos),
+                        text = unitSystem.formatPosition(pos),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace,

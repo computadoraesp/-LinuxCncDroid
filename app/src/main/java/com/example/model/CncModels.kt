@@ -109,11 +109,67 @@ data class CncToolItem(
     val holderType: String = "ER20 / ISO30"
 )
 
-enum class MpgMultiplier(val stepMm: Double, val label: String) {
-    X1(0.001, "x1 (0.001 mm)"),
-    X10(0.010, "x10 (0.010 mm)"),
-    X100(0.100, "x100 (0.100 mm)"),
-    X1000(1.000, "x1000 (1.000 mm)")
+enum class UnitSystem(
+    val code: String,
+    val shortLabel: String,
+    val lengthUnit: String,
+    val speedUnit: String,
+    val precisionDecimals: Int
+) {
+    METRIC("G21", "MM", "mm", "mm/min", 3),
+    IMPERIAL("G20", "INCH", "in", "IPM", 4);
+
+    fun formatPosition(posMm: Double): String {
+        return if (this == IMPERIAL) {
+            val inches = posMm / 25.4
+            java.lang.String.format(java.util.Locale.US, "%+08.4f", inches)
+        } else {
+            java.lang.String.format(java.util.Locale.US, "%+08.3f", posMm)
+        }
+    }
+
+    fun formatSpeed(speedMmMin: Double): String {
+        return if (this == IMPERIAL) {
+            val ipm = speedMmMin / 25.4
+            "${java.lang.String.format(java.util.Locale.US, "%.1f", ipm)} IPM"
+        } else {
+            "${speedMmMin.toInt()} mm/min"
+        }
+    }
+
+    fun toDisplayLength(lengthMm: Double): Double {
+        return if (this == IMPERIAL) lengthMm / 25.4 else lengthMm
+    }
+
+    fun toMm(displayLength: Double): Double {
+        return if (this == IMPERIAL) displayLength * 25.4 else displayLength
+    }
+}
+
+enum class MpgMultiplier(val stepMm: Double, val metricLabel: String, val imperialLabel: String) {
+    X1(0.001, "x1 (0.001 mm)", "x1 (0.0001 in)"),
+    X10(0.010, "x10 (0.010 mm)", "x10 (0.001 in)"),
+    X100(0.100, "x100 (0.100 mm)", "x100 (0.010 in)"),
+    X1000(1.000, "x1000 (1.000 mm)", "x1000 (0.100 in)");
+
+    val label: String get() = metricLabel
+
+    fun getStep(unit: UnitSystem): Double {
+        return if (unit == UnitSystem.IMPERIAL) {
+            when (this) {
+                X1 -> 0.00254 // 0.0001" in mm
+                X10 -> 0.0254 // 0.001" in mm
+                X100 -> 0.254 // 0.010" in mm
+                X1000 -> 2.54 // 0.100" in mm
+            }
+        } else {
+            stepMm
+        }
+    }
+
+    fun getLabel(unit: UnitSystem): String {
+        return if (unit == UnitSystem.IMPERIAL) imperialLabel else metricLabel
+    }
 }
 
 enum class JogControlStyle(val displayName: String) {

@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.example.model.AxisCoord
 import com.example.model.JogControlStyle
 import com.example.model.MpgMultiplier
+import com.example.model.UnitSystem
 import com.example.ui.theme.*
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -38,6 +39,7 @@ fun JogControlPad(
     isContinuous: Boolean,
     selectedStepMm: Double,
     jogSpeedMmMin: Double,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
     onSelectJogStyle: (JogControlStyle) -> Unit = {},
     onSelectMpgAxis: (String) -> Unit = {},
     onSelectMpgMultiplier: (MpgMultiplier) -> Unit = {},
@@ -63,6 +65,7 @@ fun JogControlPad(
                 axes = axesMap,
                 selectedAxis = mpgAxis,
                 selectedMultiplier = mpgMultiplier,
+                unitSystem = unitSystem,
                 onSelectAxis = onSelectMpgAxis,
                 onSelectMultiplier = onSelectMpgMultiplier,
                 onMpgStep = onMpgStep,
@@ -72,7 +75,11 @@ fun JogControlPad(
         return
     }
 
-    val stepResolutions = listOf(0.001, 0.010, 0.100, 1.000, 10.000)
+    val stepResolutions = if (unitSystem == UnitSystem.IMPERIAL) {
+        listOf(0.0001, 0.001, 0.010, 0.100, 1.000)
+    } else {
+        listOf(0.001, 0.010, 0.100, 1.000, 10.000)
+    }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = CncCardBg),
@@ -193,6 +200,11 @@ fun JogControlPad(
                 ) {
                     stepResolutions.forEach { step ->
                         val isSelected = selectedStepMm == step
+                        val label = if (unitSystem == UnitSystem.IMPERIAL) {
+                            if (step < 0.01) "${step}in" else "${step}in"
+                        } else {
+                            if (step >= 1.0) "${step.toInt()}mm" else "${step}mm"
+                        }
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
@@ -204,8 +216,8 @@ fun JogControlPad(
                                 .clickable { onSelectStep(step) }
                         ) {
                             Text(
-                                text = "${step}mm",
-                                fontSize = 10.sp,
+                                text = label,
+                                fontSize = 9.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace,
                                 color = if (isSelected) Color(0xFF00363D) else CncTextPrimary
@@ -222,7 +234,13 @@ fun JogControlPad(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text("Jog Feedrate:", fontSize = 10.sp, color = CncTextSecondary)
-                        Text("${jogSpeedMmMin.toInt()} mm/min", fontSize = 10.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = CncWarningAmber)
+                        Text(
+                            text = unitSystem.formatSpeed(jogSpeedMmMin),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            color = CncWarningAmber
+                        )
                     }
                     Slider(
                         value = jogSpeedMmMin.toFloat(),

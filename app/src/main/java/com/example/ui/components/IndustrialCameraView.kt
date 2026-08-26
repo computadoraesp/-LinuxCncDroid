@@ -47,6 +47,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.model.AxisCoord
 import com.example.model.MachineStateEnum
+import com.example.model.UnitSystem
 import com.example.ui.theme.*
 import java.io.File
 import java.text.SimpleDateFormat
@@ -66,6 +67,7 @@ fun IndustrialCameraView(
     machineState: MachineStateEnum,
     axes: Map<String, AxisCoord>,
     currentWcs: String,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
     onJogAxis: (String, Double) -> Unit,
     onZeroAxis: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -535,8 +537,14 @@ fun IndustrialCameraView(
                                 fontFamily = FontFamily.Monospace
                             )
                             axes.forEach { (axis, data) ->
+                                val isRotary = axis in listOf("A", "B", "C")
+                                val formattedVal = if (isRotary) {
+                                    "${String.format(Locale.US, "%+08.3f", data.workPos)}°"
+                                } else {
+                                    "${unitSystem.formatPosition(data.workPos)} ${unitSystem.lengthUnit}"
+                                }
                                 Text(
-                                    text = "$axis: ${String.format(Locale.US, "%+08.3f", data.workPos)} mm",
+                                    text = "$axis: $formattedVal",
                                     color = if (axis == "Z") CncWarningAmber else CncDroDigits,
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
@@ -650,6 +658,10 @@ fun IndustrialCameraView(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val microStepMm = if (unitSystem == UnitSystem.IMPERIAL) 0.002 * 25.4 else 0.05
+                    val microLabelNeg = if (unitSystem == UnitSystem.IMPERIAL) "-0.002\"" else "-0.05"
+                    val microLabelPos = if (unitSystem == UnitSystem.IMPERIAL) "+0.002\"" else "+0.05"
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -658,44 +670,44 @@ fun IndustrialCameraView(
 
                         // X Axis Micro Steps
                         Button(
-                            onClick = { onJogAxis("X", -0.05) },
+                            onClick = { onJogAxis("X", -microStepMm) },
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
                             modifier = Modifier.height(26.dp)
                         ) {
-                            Text("X -0.05", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+                            Text("X $microLabelNeg", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
                         }
 
                         Button(
-                            onClick = { onJogAxis("X", 0.05) },
+                            onClick = { onJogAxis("X", microStepMm) },
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
                             modifier = Modifier.height(26.dp)
                         ) {
-                            Text("X +0.05", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+                            Text("X $microLabelPos", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
                         }
 
                         // Y Axis Micro Steps
                         Button(
-                            onClick = { onJogAxis("Y", -0.05) },
+                            onClick = { onJogAxis("Y", -microStepMm) },
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
                             modifier = Modifier.height(26.dp)
                         ) {
-                            Text("Y -0.05", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+                            Text("Y $microLabelNeg", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
                         }
 
                         Button(
-                            onClick = { onJogAxis("Y", 0.05) },
+                            onClick = { onJogAxis("Y", microStepMm) },
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
                             modifier = Modifier.height(26.dp)
                         ) {
-                            Text("Y +0.05", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+                            Text("Y $microLabelPos", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
                         }
                     }
 

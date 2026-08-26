@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.AxisCoord
 import com.example.model.MpgMultiplier
+import com.example.model.UnitSystem
 import com.example.ui.theme.*
 import kotlin.math.*
 
@@ -39,6 +40,7 @@ fun VirtualMpgWheel(
     axes: Map<String, AxisCoord>,
     selectedAxis: String,
     selectedMultiplier: MpgMultiplier,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
     onSelectAxis: (String) -> Unit,
     onSelectMultiplier: (MpgMultiplier) -> Unit,
     onMpgStep: (axis: String, direction: Int, multiplier: MpgMultiplier) -> Unit,
@@ -152,15 +154,25 @@ fun VirtualMpgWheel(
                         shape = RoundedCornerShape(6.dp),
                         modifier = Modifier
                             .weight(1f)
-                            .height(30.dp)
+                            .height(32.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 2.dp)
+                        ) {
                             Text(
-                                text = mult.label.substringBefore(" "),
+                                text = mult.getLabel(unitSystem).substringBefore(" "),
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace,
                                 color = if (isSelected) Color(0xFF00363D) else CncTextSecondary
+                            )
+                            Text(
+                                text = mult.getLabel(unitSystem).substringAfter("(").substringBefore(")"),
+                                fontSize = 7.5.sp,
+                                fontFamily = FontFamily.Monospace,
+                                color = if (isSelected) Color(0xFF00363D).copy(alpha = 0.8f) else CncTextMuted
                             )
                         }
                     }
@@ -327,7 +339,7 @@ fun VirtualMpgWheel(
                             }
                         )
                         Text(
-                            text = selectedMultiplier.label.substringBefore(" "),
+                            text = selectedMultiplier.getLabel(unitSystem).substringBefore(" "),
                             fontSize = 9.sp,
                             fontFamily = FontFamily.Monospace,
                             fontWeight = FontWeight.Bold,
@@ -356,6 +368,20 @@ fun VirtualMpgWheel(
                         border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(CncCardBorder)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
+                        val isRotary = selectedAxis in listOf("A", "B", "C")
+                        val formattedPos = if (isRotary) {
+                            String.format(java.util.Locale.US, "%+08.3f°", currentAxisCoord)
+                        } else {
+                            "${unitSystem.formatPosition(currentAxisCoord)} ${unitSystem.lengthUnit}"
+                        }
+                        val stepStr = if (isRotary) {
+                            "±${selectedMultiplier.stepMm}°"
+                        } else if (unitSystem == UnitSystem.IMPERIAL) {
+                            "±${java.lang.String.format(java.util.Locale.US, "%.4f", selectedMultiplier.getStep(unitSystem) / 25.4)} in"
+                        } else {
+                            "±${selectedMultiplier.stepMm} mm"
+                        }
+
                         Column(modifier = Modifier.padding(8.dp)) {
                             Text(
                                 text = "$selectedAxis WORK POSITION",
@@ -364,14 +390,14 @@ fun VirtualMpgWheel(
                                 color = CncTextSecondary
                             )
                             Text(
-                                text = String.format(java.util.Locale.US, "%+08.3f", currentAxisCoord),
-                                fontSize = 16.sp,
+                                text = formattedPos,
+                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Black,
                                 fontFamily = FontFamily.Monospace,
                                 color = CncTextPrimary
                             )
                             Text(
-                                text = "INC: ±${selectedMultiplier.stepMm} mm",
+                                text = "INC: $stepStr",
                                 fontSize = 8.5.sp,
                                 fontFamily = FontFamily.Monospace,
                                 color = CncWarningAmber

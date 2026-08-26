@@ -1,14 +1,22 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,6 +64,7 @@ fun CncMainScreen(
     val isContinuousJog by viewModel.isContinuousJog.collectAsStateWithLifecycle()
     val jogStep by viewModel.jogStep.collectAsStateWithLifecycle()
     val jogSpeed by viewModel.jogSpeedMmMin.collectAsStateWithLifecycle()
+    val unitSystem by viewModel.unitSystem.collectAsStateWithLifecycle()
     val mdiText by viewModel.mdiCommandText.collectAsStateWithLifecycle()
     val mdiHistory by viewModel.mdiHistory.collectAsStateWithLifecycle()
     val profiles by viewModel.machineProfiles.collectAsStateWithLifecycle()
@@ -71,12 +80,12 @@ fun CncMainScreen(
     val mpgMultiplier by viewModel.mpgMultiplier.collectAsStateWithLifecycle()
     val activeCalibrationSession by viewModel.activeCalibrationSession.collectAsStateWithLifecycle()
 
-    var selectedTab by remember { mutableStateOf(CncNavigationTab.CONTROL) }
-    var showCyberScanDialog by remember { mutableStateOf(false) }
-    var showCalculatorDialog by remember { mutableStateOf(false) }
-    var showToolTableDialog by remember { mutableStateOf(false) }
-    var showCalibrationDialog by remember { mutableStateOf(false) }
-    var showManualDialog by remember { mutableStateOf(false) }
+    var selectedTab by rememberSaveable { mutableStateOf(CncNavigationTab.CONTROL) }
+    var showCyberScanDialog by rememberSaveable { mutableStateOf(false) }
+    var showCalculatorDialog by rememberSaveable { mutableStateOf(false) }
+    var showToolTableDialog by rememberSaveable { mutableStateOf(false) }
+    var showCalibrationDialog by rememberSaveable { mutableStateOf(false) }
+    var showManualDialog by rememberSaveable { mutableStateOf(false) }
 
     val errorCount = remember(eventLogs) {
         eventLogs.count { it.severity == LogSeverity.ERROR || it.severity == LogSeverity.CRITICAL }
@@ -92,6 +101,8 @@ fun CncMainScreen(
                 isSimulated = isSimulated,
                 latencyMs = networkLatencyMs,
                 errorCount = errorCount,
+                unitSystem = unitSystem,
+                onToggleUnitSystem = { viewModel.toggleUnitSystem() },
                 onToggleEstop = { viewModel.toggleEstop() },
                 onPowerOn = { viewModel.powerOn() },
                 onPowerOff = { viewModel.powerOff() },
@@ -107,57 +118,76 @@ fun CncMainScreen(
             )
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = CncSurface,
+            Surface(
+                color = CncSurface,
                 tonalElevation = 8.dp,
-                modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+                shadowElevation = 4.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.navigationBars)
             ) {
-                CncNavigationTab.values().forEach { tab ->
-                    val isSelected = selectedTab == tab
-                    NavigationBarItem(
-                        selected = isSelected,
-                        onClick = {
-                            viewModel.feedbackManager.triggerActionClick()
-                            selectedTab = tab
-                        },
-                        icon = {
-                            if (tab == CncNavigationTab.LOGS && errorCount > 0) {
-                                BadgedBox(
-                                    badge = {
-                                        Badge(containerColor = CncEstopRed, contentColor = Color.White) {
-                                            Text("$errorCount", fontSize = 8.sp)
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    items(CncNavigationTab.values()) { tab ->
+                        val isSelected = selectedTab == tab
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isSelected) CncCyberCyan.copy(alpha = 0.18f) else CncSurfaceVariant.copy(alpha = 0.6f),
+                            border = androidx.compose.foundation.BorderStroke(
+                                width = if (isSelected) 1.5.dp else 1.dp,
+                                color = if (isSelected) CncCyberCyan else CncCardBorder
+                            ),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    viewModel.feedbackManager.triggerActionClick()
+                                    selectedTab = tab
+                                }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                if (tab == CncNavigationTab.LOGS && errorCount > 0) {
+                                    BadgedBox(
+                                        badge = {
+                                            Badge(containerColor = CncEstopRed, contentColor = Color.White) {
+                                                Text("$errorCount", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                            }
                                         }
+                                    ) {
+                                        Icon(
+                                            imageVector = tab.icon,
+                                            contentDescription = tab.title,
+                                            tint = if (isSelected) CncCyberCyan else CncTextSecondary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
                                     }
-                                ) {
+                                } else {
                                     Icon(
                                         imageVector = tab.icon,
                                         contentDescription = tab.title,
-                                        modifier = Modifier.size(19.dp)
+                                        tint = if (isSelected) CncCyberCyan else CncTextSecondary,
+                                        modifier = Modifier.size(18.dp)
                                     )
                                 }
-                            } else {
-                                Icon(
-                                    imageVector = tab.icon,
-                                    contentDescription = tab.title,
-                                    modifier = Modifier.size(19.dp)
+
+                                Text(
+                                    text = tab.title,
+                                    color = if (isSelected) CncCyberCyan else CncTextPrimary,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    maxLines = 1
                                 )
                             }
-                        },
-                        label = {
-                            Text(
-                                text = tab.title,
-                                fontSize = 8.5.sp,
-                                fontWeight = if (isSelected) FontWeight.Black else FontWeight.Normal
-                            )
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Color(0xFF00363D),
-                            selectedTextColor = CncCyberCyan,
-                            indicatorColor = CncCyberCyan,
-                            unselectedIconColor = CncTextMuted,
-                            unselectedTextColor = CncTextSecondary
-                        )
-                    )
+                        }
+                    }
                 }
             }
         },
@@ -184,6 +214,7 @@ fun CncMainScreen(
                             axes = axes,
                             currentCoordSystem = currentCoordSystem,
                             hasServoTorque = capabilities.hasServoTorque,
+                            unitSystem = unitSystem,
                             onZeroAxis = { viewModel.zeroAxis(it) },
                             onZeroAll = { viewModel.zeroAllAxes() },
                             onHomeAxis = { viewModel.homeAxis(it) },
@@ -200,6 +231,7 @@ fun CncMainScreen(
                             isContinuous = isContinuousJog,
                             selectedStepMm = jogStep,
                             jogSpeedMmMin = jogSpeed,
+                            unitSystem = unitSystem,
                             onSelectJogStyle = { viewModel.setJogStyle(it) },
                             onSelectMpgAxis = { viewModel.setMpgAxis(it) },
                             onSelectMpgMultiplier = { viewModel.setMpgMultiplier(it) },
@@ -219,6 +251,7 @@ fun CncMainScreen(
                             feed = feed,
                             coolant = coolant,
                             machineState = machineState,
+                            unitSystem = unitSystem,
                             onToggleSpindle = { viewModel.engine.toggleSpindle() },
                             onSetSpindleRpm = { viewModel.engine.setSpindleRpm(it) },
                             onSpindleOverride = { viewModel.engine.setSpindleOverride(it) },
@@ -251,6 +284,7 @@ fun CncMainScreen(
                             feed = feed,
                             coolant = coolant,
                             machineState = machineState,
+                            unitSystem = unitSystem,
                             onToggleSpindle = { viewModel.engine.toggleSpindle() },
                             onSetSpindleRpm = { viewModel.engine.setSpindleRpm(it) },
                             onSpindleOverride = { viewModel.engine.setSpindleOverride(it) },
@@ -268,6 +302,7 @@ fun CncMainScreen(
                             machineState = machineState,
                             axes = axes,
                             currentWcs = currentCoordSystem,
+                            unitSystem = unitSystem,
                             onJogAxis = { axis, delta -> viewModel.stepJog(axis, if (delta > 0) 1 else -1) },
                             onZeroAxis = { viewModel.zeroAxis(it) }
                         )
@@ -277,6 +312,7 @@ fun CncMainScreen(
                         MiniDroBar(
                             axes = axes,
                             currentCoordSystem = currentCoordSystem,
+                            unitSystem = unitSystem,
                             onZeroAxis = { viewModel.zeroAxis(it) }
                         )
 
@@ -297,6 +333,7 @@ fun CncMainScreen(
                         MiniDroBar(
                             axes = axes,
                             currentCoordSystem = currentCoordSystem,
+                            unitSystem = unitSystem,
                             onZeroAxis = { viewModel.zeroAxis(it) }
                         )
 

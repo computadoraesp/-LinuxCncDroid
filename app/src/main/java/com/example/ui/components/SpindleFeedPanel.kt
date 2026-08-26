@@ -21,6 +21,7 @@ import com.example.model.CoolantInfo
 import com.example.model.FeedInfo
 import com.example.model.MachineStateEnum
 import com.example.model.SpindleInfo
+import com.example.model.UnitSystem
 import com.example.ui.theme.*
 import java.util.Locale
 
@@ -30,6 +31,7 @@ fun SpindleFeedPanel(
     feed: FeedInfo,
     coolant: CoolantInfo,
     machineState: MachineStateEnum,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
     onToggleSpindle: () -> Unit,
     onSetSpindleRpm: (Double) -> Unit,
     onSpindleOverride: (Int) -> Unit,
@@ -196,6 +198,7 @@ fun SpindleFeedPanel(
 
             // Section 3: Feedrate Override & Coolant
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                val effectiveFeed = feed.commandedFeed * (feed.feedOverridePct / 100.0)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -203,7 +206,7 @@ fun SpindleFeedPanel(
                 ) {
                     Text("FEEDRATE OVERRIDE", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = CncTextPrimary)
                     Text(
-                        "${feed.feedOverridePct}% (${(feed.commandedFeed * (feed.feedOverridePct / 100.0)).toInt()} mm/min)",
+                        "${feed.feedOverridePct}% (${unitSystem.formatSpeed(effectiveFeed)})",
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,

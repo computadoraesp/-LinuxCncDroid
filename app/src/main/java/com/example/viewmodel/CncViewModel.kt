@@ -65,8 +65,12 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
     private val _userRole = MutableStateFlow(UserRole.OPERATOR)
     val userRole: StateFlow<UserRole> = _userRole.asStateFlow()
 
+    // Active Unit System: METRIC (G21 / mm) vs IMPERIAL (G20 / inch)
+    private val _unitSystem = MutableStateFlow(UnitSystem.METRIC)
+    val unitSystem: StateFlow<UnitSystem> = _unitSystem.asStateFlow()
+
     // Selected Jog increment step
-    private val _jogStep = MutableStateFlow(1.0) // 1.0mm default
+    private val _jogStep = MutableStateFlow(1.0) // 1.0mm or 0.1in default
     val jogStep: StateFlow<Double> = _jogStep.asStateFlow()
 
     // Jog mode: Continuous vs Step
@@ -125,6 +129,31 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
         engine.logEvent(LogSeverity.INFO, "AUTH", "Active security level switched to ${role.displayName}")
     }
 
+    // Unit System switching (G21 MM <-> G20 INCH)
+    fun toggleUnitSystem() {
+        val newUnit = if (_unitSystem.value == UnitSystem.METRIC) UnitSystem.IMPERIAL else UnitSystem.METRIC
+        _unitSystem.value = newUnit
+        // Reset default jog step to standard increment for selected unit
+        _jogStep.value = if (newUnit == UnitSystem.IMPERIAL) 0.010 else 1.000
+        feedbackManager.triggerSuccessHaptic()
+        engine.logEvent(
+            LogSeverity.INFO,
+            "MODAL",
+            "Active Unit System switched to ${newUnit.code} (${newUnit.shortLabel} / ${newUnit.lengthUnit})"
+        )
+    }
+
+    fun setUnitSystem(unit: UnitSystem) {
+        _unitSystem.value = unit
+        _jogStep.value = if (unit == UnitSystem.IMPERIAL) 0.010 else 1.000
+        feedbackManager.triggerActionClick()
+        engine.logEvent(
+            LogSeverity.INFO,
+            "MODAL",
+            "Active Unit System set to ${unit.code} (${unit.shortLabel} / ${unit.lengthUnit})"
+        )
+    }
+
     // Wrapped actions with Haptics and Audio
     fun toggleEstop() {
         feedbackManager.triggerEstopHaptic()
@@ -146,7 +175,12 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
 
     fun stepJog(axis: String, direction: Int) {
         feedbackManager.triggerJogTick()
-        engine.stepJog(axis, direction, _jogStep.value)
+        val stepInMm = if (_unitSystem.value == UnitSystem.IMPERIAL) {
+            _jogStep.value * 25.4
+        } else {
+            _jogStep.value
+        }
+        engine.stepJog(axis, direction, stepInMm)
     }
 
     fun startJog(axis: String, direction: Int) {
@@ -247,7 +281,8 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
 
     fun sendMpgStep(axis: String, direction: Int, multiplier: MpgMultiplier) {
         feedbackManager.triggerJogTick()
-        engine.stepJog(axis, direction, multiplier.stepMm)
+        val stepMm = multiplier.getStep(_unitSystem.value)
+        engine.stepJog(axis, direction, stepMm)
     }
 
     fun mountTool(toolId: Int) {

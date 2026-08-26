@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.AxisCoord
+import com.example.model.UnitSystem
 import com.example.ui.theme.*
 import java.util.Locale
 
@@ -32,6 +33,7 @@ fun DroPanel(
     axes: Map<String, AxisCoord>,
     currentCoordSystem: String,
     hasServoTorque: Boolean,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
     onZeroAxis: (String) -> Unit,
     onZeroAll: () -> Unit,
     onHomeAxis: (String) -> Unit,
@@ -111,6 +113,7 @@ fun DroPanel(
                         axis = axis,
                         displayMode = displayMode,
                         hasServoTorque = hasServoTorque,
+                        unitSystem = unitSystem,
                         onZero = { onZeroAxis(axis.name) },
                         onHome = { onHomeAxis(axis.name) }
                     )
@@ -161,6 +164,7 @@ fun DroAxisRow(
     axis: AxisCoord,
     displayMode: DroDisplayMode,
     hasServoTorque: Boolean,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
     onZero: () -> Unit,
     onHome: () -> Unit
 ) {
@@ -173,13 +177,21 @@ fun DroAxisRow(
         else -> AxisCColor
     }
 
+    val isRotaryAxis = axis.name in listOf("A", "B", "C")
+
     val valueToDisplay = when (displayMode) {
         DroDisplayMode.WORK -> axis.workPos
         DroDisplayMode.MACHINE -> axis.machinePos
         DroDisplayMode.DTG -> axis.dtgPos
     }
 
-    val formattedNumber = String.format(Locale.US, "%+08.3f", valueToDisplay)
+    val formattedNumber = if (isRotaryAxis) {
+        String.format(Locale.US, "%+08.3f", valueToDisplay)
+    } else {
+        unitSystem.formatPosition(valueToDisplay)
+    }
+
+    val unitLabel = if (isRotaryAxis) "°" else unitSystem.lengthUnit
 
     Surface(
         color = CncSurface,
@@ -223,15 +235,28 @@ fun DroAxisRow(
                     )
                 }
 
-                // Numeric Coordinate Display (Large Digital Font)
-                Text(
-                    text = formattedNumber,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Black,
-                    fontFamily = FontFamily.Monospace,
-                    color = CncDroDigits,
-                    letterSpacing = 2.sp
-                )
+                // Numeric Coordinate Display (Large Digital Font) + Unit
+                Row(
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = formattedNumber,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.Monospace,
+                        color = CncDroDigits,
+                        letterSpacing = 2.sp
+                    )
+                    Text(
+                        text = unitLabel,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        color = CncTextSecondary,
+                        modifier = Modifier.padding(bottom = 3.dp)
+                    )
+                }
 
                 // Quick Action Buttons (Zero & Home)
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
