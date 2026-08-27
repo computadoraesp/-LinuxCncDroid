@@ -1,21 +1,43 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ProGuard & R8 Optimization Rules for LinuxCncDroid
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# 1. Preserve Line Numbers for Crash Analytics
+-keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# 2. Room Database Architecture Rules
+-keep class * extends androidx.room.RoomDatabase
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao interface * { *; }
+-keep class * extends androidx.room.migration.Migration
+-dontwarn androidx.room.paging.**
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# 3. Domain Models and Data Classes
+-keep class com.example.model.** { *; }
+-keep class com.example.data.** { *; }
+
+# 4. Moshi JSON Serialization
+-keepattributes *Annotation*
+-keepclassmembers class * {
+    @com.squareup.moshi.Json *;
+}
+-keep class com.squareup.moshi.** { *; }
+-dontwarn com.squareup.moshi.**
+
+# 5. CameraX Lifecycle & Core
+-keep class androidx.camera.core.** { *; }
+-keep class androidx.camera.camera2.** { *; }
+-keep class androidx.camera.lifecycle.** { *; }
+-keep class androidx.camera.view.** { *; }
+
+# 6. Kotlin Coroutines
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepclassmembers class kotlinx.coroutines.** {
+    volatile <fields>;
+}
+
+# 7. OkHttp & Retrofit
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-keepattributes *Annotation*
+

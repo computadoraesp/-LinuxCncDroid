@@ -4,7 +4,9 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -54,6 +56,7 @@ fun IndustrialTopBar(
     var roleMenuExpanded by remember { mutableStateOf(false) }
 
     val coordSystems = listOf("G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3")
+    val toolsScrollState = rememberScrollState()
 
     Surface(
         color = CncSurface,
@@ -66,16 +69,17 @@ fun IndustrialTopBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 6.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left Group: ESTOP & Power Controls
+            // =========================================================================
+            // FIXED / PINNED LEFT CONTROLS: E-STOP, Machine Power, State Indicator
+            // =========================================================================
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                // Emergency Stop Big Button
+                // Emergency Stop Button
                 val isEstop = machineState == MachineStateEnum.ESTOP
                 val estopBg by animateColorAsState(
                     targetValue = if (isEstop) CncEstopRed else Color(0xFF3E1218),
@@ -89,9 +93,9 @@ fun IndustrialTopBar(
                         contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                     modifier = Modifier
-                        .height(38.dp)
+                        .height(36.dp)
                         .border(
                             width = 2.dp,
                             color = if (isEstop) Color.White else CncEstopRed,
@@ -102,11 +106,11 @@ fun IndustrialTopBar(
                         imageVector = if (isEstop) Icons.Default.Warning else Icons.Default.Block,
                         contentDescription = "ESTOP Button",
                         tint = Color.White,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(15.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = if (isEstop) "E-STOP TRIPPED" else "E-STOP",
+                        text = if (isEstop) "E-STOP" else "E-STOP",
                         fontWeight = FontWeight.Black,
                         fontSize = 11.sp,
                         letterSpacing = 0.5.sp
@@ -115,11 +119,14 @@ fun IndustrialTopBar(
 
                 // Power ON / OFF Button
                 if (!isEstop) {
-                    val isPowerOn = machineState == MachineStateEnum.ON || machineState == MachineStateEnum.RUNNING || machineState == MachineStateEnum.IDLE || machineState == MachineStateEnum.PAUSED
+                    val isPowerOn = machineState == MachineStateEnum.ON ||
+                            machineState == MachineStateEnum.RUNNING ||
+                            machineState == MachineStateEnum.IDLE ||
+                            machineState == MachineStateEnum.PAUSED
                     IconButton(
                         onClick = { if (isPowerOn) onPowerOff() else onPowerOn() },
                         modifier = Modifier
-                            .size(38.dp)
+                            .size(36.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(if (isPowerOn) Color(0xFF003919) else Color(0xFF263238))
                             .border(
@@ -137,7 +144,7 @@ fun IndustrialTopBar(
                     }
                 }
 
-                // State Pill
+                // State Indicator (IDLE, RUNNING, HOMING, PAUSED, etc.)
                 val stateColor = when (machineState) {
                     MachineStateEnum.ESTOP -> CncEstopRed
                     MachineStateEnum.RUNNING -> CncActiveGreen
@@ -160,7 +167,7 @@ fun IndustrialTopBar(
                                 .clip(CircleShape)
                                 .background(stateColor)
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(3.dp))
                         Text(
                             text = machineState.displayName,
                             color = stateColor,
@@ -171,147 +178,29 @@ fun IndustrialTopBar(
                 }
             }
 
-            // Center / Right Group: Tools, Latency, WCS, Role & Settings
+            // Visual separation divider between Fixed items and Carousel
+            VerticalDivider(
+                modifier = Modifier
+                    .height(26.dp)
+                    .padding(horizontal = 4.dp),
+                color = CncCardBorder
+            )
+
+            // =========================================================================
+            // HORIZONTAL CAROUSEL: All other tools scroll smoothly (approx 3 visible at once)
+            // =========================================================================
             Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(toolsScrollState),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                // Latency Badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(CncSurfaceVariant)
-                        .padding(horizontal = 4.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        "${latencyMs}ms",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                        color = CncActiveGreen
-                    )
-                }
-
-                // Cybersecurity & G-Code Scanner Button
-                IconButton(
-                    onClick = onOpenCyberScanner,
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(CncSurfaceVariant)
-                        .border(1.dp, CncCyberCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Shield,
-                        contentDescription = "Cybersecurity Scanner",
-                        tint = CncCyberCyan,
-                        modifier = Modifier.size(17.dp)
-                    )
-                }
-
-                // Speeds & Feeds Calculator Button
-                IconButton(
-                    onClick = onOpenCalculator,
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(CncSurfaceVariant)
-                        .border(1.dp, CncCardBorder, RoundedCornerShape(6.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Calculate,
-                        contentDescription = "Speeds and Feeds",
-                        tint = CncWarningAmber,
-                        modifier = Modifier.size(17.dp)
-                    )
-                }
-
-                // Tool Table & Pocket Manager Button
-                IconButton(
-                    onClick = onOpenToolTable,
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(CncSurfaceVariant)
-                        .border(1.dp, CncCyberCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Construction,
-                        contentDescription = "Tool Table Manager",
-                        tint = CncCyberCyan,
-                        modifier = Modifier.size(17.dp)
-                    )
-                }
-
-                // Metrological Axis Calibration (ISO 230-2) Button
-                IconButton(
-                    onClick = onOpenAxisCalibration,
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(CncSurfaceVariant)
-                        .border(1.dp, CncActiveGreen.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Straighten,
-                        contentDescription = "Axis Metrology Calibration",
-                        tint = CncActiveGreen,
-                        modifier = Modifier.size(17.dp)
-                    )
-                }
-
-                // In-App User Manual & Technical Reference Button
-                IconButton(
-                    onClick = onOpenManual,
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(CncSurfaceVariant)
-                        .border(1.dp, CncCyberCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MenuBook,
-                        contentDescription = "CNC Manual & SOPs",
-                        tint = CncCyberCyan,
-                        modifier = Modifier.size(17.dp)
-                    )
-                }
-
-                // Event & Alarm Logs Button with Badge
-                IconButton(
-                    onClick = onOpenLogs,
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(if (errorCount > 0) CncEstopRed.copy(alpha = 0.2f) else CncSurfaceVariant)
-                        .border(1.dp, if (errorCount > 0) CncEstopRed else CncCardBorder, RoundedCornerShape(6.dp))
-                ) {
-                    BadgedBox(
-                        badge = {
-                            if (errorCount > 0) {
-                                Badge(
-                                    containerColor = CncEstopRed,
-                                    contentColor = Color.White
-                                ) {
-                                    Text("$errorCount", fontSize = 8.sp)
-                                }
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.NotificationsActive,
-                            contentDescription = "Event Logs",
-                            tint = if (errorCount > 0) CncEstopRed else CncTextPrimary,
-                            modifier = Modifier.size(17.dp)
-                        )
-                    }
-                }
-
-                // Unit System Toggle Button (G21 MM / G20 INCH)
+                // 1. Unit System Toggle Button (G21 MM / G20 INCH)
                 OutlinedButton(
                     onClick = onToggleUnitSystem,
                     shape = RoundedCornerShape(6.dp),
-                    contentPadding = PaddingValues(horizontal = 7.dp, vertical = 2.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = if (unitSystem == UnitSystem.METRIC) CncCyberCyan else CncWarningAmber,
                         containerColor = if (unitSystem == UnitSystem.METRIC) CncCyberCyan.copy(alpha = 0.12f) else CncWarningAmber.copy(alpha = 0.12f)
@@ -330,7 +219,7 @@ fun IndustrialTopBar(
                     )
                 }
 
-                // Coordinate System Dropdown (G54 - G59.3)
+                // 2. Coordinate System Dropdown (G54 - G59.3)
                 Box {
                     OutlinedButton(
                         onClick = { coordMenuExpanded = true },
@@ -340,7 +229,9 @@ fun IndustrialTopBar(
                             contentColor = CncCyberCyan,
                             containerColor = CncSurfaceVariant
                         ),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(CncCyberCyan.copy(alpha = 0.6f))),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            brush = androidx.compose.ui.graphics.SolidColor(CncCyberCyan.copy(alpha = 0.6f))
+                        ),
                         modifier = Modifier.height(34.dp)
                     ) {
                         Text(
@@ -374,7 +265,7 @@ fun IndustrialTopBar(
                     }
                 }
 
-                // User Role Selector
+                // 3. User Role Selector
                 Box {
                     IconButton(
                         onClick = { roleMenuExpanded = true },
@@ -422,7 +313,139 @@ fun IndustrialTopBar(
                     }
                 }
 
-                // Settings / Config Button
+                // 4. Latency Badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(CncSurfaceVariant)
+                        .border(1.dp, CncCardBorder, RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        "${latencyMs}ms",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace,
+                        color = CncActiveGreen
+                    )
+                }
+
+                // 5. Cybersecurity & G-Code Scanner Button
+                IconButton(
+                    onClick = onOpenCyberScanner,
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(CncSurfaceVariant)
+                        .border(1.dp, CncCyberCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Shield,
+                        contentDescription = "Cybersecurity Scanner",
+                        tint = CncCyberCyan,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+
+                // 6. Speeds & Feeds Calculator Button
+                IconButton(
+                    onClick = onOpenCalculator,
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(CncSurfaceVariant)
+                        .border(1.dp, CncCardBorder, RoundedCornerShape(6.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Calculate,
+                        contentDescription = "Speeds and Feeds",
+                        tint = CncWarningAmber,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+
+                // 7. Tool Table & Pocket Manager Button
+                IconButton(
+                    onClick = onOpenToolTable,
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(CncSurfaceVariant)
+                        .border(1.dp, CncCyberCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Construction,
+                        contentDescription = "Tool Table Manager",
+                        tint = CncCyberCyan,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+
+                // 8. Metrological Axis Calibration (ISO 230-2) Button
+                IconButton(
+                    onClick = onOpenAxisCalibration,
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(CncSurfaceVariant)
+                        .border(1.dp, CncActiveGreen.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Straighten,
+                        contentDescription = "Axis Metrology Calibration",
+                        tint = CncActiveGreen,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+
+                // 9. In-App User Manual & Technical Reference Button
+                IconButton(
+                    onClick = onOpenManual,
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(CncSurfaceVariant)
+                        .border(1.dp, CncCyberCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MenuBook,
+                        contentDescription = "CNC Manual & SOPs",
+                        tint = CncCyberCyan,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+
+                // 10. Event & Alarm Logs Button with Badge
+                IconButton(
+                    onClick = onOpenLogs,
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (errorCount > 0) CncEstopRed.copy(alpha = 0.2f) else CncSurfaceVariant)
+                        .border(1.dp, if (errorCount > 0) CncEstopRed else CncCardBorder, RoundedCornerShape(6.dp))
+                ) {
+                    BadgedBox(
+                        badge = {
+                            if (errorCount > 0) {
+                                Badge(
+                                    containerColor = CncEstopRed,
+                                    contentColor = Color.White
+                                ) {
+                                    Text("$errorCount", fontSize = 8.sp)
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.NotificationsActive,
+                            contentDescription = "Event Logs",
+                            tint = if (errorCount > 0) CncEstopRed else CncTextPrimary,
+                            modifier = Modifier.size(17.dp)
+                        )
+                    }
+                }
+
+                // 11. Settings / Config Button
                 IconButton(
                     onClick = onOpenConfig,
                     modifier = Modifier
