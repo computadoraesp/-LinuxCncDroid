@@ -60,6 +60,7 @@ fun IndustrialTopBar(
         shadowElevation = 4.dp,
         modifier = modifier
             .fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.statusBars)
             .border(width = 1.dp, color = CncCardBorder)
     ) {
         Row(
