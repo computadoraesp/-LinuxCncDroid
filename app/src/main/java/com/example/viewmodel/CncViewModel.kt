@@ -2,6 +2,7 @@ package com.example.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
 import com.example.data.local.CncAppDatabase
@@ -10,20 +11,29 @@ import com.example.data.local.MdiMacroEntity
 import com.example.model.*
 import com.example.service.CncFeedbackManager
 import com.example.service.CncSecurityScanner
+import com.example.service.ConnectivityObserver
 import com.example.service.LinuxCncEngine
+import com.example.service.NetworkConnectivityObserver
+import java.util.Locale
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class CncViewModel(application: Application) : AndroidViewModel(application) {
+class CncViewModel(application: Application, private val savedStateHandle: SavedStateHandle) : AndroidViewModel(application) {
+
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        engine.logEvent(LogSeverity.ERROR, "RUNTIME", "Unhandled Error: ${throwable.localizedMessage}")
+    }
 
     val engine = LinuxCncEngine()
     val feedbackManager = CncFeedbackManager(application)
     val securityScanner = CncSecurityScanner()
+    private val connectivityObserver = NetworkConnectivityObserver(application)
 
     private val db = Room.databaseBuilder(
         application,
         CncAppDatabase::class.java,
-        "linuxcnc_hmi.db"
+        "linuxcnc_hmi.db",
     ).build()
 
     // State flows from engine
@@ -74,7 +84,7 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
     val jogStep: StateFlow<Double> = _jogStep.asStateFlow()
 
     // Jog mode: Continuous vs Step
-    private val _isContinuousJog = MutableStateFlow(true)
+    private val _isContinuousJog = MutableStateFlow(value = true)
     val isContinuousJog: StateFlow<Boolean> = _isContinuousJog.asStateFlow()
 
     // Jog Speed slider
@@ -85,10 +95,19 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
     private val _mdiCommandText = MutableStateFlow("")
     val mdiCommandText: StateFlow<String> = _mdiCommandText.asStateFlow()
 
-    private val _mdiHistory = MutableStateFlow<List<String>>(
-        listOf("G0 X0 Y0 Z10", "G1 Z-5 F300", "M3 S12000", "G54", "G28", "T1 M6")
+    private val _mdiHistory = MutableStateFlow(
+        listOf("G0 X0 Y0 Z10", "G1 Z-5 F300", "M3 S12000", "G54", "G28", "T1 M6"),
     )
     val mdiHistory: StateFlow<List<String>> = _mdiHistory.asStateFlow()
+
+    // Navigation and UI States (Saved in SavedStateHandle for process death survival)
+    val selectedTab: StateFlow<CncNavigationTab> = savedStateHandle.getStateFlow("selected_tab", CncNavigationTab.CONTROL)
+    
+    val showCyberScanDialog: MutableStateFlow<Boolean> = MutableStateFlow(value = false)
+    val showCalculatorDialog: MutableStateFlow<Boolean> = MutableStateFlow(value = false)
+    val showToolTableDialog: MutableStateFlow<Boolean> = MutableStateFlow(value = false)
+    val showCalibrationDialog: MutableStateFlow<Boolean> = MutableStateFlow(value = false)
+    val showManualDialog: MutableStateFlow<Boolean> = MutableStateFlow(value = false)
 
     // Persistent Profiles and Macros from DB
     val machineProfiles: StateFlow<List<MachineProfileEntity>> = db.profileDao().getAllProfiles()
@@ -99,15 +118,52 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         seedInitialData()
+        observeEngineStates()
+        observeConnectivity()
+    }
+
+    private fun observeConnectivity() {
+        connectivityObserver.observe()
+            .onEach { status ->
+                val severity = if (status == ConnectivityObserver.Status.Available) LogSeverity.INFO else LogSeverity.WARNING
+                engine.logEvent(severity, "NETWORK", "Device Connectivity: ${status.name}")
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeEngineStates() {
+        engine.machineState
+            .onEach { state ->
+                when (state) {
+                 MachineStateEnum.ERROR -> feedbackManager.playErrorAlarm()
+                    MachineStateEnum.IDLE -> {
+                        // Logic to detect actual program completion in simulation
+                        if ((engine.activeGCodeLine.value > 0) && engine.loadedGCode.value.isNotEmpty()) {
+                            if (engine.activeGCodeLine.value >= (engine.loadedGCode.value.size - 1)) {
+                                feedbackManager.playCycleCompleteSound()
+                            }
+                        }
+                    }
+                    else -> {}
+                }
+            }
+            .launchIn(viewModelScope)
+
+        engine.probe
+            .map { it.isTripped }
+            .distinctUntilChanged()
+            .filter { it }
+            .onEach { feedbackManager.playProbeTripSound() }
+            .launchIn(viewModelScope)
     }
 
     private fun seedInitialData() {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             // Seed sample profiles if empty
             val initialProfiles = listOf(
                 MachineProfileEntity(name = "Workshop VMC-850 (EtherCAT + Delta)", hostIp = "192.168.1.100", architecture = "ETHERCAT_DELTA", isDefault = true),
                 MachineProfileEntity(name = "Prototype Router (Mesa 7i96S FPGA)", hostIp = "10.42.0.1", architecture = "MESA_FPGA"),
-                MachineProfileEntity(name = "Mini Mill (Parallel Port Legacy)", hostIp = "192.168.1.150", architecture = "PARPORT_LEGACY")
+                MachineProfileEntity(name = "Mini Mill (Parallel Port Legacy)", hostIp = "192.168.1.150", architecture = "PARPORT_LEGACY"),
             )
             initialProfiles.forEach { db.profileDao().insertProfile(it) }
 
@@ -116,7 +172,7 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
                 MdiMacroEntity("m2", "Park Position", "G0 G53 Z0\nG0 G53 X0 Y300", "Retract Z and move table forward", "MOTION"),
                 MdiMacroEntity("m3", "Spindle Warmup", "M3 S3000\nG4 P5\nM3 S8000\nG4 P5\nM3 S15000", "3-Stage spindle bearing warmup cycle", "SPINDLE"),
                 MdiMacroEntity("m4", "Laser Crosshair", "M64 P0", "Toggle optical alignment laser crosshair", "TOOLING"),
-                MdiMacroEntity("m5", "Tool Length Touch", "G38.2 Z-50 F100\nG91 G0 Z2\nG90", "Execute toolsetter probe touch routine", "PROBING")
+                MdiMacroEntity("m5", "Tool Length Touch", "G38.2 Z-50 F100\nG91 G0 Z2\nG90", "Execute toolsetter probe touch routine", "PROBING"),
             )
             db.macroDao().insertMacros(initialMacros)
         }
@@ -132,15 +188,8 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
     // Unit System switching (G21 MM <-> G20 INCH)
     fun toggleUnitSystem() {
         val newUnit = if (_unitSystem.value == UnitSystem.METRIC) UnitSystem.IMPERIAL else UnitSystem.METRIC
-        _unitSystem.value = newUnit
-        // Reset default jog step to standard increment for selected unit
-        _jogStep.value = if (newUnit == UnitSystem.IMPERIAL) 0.010 else 1.000
+        setUnitSystem(newUnit)
         feedbackManager.triggerSuccessHaptic()
-        engine.logEvent(
-            LogSeverity.INFO,
-            "MODAL",
-            "Active Unit System switched to ${newUnit.code} (${newUnit.shortLabel} / ${newUnit.lengthUnit})"
-        )
     }
 
     fun setUnitSystem(unit: UnitSystem) {
@@ -150,7 +199,7 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
         engine.logEvent(
             LogSeverity.INFO,
             "MODAL",
-            "Active Unit System set to ${unit.code} (${unit.shortLabel} / ${unit.lengthUnit})"
+            "Active Unit System set to ${unit.code} (${unit.shortLabel} / ${unit.lengthUnit})",
         )
     }
 
@@ -175,11 +224,7 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
 
     fun stepJog(axis: String, direction: Int) {
         feedbackManager.triggerJogTick()
-        val stepInMm = if (_unitSystem.value == UnitSystem.IMPERIAL) {
-            _jogStep.value * 25.4
-        } else {
-            _jogStep.value
-        }
+        val stepInMm = unitSystem.value.toMm(_jogStep.value)
         engine.stepJog(axis, direction, stepInMm)
     }
 
@@ -264,6 +309,19 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
         engine.clearEventLogs()
     }
 
+    fun setSelectedTab(tab: CncNavigationTab) {
+        if (selectedTab.value != tab) {
+            feedbackManager.triggerActionClick()
+            savedStateHandle["selected_tab"] = tab
+        }
+    }
+
+    fun setShowCyberScanDialog(show: Boolean) { showCyberScanDialog.value = show }
+    fun setShowCalculatorDialog(show: Boolean) { showCalculatorDialog.value = show }
+    fun setShowToolTableDialog(show: Boolean) { showToolTableDialog.value = show }
+    fun setShowCalibrationDialog(show: Boolean) { showCalibrationDialog.value = show }
+    fun setShowManualDialog(show: Boolean) { showManualDialog.value = show }
+
     fun setJogStyle(style: JogControlStyle) {
         feedbackManager.triggerActionClick()
         _jogStyle.value = style
@@ -303,6 +361,8 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
     fun touchOffToolZ(toolId: Int) {
         feedbackManager.triggerSuccessHaptic()
         val currentZ = engine.axes.value["Z"]?.workPos ?: 0.0
+        val zDisplay = _unitSystem.value.toDisplayLength(currentZ)
+        engine.logEvent(LogSeverity.INFO, "TOUCH_OFF", "T$toolId Z-Pos: ${_unitSystem.value.formatPosition(currentZ)} (${String.format(Locale.US, "%.4f", zDisplay)} ${_unitSystem.value.lengthUnit})")
         engine.touchOffToolZ(toolId, currentZ)
     }
 
@@ -336,23 +396,37 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun saveProfile(name: String, ip: String, port: Int, arch: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             db.profileDao().insertProfile(
                 MachineProfileEntity(
                     name = name,
                     hostIp = ip,
                     port = port,
-                    architecture = arch
-                )
+                    architecture = arch,
+                ),
             )
             feedbackManager.triggerSuccessHaptic()
         }
     }
 
     fun deleteProfile(id: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(exceptionHandler) {
             db.profileDao().deleteProfile(id)
             feedbackManager.triggerActionClick()
+        }
+    }
+
+    fun wipeAllAppData() {
+        viewModelScope.launch(exceptionHandler) {
+            // Delete all profiles and macros
+            machineProfiles.value.forEach { db.profileDao().deleteProfile(it.id) }
+            macros.value.forEach { db.macroDao().deleteMacro(it.id) }
+            
+            // Re-seed with default data
+            seedInitialData()
+            
+            feedbackManager.triggerEstopHaptic()
+            engine.logEvent(LogSeverity.CRITICAL, "SYSTEM", "ALL USER DATA WIPED - Defaults Restored")
         }
     }
 
@@ -364,7 +438,7 @@ class CncViewModel(application: Application) : AndroidViewModel(application) {
         totalTravelMm: Double = 600.0,
         stepIntervalPercent: Double = 10.0,
         instrumentName: String = "Dial Indicator (0.001mm Resolution)",
-        instrumentUncertaintyMm: Double = 0.003
+        instrumentUncertaintyMm: Double = 0.003,
     ) {
         feedbackManager.triggerActionClick()
         engine.startAxisCalibration(axis, totalTravelMm, stepIntervalPercent, instrumentName, instrumentUncertaintyMm)
