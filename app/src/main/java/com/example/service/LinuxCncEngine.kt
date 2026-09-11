@@ -7,8 +7,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.*
 import org.json.JSONObject
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.math.*
+import kotlin.time.Duration.Companion.milliseconds
 
 class LinuxCncEngine {
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
@@ -24,13 +26,13 @@ class LinuxCncEngine {
     val currentCoordSystem: StateFlow<String> = _currentCoordSystem.asStateFlow()
 
     // Axes
-    private val _axes = MutableStateFlow<Map<String, AxisCoord>>(
+    private val _axes = MutableStateFlow(
         mapOf(
             "X" to AxisCoord(name = "X", machinePos = 120.450, workPos = 20.450, dtgPos = 0.0, loadTorquePct = 14.5, motorTempC = 36.2, driveTempC = 41.0),
             "Y" to AxisCoord(name = "Y", machinePos = 85.320, workPos = 15.320, dtgPos = 0.0, loadTorquePct = 12.8, motorTempC = 35.8, driveTempC = 39.5),
             "Z" to AxisCoord(name = "Z", machinePos = -42.100, workPos = -12.100, dtgPos = 0.0, loadTorquePct = 18.2, motorTempC = 38.0, driveTempC = 42.1),
-            "A" to AxisCoord(name = "A", machinePos = 0.000, workPos = 0.000, dtgPos = 0.0, loadTorquePct = 8.5, motorTempC = 32.5, driveTempC = 35.0)
-        )
+            "A" to AxisCoord(name = "A", machinePos = 0.000, workPos = 0.000, dtgPos = 0.0, loadTorquePct = 8.5, motorTempC = 32.5, driveTempC = 35.0),
+        ),
     )
     val axes: StateFlow<Map<String, AxisCoord>> = _axes.asStateFlow()
 
@@ -59,7 +61,7 @@ class LinuxCncEngine {
             maxRpm = 24000.0,
             lifeMinutesCurrent = 42.0,
             lifeMinutesMax = 180.0,
-            isActive = true
+            isActive = true,
         ),
         CncToolItem(
             id = 2,
@@ -72,7 +74,7 @@ class LinuxCncEngine {
             maxRpm = 24000.0,
             lifeMinutesCurrent = 18.5,
             lifeMinutesMax = 120.0,
-            isActive = false
+            isActive = false,
         ),
         CncToolItem(
             id = 3,
@@ -85,7 +87,7 @@ class LinuxCncEngine {
             maxRpm = 10000.0,
             lifeMinutesCurrent = 65.0,
             lifeMinutesMax = 240.0,
-            isActive = false
+            isActive = false,
         ),
         CncToolItem(
             id = 4,
@@ -98,7 +100,7 @@ class LinuxCncEngine {
             maxRpm = 6000.0,
             lifeMinutesCurrent = 12.0,
             lifeMinutesMax = 90.0,
-            isActive = false
+            isActive = false,
         ),
         CncToolItem(
             id = 5,
@@ -111,7 +113,7 @@ class LinuxCncEngine {
             maxRpm = 1200.0,
             lifeMinutesCurrent = 8.0,
             lifeMinutesMax = 60.0,
-            isActive = false
+            isActive = false,
         ),
         CncToolItem(
             id = 6,
@@ -124,7 +126,7 @@ class LinuxCncEngine {
             maxRpm = 18000.0,
             lifeMinutesCurrent = 29.0,
             lifeMinutesMax = 150.0,
-            isActive = false
+            isActive = false,
         ),
         CncToolItem(
             id = 7,
@@ -137,11 +139,11 @@ class LinuxCncEngine {
             maxRpm = 0.0,
             lifeMinutesCurrent = 150.0,
             lifeMinutesMax = 9999.0,
-            isActive = false
-        )
+            isActive = false,
+        ),
     )
 
-    private val _toolTable = MutableStateFlow<List<CncToolItem>>(defaultTools)
+    private val _toolTable = MutableStateFlow(defaultTools)
     val toolTable: StateFlow<List<CncToolItem>> = _toolTable.asStateFlow()
 
     private val _activeTool = MutableStateFlow(defaultTools.first())
@@ -169,7 +171,7 @@ class LinuxCncEngine {
     private val _etherCatMaster = MutableStateFlow(EtherCatMasterInfo())
     val etherCatMaster: StateFlow<EtherCatMasterInfo> = _etherCatMaster.asStateFlow()
 
-    private val _etherCatSlaves = MutableStateFlow<List<EtherCatSlaveInfo>>(
+    private val _etherCatSlaves = MutableStateFlow(
         listOf(
             EtherCatSlaveInfo(0, "Delta ASDA-B3-E Axis X", actualTorquePct = 14.5, driveTempC = 41.0),
             EtherCatSlaveInfo(1, "Delta ASDA-B3-E Axis Y", actualTorquePct = 12.8, driveTempC = 39.5),
@@ -193,7 +195,7 @@ class LinuxCncEngine {
     private val _loadedFileName = MutableStateFlow("pocket_demo.ngc")
     val loadedFileName: StateFlow<String> = _loadedFileName.asStateFlow()
 
-    private val _eventLogs = MutableStateFlow<List<CncEventLog>>(
+    private val _eventLogs = MutableStateFlow(
         listOf(
             CncEventLog(severity = LogSeverity.INFO, tag = "KERNEL", message = "LinuxCNC Motion Kernel initialized in real-time mode"),
             CncEventLog(severity = LogSeverity.INFO, tag = "ETHERCAT", message = "EtherCAT Master [OP]: 4 slaves operational, DC synch 1000us"),
@@ -203,7 +205,7 @@ class LinuxCncEngine {
     )
     val eventLogs: StateFlow<List<CncEventLog>> = _eventLogs.asStateFlow()
 
-    private val _isSimulatedMode = MutableStateFlow(true)
+    private val _isSimulatedMode = MutableStateFlow(value = true)
     val isSimulatedMode: StateFlow<Boolean> = _isSimulatedMode.asStateFlow()
 
     private val _networkLatencyMs = MutableStateFlow(2)
@@ -289,7 +291,7 @@ class LinuxCncEngine {
                 if (_isSimulatedMode.value) {
                     stepSimulation()
                 }
-                delay(33) // ~30Hz Telemetry Rate
+                delay(33.milliseconds) // ~30Hz Telemetry Rate
             }
         }
     }
@@ -300,14 +302,14 @@ class LinuxCncEngine {
         val activeAxis = _activeJogAxis.value
 
         // Handle Active Jogging
-        if (activeAxis != null && (currentState == MachineStateEnum.ON || currentState == MachineStateEnum.IDLE)) {
+        if ((activeAxis != null) && ((currentState == MachineStateEnum.ON) || (currentState == MachineStateEnum.IDLE))) {
             val axis = currentAxes[activeAxis]
             if (axis != null) {
-                val delta = (jogDirection * jogSpeed * 0.033) / 60.0 // mm per tick
+                val delta = (jogDirection * jogSpeed * 0.033) / 60.0 // mm, per tick
                 val newMachinePos = (axis.machinePos + delta).coerceIn(axis.minLimit, axis.maxLimit)
                 val newWorkPos = (axis.workPos + delta)
-                val dynamicTorque = 10.0 + (abs(jogSpeed) / 5000.0) * 45.0 + (Math.random() * 3.0)
-                val dynamicTemp = 36.0 + (dynamicTorque / 100.0) * 8.0
+                val dynamicTorque = 10.0 + ((abs(jogSpeed) / 5000.0) * 45.0) + (Math.random() * 3.0)
+                val dynamicTemp = 36.0 + ((dynamicTorque / 100.0) * 8.0)
 
                 currentAxes[activeAxis] = axis.copy(
                     machinePos = round(newMachinePos * 1000.0) / 1000.0,
@@ -330,17 +332,17 @@ class LinuxCncEngine {
                     val x = currentAxes["X"]
                     val y = currentAxes["Y"]
                     val z = currentAxes["Z"]
-                    if (x != null && y != null && z != null) {
+                    if ((x != null) && (y != null) && (z != null)) {
                         val dx = seg.endX - x.workPos
                         val dy = seg.endY - y.workPos
                         val dz = seg.endZ - z.workPos
-                        val dist = sqrt(dx * dx + dy * dy + dz * dz)
+                        val dist = sqrt((dx * dx) + (dy * dy) + (dz * dz))
 
                         if (dist > 0.5) {
                             val step = 0.8
-                            val nextX = x.workPos + (dx / dist) * step
-                            val nextY = y.workPos + (dy / dist) * step
-                            val nextZ = z.workPos + (dz / dist) * step
+                            val nextX = x.workPos + ((dx / dist) * step)
+                            val nextY = y.workPos + ((dy / dist) * step)
+                            val nextZ = z.workPos + ((dz / dist) * step)
                             currentAxes["X"] = x.copy(
                                 workPos = round(nextX * 1000.0) / 1000.0,
                                 machinePos = round((nextX + 100.0) * 1000.0) / 1000.0,
@@ -360,7 +362,13 @@ class LinuxCncEngine {
                                 loadTorquePct = 30.0 + (Math.random() * 5.0)
                             )
                         } else {
-                            _activeGCodeLine.value = (currentLine + 1) % gcodeList.size
+                            val nextLine = (currentLine + 1)
+                            if (nextLine >= gcodeList.size) {
+                                _machineState.value = MachineStateEnum.IDLE
+                                logEvent(LogSeverity.INFO, "CYCLE", "Program Completed Successfully")
+                            } else {
+                                _activeGCodeLine.value = nextLine
+                            }
                         }
                     }
                 }
@@ -374,7 +382,7 @@ class LinuxCncEngine {
         if (currentSpindle.isEnabled) {
             val target = currentSpindle.commandedRpm * (currentSpindle.overridePct / 100.0)
             val currentActual = currentSpindle.actualRpm
-            val newActual = currentActual + (target - currentActual) * 0.15 + (Math.random() * 20.0 - 10.0)
+            val newActual = currentActual + ((target - currentActual) * 0.15) + ((Math.random() * 20.0) - 10.0)
             _spindle.value = currentSpindle.copy(actualRpm = round(newActual))
         } else {
             val currentActual = currentSpindle.actualRpm
@@ -389,6 +397,28 @@ class LinuxCncEngine {
         _etherCatMaster.value = _etherCatMaster.value.copy(
             dcOffsetNs = (10L + (Math.random() * 8.0).toLong())
         )
+
+        // Sync EtherCAT Slave telemetry with simulated axes
+        if (capabilities.value.hasEtherCat) {
+            val updatedSlaves = _etherCatSlaves.value.map { slave ->
+                val axisName = when (slave.slaveIndex) {
+                    0 -> "X"
+                    1 -> "Y"
+                    2 -> "Z"
+                    3 -> "A"
+                    else -> null
+                }
+                axisName?.let { name ->
+                    currentAxes[name]?.let { axisData ->
+                        slave.copy(
+                            actualTorquePct = axisData.loadTorquePct,
+                            driveTempC = axisData.driveTempC
+                        )
+                    }
+                } ?: slave
+            }
+            _etherCatSlaves.value = updatedSlaves
+        }
     }
 
     // Safety and State Commands
@@ -423,10 +453,12 @@ class LinuxCncEngine {
         sendRemoteCommand("POWER_OFF", emptyMap())
     }
 
+    @Suppress("unused")
     fun setTaskMode(mode: TaskMode) {
         _taskMode.value = mode
         sendRemoteCommand("SET_MODE", mapOf("mode" to mode.name))
     }
+
 
     fun setCoordinateSystem(gSystem: String) {
         _currentCoordSystem.value = gSystem
@@ -435,7 +467,7 @@ class LinuxCncEngine {
 
     // Motion & Jog Commands
     fun startJog(axis: String, direction: Int, speedMmMin: Double = 1500.0) {
-        if (_machineState.value == MachineStateEnum.ON || _machineState.value == MachineStateEnum.IDLE) {
+        if ((_machineState.value == MachineStateEnum.ON) || (_machineState.value == MachineStateEnum.IDLE)) {
             _activeJogAxis.value = axis
             jogDirection = direction
             jogSpeed = speedMmMin
@@ -444,16 +476,15 @@ class LinuxCncEngine {
     }
 
     fun stopJog() {
-        val axis = _activeJogAxis.value
-        _activeJogAxis.value = null
-        jogDirection = 0
-        if (axis != null) {
+        _activeJogAxis.value?.let { axis ->
+            _activeJogAxis.value = null
+            jogDirection = 0
             sendRemoteCommand("JOG_STOP", mapOf("axis" to axis))
         }
     }
 
     fun stepJog(axis: String, direction: Int, stepSizeMm: Double) {
-        if (_machineState.value == MachineStateEnum.ON || _machineState.value == MachineStateEnum.IDLE) {
+        if ((_machineState.value == MachineStateEnum.ON) || (_machineState.value == MachineStateEnum.IDLE)) {
             val currentMap = _axes.value.toMutableMap()
             val axisObj = currentMap[axis]
             if (axisObj != null) {
@@ -483,10 +514,7 @@ class LinuxCncEngine {
     fun zeroAllAxes() {
         val currentMap = _axes.value.toMutableMap()
         currentMap.keys.forEach { key ->
-            val obj = currentMap[key]
-            if (obj != null) {
-                currentMap[key] = obj.copy(workPos = 0.0)
-            }
+            currentMap[key] = currentMap[key]?.copy(workPos = 0.0) ?: return@forEach
         }
         _axes.value = currentMap
         logEvent(LogSeverity.INFO, "WCS", "All Axes Zeroed to ${_currentCoordSystem.value} origin")
@@ -497,23 +525,34 @@ class LinuxCncEngine {
         val currentMap = _axes.value.toMutableMap()
         val axisObj = currentMap[axis]
         if (axisObj != null) {
-            currentMap[axis] = axisObj.copy(isHomed = true, machinePos = 0.0, workPos = 0.0)
-            _axes.value = currentMap
+            val prevState = _machineState.value
+            _machineState.value = MachineStateEnum.HOMING
+            scope.launch {
+                delay(800.milliseconds) // Simulating physical motion
+                currentMap[axis] = axisObj.copy(isHomed = true, machinePos = 0.0, workPos = 0.0)
+                _axes.value = currentMap
+                _machineState.value = prevState
+                logEvent(LogSeverity.INFO, "HOMING", "Axis $axis Homed successfully")
+            }
         }
-        logEvent(LogSeverity.INFO, "HOMING", "Axis $axis Homed successfully")
         sendRemoteCommand("HOME_AXIS", mapOf("axis" to axis))
     }
 
     fun homeAllAxes() {
         val currentMap = _axes.value.toMutableMap()
-        currentMap.keys.forEach { key ->
-            val obj = currentMap[key]
-            if (obj != null) {
-                currentMap[key] = obj.copy(isHomed = true, machinePos = 0.0, workPos = 0.0)
+        val prevState = _machineState.value
+        _machineState.value = MachineStateEnum.HOMING
+        scope.launch {
+            delay(1500.milliseconds) // Simulating multi-axis motion
+            currentMap.keys.forEach { key ->
+                currentMap[key]?.let { obj ->
+                    currentMap[key] = obj.copy(isHomed = true, machinePos = 0.0, workPos = 0.0)
+                }
             }
+            _axes.value = currentMap
+            _machineState.value = prevState
+            logEvent(LogSeverity.INFO, "HOMING", "All machine axes homed to physical index switches")
         }
-        _axes.value = currentMap
-        logEvent(LogSeverity.INFO, "HOMING", "All machine axes homed to physical index switches")
         sendRemoteCommand("HOME_ALL", emptyMap())
     }
 
@@ -555,7 +594,7 @@ class LinuxCncEngine {
 
     // Program Cycle Controls
     fun cycleStart() {
-        if (_machineState.value == MachineStateEnum.ON || _machineState.value == MachineStateEnum.IDLE || _machineState.value == MachineStateEnum.PAUSED) {
+        if ((_machineState.value == MachineStateEnum.ON) || (_machineState.value == MachineStateEnum.IDLE) || (_machineState.value == MachineStateEnum.PAUSED)) {
             _machineState.value = MachineStateEnum.RUNNING
             _taskMode.value = TaskMode.AUTO
             _spindle.value = _spindle.value.copy(isEnabled = true)
@@ -586,15 +625,15 @@ class LinuxCncEngine {
         scope.launch {
             logEvent(LogSeverity.INFO, "PROBE", "Starting Metrology routine: $routineType")
             _probe.value = _probe.value.copy(activeRoutine = routineType, isTripped = false)
-            delay(600)
+            delay(600.milliseconds)
             _probe.value = _probe.value.copy(
                 isTripped = true,
                 lastContactX = _axes.value["X"]?.workPos ?: 0.0,
                 lastContactY = _axes.value["Y"]?.workPos ?: 0.0,
                 lastContactZ = _axes.value["Z"]?.workPos ?: 0.0
             )
-            logEvent(LogSeverity.INFO, "PROBE", "Touch Contact Confirmed at (${String.format(java.util.Locale.US, "%.3f", _probe.value.lastContactX)}, ${String.format(java.util.Locale.US, "%.3f", _probe.value.lastContactY)}, ${String.format(java.util.Locale.US, "%.3f", _probe.value.lastContactZ)})")
-            delay(400)
+            logEvent(LogSeverity.INFO, "PROBE", "Touch Contact Confirmed at (${String.format(Locale.US, "%.3f", _probe.value.lastContactX)}, ${String.format(Locale.US, "%.3f", _probe.value.lastContactY)}, ${String.format(Locale.US, "%.3f", _probe.value.lastContactZ)})")
+            delay(400.milliseconds)
             _probe.value = _probe.value.copy(isTripped = false, activeRoutine = null)
         }
         sendRemoteCommand("PROBE_CYCLE", mapOf("routine" to routineType))
@@ -650,7 +689,7 @@ class LinuxCncEngine {
         val target = _toolTable.value.find { it.id == toolId } ?: return
         val updated = target.copy(lengthOffset = round(abs(currentSpindleZ) * 1000.0) / 1000.0)
         updateToolItem(updated)
-        logEvent(LogSeverity.INFO, "TOOL_OFFSET", "T${toolId} Tool Length Offset (TLO) set to ${updated.lengthOffset} mm via Touch-Off")
+        logEvent(LogSeverity.INFO, "TOOL_OFFSET", "T$toolId Tool Length Offset (TLO) set to ${updated.lengthOffset} mm via Touch-Off")
     }
 
     // Switch Architecture Profile dynamically
@@ -669,7 +708,7 @@ class LinuxCncEngine {
             hasServoTorque = (arch == HardwareArchitecture.ETHERCAT_DELTA),
             hasDriveTemp = (arch == HardwareArchitecture.ETHERCAT_DELTA),
             hasEtherCat = (arch == HardwareArchitecture.ETHERCAT_DELTA),
-            hasProbe = (arch != HardwareArchitecture.PARPORT_LEGACY || true)
+            hasProbe = (true)
         )
 
         // Adjust axes map if needed
@@ -693,7 +732,9 @@ class LinuxCncEngine {
                     .url("ws://$hostIp:$port/ws/telemetry")
                     .build()
 
-                webSocket = okHttpClient?.newWebSocket(request, object : WebSocketListener() {
+                webSocket = okHttpClient?.newWebSocket(
+                    request,
+                    object : WebSocketListener() {
                     override fun onOpen(webSocket: WebSocket, response: Response) {
                         isConnectedToRealServer = true
                         _isSimulatedMode.value = false
@@ -714,8 +755,10 @@ class LinuxCncEngine {
                         isConnectedToRealServer = false
                         _isSimulatedMode.value = true
                     }
-                })
+                },
+            )
             } catch (e: Exception) {
+                logEvent(LogSeverity.ERROR, "NETWORK", "Connection failed: ${e.message}")
                 _isSimulatedMode.value = true
             }
         }
@@ -734,11 +777,13 @@ class LinuxCncEngine {
                     else -> MachineStateEnum.OFF
                 }
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            logEvent(LogSeverity.ERROR, "TELEMETRY", "Parse error: ${e.message}")
+        }
     }
 
     private fun sendRemoteCommand(cmdName: String, args: Map<String, Any>) {
-        if (isConnectedToRealServer && webSocket != null) {
+        if (isConnectedToRealServer && (webSocket != null)) {
             val json = JSONObject()
             json.put("command", cmdName)
             val argsObj = JSONObject()
@@ -823,17 +868,21 @@ class LinuxCncEngine {
         val measuredPoints = updatedPoints.filter { it.measuredPositionMm != null }
         val isAllCompleted = measuredPoints.size == updatedPoints.size
 
-        val maxErr = if (measuredPoints.isNotEmpty()) measuredPoints.maxOf { Math.abs(it.errorMm ?: 0.0) } else 0.0
-        val meanErr = if (measuredPoints.isNotEmpty()) measuredPoints.map { it.errorMm ?: 0.0 }.average() else 0.0
+        val maxErr = if (measuredPoints.isNotEmpty()) measuredPoints.maxOf {
+            abs(
+                it.errorMm ?: 0.0
+            )
+        } else 0.0
+        val meanErr = if (measuredPoints.isNotEmpty()) measuredPoints.asSequence().map { it.errorMm ?: 0.0 }.average() else 0.0
 
         // Expanded uncertainty k=2 calculation: Uc = sqrt(u_inst^2 + u_repeat^2) * 2
         val repeatUncertainty = if (measuredPoints.size > 1) {
-            val variance = measuredPoints.map { Math.pow((it.errorMm ?: 0.0) - meanErr, 2.0) }.sum() / (measuredPoints.size - 1)
-            Math.sqrt(variance)
+            val variance = measuredPoints.sumOf { ((it.errorMm ?: 0.0) - meanErr).pow(2.0) } / (measuredPoints.size - 1)
+            sqrt(variance)
         } else current.instrumentUncertaintyMm
 
-        val combinedUncertainty = Math.sqrt(
-            Math.pow(current.instrumentUncertaintyMm, 2.0) + Math.pow(repeatUncertainty, 2.0)
+        val combinedUncertainty = sqrt(
+            current.instrumentUncertaintyMm.pow(2.0) + repeatUncertainty.pow(2.0)
         )
         val expandedUncertainty = combinedUncertainty * 2.0
 
@@ -845,7 +894,7 @@ class LinuxCncEngine {
             expandedUncertaintyMm = expandedUncertainty
         )
 
-        logEvent(LogSeverity.INFO, "METROLOGY", "Recorded ${current.axis} point [$stepIndex] Nominal=${updatedPoints[stepIndex].nominalPositionMm}mm, Measured=${measuredValueMm}mm, Err=${String.format(java.util.Locale.US, "%.4f", updatedPoints[stepIndex].errorMm)}mm")
+        logEvent(LogSeverity.INFO, "METROLOGY", "Recorded ${current.axis} point [$stepIndex] Nominal=${updatedPoints[stepIndex].nominalPositionMm}mm, Measured=${measuredValueMm}mm, Err=${String.format(Locale.US, "%.4f", updatedPoints[stepIndex].errorMm)}mm")
     }
 
     fun moveAxisToNominal(stepIndex: Int) {
@@ -870,13 +919,20 @@ class LinuxCncEngine {
         sb.append("# LinuxCNC Screw Pitch Compensation Table (comp.tbl)\n")
         sb.append("# Axis: ${session.axis} | Total Travel: ${session.totalTravelMm} mm\n")
         sb.append("# Instrument: ${session.instrumentName} (±${session.instrumentUncertaintyMm} mm)\n")
-        sb.append("# Max Deviation: ${String.format("%.4f", session.maxErrorMm)} mm | Expanded Uncertainty U (k=2): ±${String.format("%.4f", session.expandedUncertaintyMm)} mm\n")
+        sb.append("# Max Deviation: ${String.format(Locale.US, "%.4f", session.maxErrorMm)} mm | ")
+        sb.append(
+            "Expanded Uncertainty U (k=2): ±${String.format(
+                Locale.US,
+                "%.4f",
+                session.expandedUncertaintyMm,
+            )} mm\n"
+        )
         sb.append("# Format: Nominal_Position_Pos_Forward  Compensation_Forward  Nominal_Position_Neg_Reverse  Compensation_Reverse\n\n")
 
         session.points.forEach { pt ->
             val nominal = pt.nominalPositionMm
             val comp = if (pt.errorMm != null) -pt.errorMm else 0.0 // Negative of error is compensation
-            sb.append(String.format(java.util.Locale.US, "%10.4f  %10.4f  %10.4f  %10.4f\n", nominal, comp, nominal, comp))
+            sb.append(String.format(Locale.US, "%10.4f  %10.4f  %10.4f  %10.4f\n", nominal, comp, nominal, comp))
         }
         return sb.toString()
     }
