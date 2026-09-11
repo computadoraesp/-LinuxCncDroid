@@ -4,11 +4,25 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import java.util.Locale
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -17,9 +31,34 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.GpsFixed
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,7 +66,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +76,19 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.model.AxisCalibrationPoint
 import com.example.model.AxisCalibrationSession
-import com.example.ui.theme.*
+import com.example.ui.theme.CncActiveGreen
+import com.example.ui.theme.CncBackground
+import com.example.ui.theme.CncCardBorder
+import com.example.ui.theme.CncCyberCyan
+import com.example.ui.theme.CncDroDigits
+import com.example.ui.theme.CncEstopRed
+import com.example.ui.theme.CncSurface
+import com.example.ui.theme.CncSurfaceVariant
+import com.example.ui.theme.CncTextMuted
+import com.example.ui.theme.CncTextPrimary
+import com.example.ui.theme.CncTextSecondary
+import com.example.ui.theme.CncWarningAmber
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,18 +99,18 @@ fun AxisCalibrationDialog(
     onRecordPoint: (stepIndex: Int, measuredValue: Double) -> Unit,
     onMoveToNominal: (stepIndex: Int) -> Unit,
     onGenerateCompTable: (session: AxisCalibrationSession) -> String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     var selectedAxis by remember { mutableStateOf("X") }
     var totalTravelText by remember { mutableStateOf("600.0") }
-    var intervalPercent by remember { mutableStateOf(10.0) } // 10%
+    var intervalPercent by remember { mutableDoubleStateOf(10.0) } // 10%
     var instrumentName by remember { mutableStateOf("Dial Indicator (0.001mm)") }
     var instrumentUncertaintyText by remember { mutableStateOf("0.003") }
 
-    var currentStepIndex by remember { mutableStateOf(0) }
+    var currentStepIndex by remember { mutableIntStateOf(0) }
     var inputMeasuredText by remember { mutableStateOf("") }
-    var showCompTableExportDialog by remember { mutableStateOf(false) }
+    var showCompTableExportDialog by remember { mutableStateOf(value = false) }
     var generatedCompText by remember { mutableStateOf("") }
 
     val activeSession = session ?: remember {
@@ -73,15 +123,15 @@ fun AxisCalibrationDialog(
                 AxisCalibrationPoint(
                     stepIndex = i,
                     percentOfTravel = i * 10.0,
-                    nominalPositionMm = i * 60.0
+                    nominalPositionMm = i * 60.0,
                 )
-            }
+            },
         )
     }
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Card(
             modifier = modifier
@@ -89,18 +139,18 @@ fun AxisCalibrationDialog(
                 .fillMaxHeight(0.94f),
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = CncSurface),
-            border = androidx.compose.foundation.BorderStroke(1.dp, CncCyberCyan.copy(alpha = 0.5f))
+            border = BorderStroke(1.dp, CncCyberCyan.copy(alpha = 0.5f)),
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(16.dp),
             ) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -319,7 +369,7 @@ fun AxisCalibrationDialog(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = CncSurfaceVariant),
                         shape = RoundedCornerShape(8.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, CncCyberCyan.copy(alpha = 0.3f))
+                        border = BorderStroke(1.dp, CncCyberCyan.copy(alpha = 0.3f))
                     ) {
                         Column(
                             modifier = Modifier.padding(12.dp),
@@ -363,7 +413,7 @@ fun AxisCalibrationDialog(
                                             .border(1.dp, borderColor, RoundedCornerShape(6.dp))
                                             .clickable {
                                                 currentStepIndex = pt.stepIndex
-                                                inputMeasuredText = pt.measuredPositionMm?.let { String.format("%.4f", it) } ?: ""
+                                                inputMeasuredText = pt.measuredPositionMm?.let { String.format(Locale.US, "%.4f", it) } ?: ""
                                             }
                                             .padding(horizontal = 8.dp, vertical = 6.dp),
                                         contentAlignment = Alignment.Center
@@ -381,10 +431,12 @@ fun AxisCalibrationDialog(
                                                 fontSize = 8.sp
                                             )
                                             if (err != null) {
-                                                val errFormatted = String.format("%+.3f", err)
+                                                val errFormatted = String.format(Locale.US, "%+.3f", err)
                                                 Text(
                                                     text = errFormatted,
-                                                    color = if (isCurrent) Color.Black else if (Math.abs(err) > 0.01) CncEstopRed else CncActiveGreen,
+                                                    color = if (isCurrent) Color.Black else if (abs(
+                                                            err
+                                                        ) > 0.01) CncEstopRed else CncActiveGreen,
                                                     fontSize = 7.5.sp,
                                                     fontWeight = FontWeight.Black
                                                 )
@@ -420,7 +472,7 @@ fun AxisCalibrationDialog(
                                             Button(
                                                 onClick = { onMoveToNominal(activePt.stepIndex) },
                                                 colors = ButtonDefaults.buttonColors(containerColor = CncSurfaceVariant),
-                                                border = androidx.compose.foundation.BorderStroke(1.dp, CncCyberCyan),
+                                                border = BorderStroke(1.dp, CncCyberCyan),
                                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                                                 modifier = Modifier.height(28.dp)
                                             ) {
@@ -480,10 +532,10 @@ fun AxisCalibrationDialog(
                                                 onClick = {
                                                     val measuredVal = inputMeasuredText.toDoubleOrNull() ?: activePt.nominalPositionMm
                                                     onRecordPoint(activePt.stepIndex, measuredVal)
-                                                    if (currentStepIndex < pointsList.size - 1) {
+                                                    if (currentStepIndex < (pointsList.size - 1)) {
                                                         currentStepIndex++
                                                         val nextPt = pointsList[currentStepIndex]
-                                                        inputMeasuredText = nextPt.measuredPositionMm?.let { String.format("%.4f", it) } ?: ""
+                                                        inputMeasuredText = nextPt.measuredPositionMm?.let { String.format(Locale.US, "%.4f", it) } ?: ""
                                                     }
                                                 },
                                                 colors = ButtonDefaults.buttonColors(containerColor = CncActiveGreen),
@@ -557,19 +609,19 @@ fun AxisCalibrationDialog(
                             ) {
                                 MetricBox(
                                     label = "MAX ERROR (E_max)",
-                                    value = String.format("%+.4f mm", activeSession.maxErrorMm),
+                                    value = String.format(Locale.US, "%+.4f mm", activeSession.maxErrorMm),
                                     color = if (activeSession.maxErrorMm > 0.02) CncEstopRed else CncActiveGreen,
                                     modifier = Modifier.weight(1f)
                                 )
                                 MetricBox(
                                     label = "EXPANDED UNCERTAINTY U (k=2)",
-                                    value = String.format("±%.4f mm", activeSession.expandedUncertaintyMm),
+                                    value = String.format(Locale.US, "±%.4f mm", activeSession.expandedUncertaintyMm),
                                     color = CncCyberCyan,
                                     modifier = Modifier.weight(1.2f)
                                 )
                                 MetricBox(
                                     label = "MEAN SECTOR BIAS",
-                                    value = String.format("%+.4f mm", activeSession.meanErrorMm),
+                                    value = String.format(Locale.US, "%+.4f mm", activeSession.meanErrorMm),
                                     color = CncWarningAmber,
                                     modifier = Modifier.weight(1f)
                                 )
@@ -661,14 +713,14 @@ private fun MetricBox(
     label: String,
     value: String,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(6.dp))
             .background(CncSurface)
             .border(1.dp, CncCardBorder, RoundedCornerShape(6.dp))
-            .padding(8.dp)
+            .padding(8.dp),
     ) {
         Column {
             Text(label, color = CncTextSecondary, fontSize = 7.5.sp, fontFamily = FontFamily.Monospace)
@@ -683,7 +735,7 @@ private fun ErrorCurveVisualizer(
     points: List<AxisCalibrationPoint>,
     maxErrorMm: Double,
     expandedUncertaintyMm: Double,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier) {
         val width = size.width
@@ -725,7 +777,7 @@ private fun ErrorCurveVisualizer(
         if (measuredPts.size >= 2) {
             val path = Path()
             measuredPts.forEachIndexed { i, pt ->
-                val x = padding + (pt.percentOfTravel.toFloat() / 100f) * graphW
+                val x = padding + ((pt.percentOfTravel.toFloat() / 100f) * graphW)
                 val y = centerY - ((pt.errorMm?.toFloat() ?: 0f) * scaleY)
                 if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
             }
@@ -739,12 +791,12 @@ private fun ErrorCurveVisualizer(
 
         // Draw points
         points.forEach { pt ->
-            val x = padding + (pt.percentOfTravel.toFloat() / 100f) * graphW
+            val x = padding + ((pt.percentOfTravel.toFloat() / 100f) * graphW)
             val err = pt.errorMm
             if (err != null) {
                 val y = centerY - (err.toFloat() * scaleY)
                 drawCircle(
-                    color = if (Math.abs(err) > 0.015) CncEstopRed else CncActiveGreen,
+                    color = if (abs(err) > 0.015) CncEstopRed else CncActiveGreen,
                     radius = 4f,
                     center = Offset(x, y)
                 )
