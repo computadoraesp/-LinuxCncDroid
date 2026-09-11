@@ -2,40 +2,74 @@ package com.example.ui.components
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
+import android.os.Build
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.*
+import androidx.camera.core.CameraControl
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.animation.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.CenterFocusStrong
+import androidx.compose.material.icons.filled.FlashOff
+import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.FlipCameraAndroid
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.LayersClear
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.VideocamOff
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -48,10 +82,21 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.model.AxisCoord
 import com.example.model.MachineStateEnum
 import com.example.model.UnitSystem
-import com.example.ui.theme.*
+import com.example.ui.theme.CncActiveGreen
+import com.example.ui.theme.CncBackground
+import com.example.ui.theme.CncCardBorder
+import com.example.ui.theme.CncCyberCyan
+import com.example.ui.theme.CncDroDigits
+import com.example.ui.theme.CncSurface
+import com.example.ui.theme.CncSurfaceVariant
+import com.example.ui.theme.CncTextMuted
+import com.example.ui.theme.CncTextPrimary
+import com.example.ui.theme.CncTextSecondary
+import com.example.ui.theme.CncWarningAmber
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.Executors
 
 enum class ReticleType(val label: String) {
@@ -64,35 +109,43 @@ enum class ReticleType(val label: String) {
 
 @Composable
 fun IndustrialCameraView(
+    modifier: Modifier = Modifier,
     machineState: MachineStateEnum,
     axes: Map<String, AxisCoord>,
     currentWcs: String,
     unitSystem: UnitSystem = UnitSystem.METRIC,
     onJogAxis: (String, Double) -> Unit,
     onZeroAxis: (String) -> Unit,
-    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    val attributionContext = remember(context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            context.createAttributionContext("camera")
+        } else {
+            context
+        }
+    }
 
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
                 context,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
+                Manifest.permission.CAMERA,
+            ) == PackageManager.PERMISSION_GRANTED,
         )
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
+        contract = ActivityResultContracts.RequestPermission(),
     ) { isGranted ->
         hasCameraPermission = isGranted
     }
 
     // Camera Controls State
-    var lensFacing by remember { mutableStateOf(CameraSelector.LENS_FACING_BACK) }
-    var isFlashOn by remember { mutableStateOf(false) }
+    var lensFacing by remember { mutableIntStateOf(CameraSelector.LENS_FACING_BACK) }
+    var isFlashOn by remember { mutableStateOf(value = false) }
     var zoomRatio by remember { mutableFloatStateOf(1.0f) }
     var maxZoomRatio by remember { mutableFloatStateOf(5.0f) }
     var minZoomRatio by remember { mutableFloatStateOf(1.0f) }
@@ -100,11 +153,11 @@ fun IndustrialCameraView(
     // Reticle & Overlay Configuration
     var selectedReticle by remember { mutableStateOf(ReticleType.CROSSHAIR) }
     var reticleColor by remember { mutableStateOf(CncCyberCyan) }
-    var reticleScaleMm by remember { mutableFloatStateOf(10f) } // mm equivalent scale
+    var reticleScaleMm by remember { mutableFloatStateOf(10f) } // mm, equivalent scale
     var reticleOffsetX by remember { mutableFloatStateOf(0f) }
     var reticleOffsetY by remember { mutableFloatStateOf(0f) }
-    var showTelemetryOverlay by remember { mutableStateOf(true) }
-    var showEdgeDetectionFilter by remember { mutableStateOf(false) }
+    var showTelemetryOverlay by remember { mutableStateOf(value = true) }
+    var showEdgeDetectionFilter by remember { mutableStateOf(value = false) }
     var lastCapturedSnapshotMessage by remember { mutableStateOf<String?>(null) }
 
     var cameraControl by remember { mutableStateOf<CameraControl?>(null) }
@@ -122,12 +175,12 @@ fun IndustrialCameraView(
         colors = CardDefaults.cardColors(containerColor = CncSurface),
         shape = RoundedCornerShape(8.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, CncCardBorder),
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .padding(8.dp),
         ) {
             // Header Bar
             Row(
@@ -135,20 +188,20 @@ fun IndustrialCameraView(
                     .fillMaxWidth()
                     .padding(bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(
                         imageVector = Icons.Default.Videocam,
                         contentDescription = null,
                         tint = CncCyberCyan,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(20.dp),
                     )
                     Text(
                         text = "SISTEMA DE VISIÓN ÓPTICA INDUSTRIAL & CENTRADO (CNC CAM)",
                         color = CncTextPrimary,
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 }
 
@@ -165,7 +218,7 @@ fun IndustrialCameraView(
                             imageVector = if (isFlashOn) Icons.Default.FlashOn else Icons.Default.FlashOff,
                             contentDescription = "Flash",
                             tint = if (isFlashOn) CncWarningAmber else CncTextSecondary,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
 
@@ -178,7 +231,7 @@ fun IndustrialCameraView(
                                 CameraSelector.LENS_FACING_BACK
                             }
                         },
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.size(30.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Default.FlipCameraAndroid,
@@ -207,7 +260,7 @@ fun IndustrialCameraView(
                             val cap = imageCapture
                             if (cap != null) {
                                 val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-                                val photoFile = File(context.cacheDir, "CNC_ALIGN_${timeStamp}.jpg")
+                                val photoFile = File(attributionContext.cacheDir, "CNC_ALIGN_$timeStamp.jpg")
                                 val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
                                 cap.takePicture(
@@ -215,7 +268,7 @@ fun IndustrialCameraView(
                                     cameraExecutor,
                                     object : ImageCapture.OnImageSavedCallback {
                                         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                                            lastCapturedSnapshotMessage = "Captura guardada: CNC_ALIGN_${timeStamp}.jpg"
+                                            lastCapturedSnapshotMessage = "Captura guardada: CNC_ALIGN_$timeStamp.jpg"
                                         }
 
                                         override fun onError(exc: ImageCaptureException) {
@@ -226,12 +279,13 @@ fun IndustrialCameraView(
                                 )
                             }
                         },
+                        enabled = machineState != MachineStateEnum.RUNNING,
                         modifier = Modifier.size(30.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.PhotoCamera,
                             contentDescription = "Take Snapshot",
-                            tint = CncActiveGreen,
+                            tint = if (machineState != MachineStateEnum.RUNNING) CncActiveGreen else CncTextMuted,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -305,18 +359,19 @@ fun IndustrialCameraView(
                 ) {
                     // Android CameraX Preview View
                     AndroidView(
-                        factory = { ctx ->
-                            val previewView = PreviewView(ctx).apply {
+                        factory = { _ ->
+                            val previewView = PreviewView(attributionContext).apply {
                                 implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                                 scaleType = PreviewView.ScaleType.FILL_CENTER
                             }
 
-                            val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
-                            cameraProviderFuture.addListener({
-                                val cameraProvider = cameraProviderFuture.get()
+                            val cameraProviderFuture = ProcessCameraProvider.getInstance(attributionContext)
+                            cameraProviderFuture.addListener(
+                                {
+                                    val cameraProvider = cameraProviderFuture.get()
 
                                 val preview = Preview.Builder().build().also {
-                                    it.setSurfaceProvider(previewView.surfaceProvider)
+                                    it.surfaceProvider = previewView.surfaceProvider
                                 }
 
                                 val capture = ImageCapture.Builder()
@@ -334,7 +389,7 @@ fun IndustrialCameraView(
                                         lifecycleOwner,
                                         selector,
                                         preview,
-                                        capture
+                                        capture,
                                     )
                                     cameraControl = cam.cameraControl
                                     cam.cameraInfo.zoomState.observe(lifecycleOwner) { zState ->
@@ -346,7 +401,9 @@ fun IndustrialCameraView(
                                 } catch (e: Exception) {
                                     Log.e("CncCamera", "Failed to bind camera: ${e.message}", e)
                                 }
-                            }, ContextCompat.getMainExecutor(ctx))
+                            },
+                                ContextCompat.getMainExecutor(attributionContext),
+                            )
 
                             previewView
                         },
@@ -357,8 +414,8 @@ fun IndustrialCameraView(
                     Canvas(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        val centerX = size.width / 2f + reticleOffsetX
-                        val centerY = size.height / 2f + reticleOffsetY
+                        val centerX = (size.width / 2f) + reticleOffsetX
+                        val centerY = (size.height / 2f) + reticleOffsetY
 
                         when (selectedReticle) {
                             ReticleType.CROSSHAIR -> {
@@ -380,19 +437,19 @@ fun IndustrialCameraView(
                                 val tickSpacingPx = 40f
                                 for (i in -10..10) {
                                     if (i != 0) {
-                                        val tickH = if (i % 5 == 0) 18f else 8f
+                                        val tickH = if ((i % 5) == 0) 18f else 8f
                                         // X ticks
                                         drawLine(
                                             color = reticleColor.copy(alpha = 0.8f),
-                                            start = Offset(centerX + i * tickSpacingPx, centerY - tickH / 2),
-                                            end = Offset(centerX + i * tickSpacingPx, centerY + tickH / 2),
+                                            start = Offset((centerX + (i * tickSpacingPx)), (centerY - (tickH / 2))),
+                                            end = Offset((centerX + (i * tickSpacingPx)), (centerY + (tickH / 2))),
                                             strokeWidth = 1f
                                         )
                                         // Y ticks
                                         drawLine(
                                             color = reticleColor.copy(alpha = 0.8f),
-                                            start = Offset(centerX - tickH / 2, centerY + i * tickSpacingPx),
-                                            end = Offset(centerX + tickH / 2, centerY + i * tickSpacingPx),
+                                            start = Offset((centerX - (tickH / 2)), (centerY + (i * tickSpacingPx))),
+                                            end = Offset((centerX + (tickH / 2)), (centerY + (i * tickSpacingPx))),
                                             strokeWidth = 1f
                                         )
                                     }
@@ -415,7 +472,7 @@ fun IndustrialCameraView(
                             ReticleType.CONCENTRIC_CIRCLES -> {
                                 val radii = listOf(30f, 60f, 100f, 160f, 240f)
                                 radii.forEachIndexed { idx, r ->
-                                    val isMajor = idx % 2 == 1
+                                    val isMajor = (idx % 2) == 1
                                     drawCircle(
                                         color = reticleColor.copy(alpha = if (isMajor) 0.9f else 0.5f),
                                         radius = r,
@@ -531,7 +588,7 @@ fun IndustrialCameraView(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "WCS: $currentWcs | ZOOM: ${String.format(Locale.US, "%.1fx", zoomRatio)}",
+                                text = "WCS: $currentWcs | ZOOM: ${String.format(Locale.US, "%.1fx", zoomRatio)} | SCALE: ${reticleScaleMm.toInt()}mm",
                                 color = CncTextPrimary,
                                 fontSize = 8.5.sp,
                                 fontFamily = FontFamily.Monospace
@@ -561,7 +618,7 @@ fun IndustrialCameraView(
                             .padding(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        if (reticleOffsetX != 0f || reticleOffsetY != 0f) {
+                        if ((reticleOffsetX != 0f) || (reticleOffsetY != 0f)) {
                             Button(
                                 onClick = {
                                     reticleOffsetX = 0f
@@ -607,7 +664,7 @@ fun IndustrialCameraView(
                         modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        items(ReticleType.values()) { rType ->
+                        items(ReticleType.entries.toTypedArray()) { rType ->
                             val isSel = selectedReticle == rType
                             Box(
                                 modifier = Modifier
@@ -632,6 +689,19 @@ fun IndustrialCameraView(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Edge Filter Toggle
+                        IconButton(
+                            onClick = { showEdgeDetectionFilter = !showEdgeDetectionFilter },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (showEdgeDetectionFilter) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                contentDescription = "Edge Filter",
+                                tint = if (showEdgeDetectionFilter) CncCyberCyan else CncTextMuted,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
                         listOf(CncCyberCyan, CncActiveGreen, CncWarningAmber, Color.Red, Color.White).forEach { c ->
                             Box(
                                 modifier = Modifier
