@@ -25,8 +25,8 @@ class CncSecurityScanner {
                     description = "File contains ELF/PE/ZIP binary magic bytes disguised as G-Code. Execution blocked.",
                     lineNumber = 1,
                     lineContent = content.take(32),
-                    severity = LogSeverity.CRITICAL
-                )
+                    severity = LogSeverity.CRITICAL,
+                ),
             )
         }
 
@@ -92,12 +92,11 @@ class CncSecurityScanner {
 
             // Unvetted Custom User M-Codes (M100 - M199) that invoke OS bash scripts in LinuxCNC
             val mUserPattern = Regex("""\bM1[0-9]{2}\b""", RegexOption.IGNORE_CASE)
-            val mMatch = mUserPattern.find(line)
-            if (mMatch != null) {
+            mUserPattern.find(line)?.let { match ->
                 threats.add(
                     SecurityThreat(
                         code = "SEC-WARN-005",
-                        title = "Unvetted External Script Execution (${mMatch.value})",
+                        title = "Unvetted External Script Execution (${match.value})",
                         description = "M100-M199 executes custom bash scripts on the host Linux CNC controller. Verify script permissions.",
                         lineNumber = lineNum,
                         lineContent = line,
@@ -109,7 +108,7 @@ class CncSecurityScanner {
             // Hidden Base64 / Hex Payload in comments
             if (line.contains("(") && line.contains(")")) {
                 val commentContent = line.substringAfter("(").substringBefore(")")
-                if (commentContent.length > 80 && !commentContent.contains(" ") && commentContent.matches(Regex("^[a-zA-Z0-9+/=]+$"))) {
+                if ((commentContent.length > 80) && (!commentContent.contains(" ")) && (commentContent.matches(Regex("^[a-zA-Z0-9+/=]+$")))) {
                     threats.add(
                         SecurityThreat(
                             code = "SEC-WARN-006",
@@ -128,7 +127,7 @@ class CncSecurityScanner {
             val yVal = extractCoord(line, 'Y')
             val zVal = extractCoord(line, 'Z')
 
-            if (xVal != null || yVal != null || zVal != null) {
+            if ((xVal != null) || (yVal != null) || (zVal != null)) {
                 hasMotion = true
                 xVal?.let { minX = min(minX, it); maxX = max(maxX, it) }
                 yVal?.let { minY = min(minY, it); maxY = max(maxY, it) }
@@ -136,7 +135,7 @@ class CncSecurityScanner {
             }
 
             // Extreme Z Plunge Hazard Check (< -250mm without safety prompt)
-            if (zVal != null && zVal < -250f) {
+            if ((zVal != null) && (zVal < -250f)) {
                 threats.add(
                     SecurityThreat(
                         code = "SEC-WARN-007",
@@ -168,6 +167,7 @@ class CncSecurityScanner {
             threatLevel = level,
             threats = threats,
             isExecutable = !hasCritical,
+            hasMotion = hasMotion,
             scanDurationMs = duration,
             sha256Fingerprint = sha256,
             boundingBoxX = Pair(minX, maxX),
