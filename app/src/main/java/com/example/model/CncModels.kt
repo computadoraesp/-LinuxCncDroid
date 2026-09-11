@@ -1,5 +1,9 @@
 package com.example.model
 
+import androidx.annotation.StringRes
+import androidx.annotation.ArrayRes
+import java.util.Locale
+
 enum class MachineStateEnum(val displayName: String) {
     ESTOP("ESTOP ACTIVE"),
     OFF("MACHINE OFF"),
@@ -8,13 +12,17 @@ enum class MachineStateEnum(val displayName: String) {
     RUNNING("CYCLE RUNNING"),
     PAUSED("FEED HOLD / PAUSED"),
     HOMING("HOMING AXES"),
-    ERROR("SYSTEM ERROR")
+    ERROR("SYSTEM ERROR"),
 }
 
 enum class TaskMode(val displayName: String) {
     MANUAL("MANUAL"),
     MDI("MDI CONSOLE"),
     AUTO("AUTO PROGRAM")
+}
+
+enum class CncNavigationTab {
+    CONTROL, TOOLPATH, CAMERA, PROBING, ETHERCAT, MDI, LOGS, CONFIG
 }
 
 enum class HardwareArchitecture(val displayName: String, val level: Int, val description: String) {
@@ -41,7 +49,7 @@ data class AxisCoord(
     val loadTorquePct: Double = 12.5,
     val motorTempC: Double = 34.0,
     val driveTempC: Double = 38.5,
-    val encoderCounts: Long = 0L
+    val encoderCounts: Long = 0L,
 )
 
 data class SpindleInfo(
@@ -50,19 +58,19 @@ data class SpindleInfo(
     val isEnabled: Boolean = false,
     val isClockwise: Boolean = true,
     val overridePct: Int = 100,
-    val loadAmps: Double = 2.4
+    val loadAmps: Double = 2.4,
 )
 
 data class FeedInfo(
     val commandedFeed: Double = 1500.0,
     val actualFeed: Double = 1495.0,
     val feedOverridePct: Int = 100,
-    val rapidOverridePct: Int = 100
+    val rapidOverridePct: Int = 100,
 )
 
 data class CoolantInfo(
     val mist: Boolean = false,
-    val flood: Boolean = false
+    val flood: Boolean = false,
 )
 
 data class ProbeInfo(
@@ -70,7 +78,7 @@ data class ProbeInfo(
     val lastContactX: Double = 0.0,
     val lastContactY: Double = 0.0,
     val lastContactZ: Double = 0.0,
-    val activeRoutine: String? = null
+    val activeRoutine: String? = null,
 )
 
 data class ToolInfo(
@@ -78,7 +86,7 @@ data class ToolInfo(
     val description: String = "6mm 2-Flute Carbide Endmill",
     val lengthOffset: Double = 45.230,
     val diameterOffset: Double = 6.000,
-    val atcSlot: Int = 1
+    val atcSlot: Int = 1,
 )
 
 enum class ToolType(val displayName: String, val iconName: String) {
@@ -106,7 +114,7 @@ data class CncToolItem(
     val lifeMinutesCurrent: Double = 24.5,
     val lifeMinutesMax: Double = 120.0,
     val isActive: Boolean = false,
-    val holderType: String = "ER20 / ISO30"
+    val holderType: String = "ER20 / ISO30",
 )
 
 enum class UnitSystem(
@@ -114,7 +122,7 @@ enum class UnitSystem(
     val shortLabel: String,
     val lengthUnit: String,
     val speedUnit: String,
-    val precisionDecimals: Int
+    val precisionDecimals: Int,
 ) {
     METRIC("G21", "MM", "mm", "mm/min", 3),
     IMPERIAL("G20", "INCH", "in", "IPM", 4);
@@ -122,18 +130,18 @@ enum class UnitSystem(
     fun formatPosition(posMm: Double): String {
         return if (this == IMPERIAL) {
             val inches = posMm / 25.4
-            java.lang.String.format(java.util.Locale.US, "%+08.4f", inches)
+            java.lang.String.format(Locale.US, "%+08.${precisionDecimals}f", inches)
         } else {
-            java.lang.String.format(java.util.Locale.US, "%+08.3f", posMm)
+            java.lang.String.format(Locale.US, "%+08.${precisionDecimals}f", posMm)
         }
     }
 
     fun formatSpeed(speedMmMin: Double): String {
         return if (this == IMPERIAL) {
             val ipm = speedMmMin / 25.4
-            "${java.lang.String.format(java.util.Locale.US, "%.1f", ipm)} IPM"
+            "${java.lang.String.format(Locale.US, "%.1f", ipm)} $speedUnit"
         } else {
-            "${speedMmMin.toInt()} mm/min"
+            "${speedMmMin.toInt()} $speedUnit"
         }
     }
 
@@ -184,7 +192,7 @@ data class EtherCatSlaveInfo(
     val actualTorquePct: Double = 14.2,
     val driveTempC: Double = 39.0,
     val alarmCode: String = "AL.000 (NORMAL)",
-    val isFault: Boolean = false
+    val isFault: Boolean = false,
 )
 
 data class EtherCatMasterInfo(
@@ -192,7 +200,7 @@ data class EtherCatMasterInfo(
     val slaveCount: Int = 4,
     val busCycleTimeUs: Int = 1000,
     val packetLossPct: Double = 0.00,
-    val dcOffsetNs: Long = 12
+    val dcOffsetNs: Long = 12,
 )
 
 data class CapabilitiesManifest(
@@ -209,7 +217,7 @@ data class CapabilitiesManifest(
     val hostIp: String = "192.168.1.100",
     val port: Int = 8000,
     val isConnected: Boolean = true,
-    val pingMs: Int = 4
+    val pingMs: Int = 4,
 )
 
 data class GCodeSegment(
@@ -222,16 +230,9 @@ data class GCodeSegment(
     val startZ: Float = 0f,
     val endX: Float = 0f,
     val endY: Float = 0f,
-    val endZ: Float = 0f
+    val endZ: Float = 0f,
 )
 
-data class MdiMacro(
-    val id: String,
-    val label: String,
-    val command: String,
-    val description: String,
-    val category: String = "SETUP"
-)
 
 enum class LogSeverity(val displayName: String) {
     INFO("INFO"),
@@ -246,7 +247,7 @@ data class CncEventLog(
     val timestamp: Long = System.currentTimeMillis(),
     val severity: LogSeverity = LogSeverity.INFO,
     val tag: String = "SYSTEM",
-    val message: String = ""
+    val message: String = "",
 )
 
 enum class ThreatLevel(val displayName: String) {
@@ -261,7 +262,7 @@ data class SecurityThreat(
     val description: String,
     val lineNumber: Int = -1,
     val lineContent: String = "",
-    val severity: LogSeverity = LogSeverity.SECURITY
+    val severity: LogSeverity = LogSeverity.SECURITY,
 )
 
 data class SecurityScanResult(
@@ -273,9 +274,10 @@ data class SecurityScanResult(
     val isExecutable: Boolean = true,
     val scanDurationMs: Long = 0L,
     val sha256Fingerprint: String = "",
+    val hasMotion: Boolean = false,
     val boundingBoxX: Pair<Float, Float> = Pair(0f, 0f),
     val boundingBoxY: Pair<Float, Float> = Pair(0f, 0f),
-    val boundingBoxZ: Pair<Float, Float> = Pair(0f, 0f)
+    val boundingBoxZ: Pair<Float, Float> = Pair(0f, 0f),
 )
 
 data class MaterialPreset(
@@ -284,7 +286,7 @@ data class MaterialPreset(
     val category: String,
     val surfaceSpeedMMin: Double, // Vc (m/min)
     val feedPerToothMm: Double,   // Fz (mm/tooth for 6mm standard)
-    val powerFactor: Double       // specific cutting force factor
+    val powerFactor: Double,       // specific cutting force factor
 )
 
 data class SpeedFeedCalculation(
@@ -295,7 +297,7 @@ data class SpeedFeedCalculation(
     val calculatedFeedMmMin: Double,
     val recommendedDocMm: Double,
     val recommendedWocMm: Double,
-    val spindlePowerKw: Double
+    val spindlePowerKw: Double,
 )
 
 data class AxisCalibrationPoint(
@@ -304,7 +306,7 @@ data class AxisCalibrationPoint(
     val nominalPositionMm: Double,
     val measuredPositionMm: Double? = null,
     val errorMm: Double? = null,
-    val sectorUncertaintyMm: Double = 0.002
+    val sectorUncertaintyMm: Double = 0.002,
 )
 
 data class AxisCalibrationSession(
@@ -320,16 +322,16 @@ data class AxisCalibrationSession(
     val maxErrorMm: Double = 0.0,
     val meanErrorMm: Double = 0.0,
     val expandedUncertaintyMm: Double = 0.0,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
 )
 
 data class DocSectionItem(
     val id: String,
-    val title: String,
+    @get:StringRes val titleRes: Int,
     val category: String,
     val iconName: String,
-    val summary: String,
-    val detailedContent: String,
-    val standardSteps: List<String> = emptyList(),
-    val safetyTips: List<String> = emptyList()
+    @get:StringRes val summaryRes: Int,
+    @get:StringRes val detailedContentRes: Int,
+    @get:ArrayRes val standardStepsRes: Int = 0,
+    @get:ArrayRes val safetyTipsRes: Int = 0,
 )
