@@ -3,16 +3,54 @@ package com.example.ui.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.Construction
+import androidx.compose.material.icons.filled.Engineering
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,7 +63,17 @@ import com.example.model.HardwareArchitecture
 import com.example.model.MachineStateEnum
 import com.example.model.UnitSystem
 import com.example.model.UserRole
-import com.example.ui.theme.*
+import com.example.ui.theme.CncActiveGreen
+import com.example.ui.theme.CncCardBg
+import com.example.ui.theme.CncCardBorder
+import com.example.ui.theme.CncCyberCyan
+import com.example.ui.theme.CncEstopRed
+import com.example.ui.theme.CncInfoBlue
+import com.example.ui.theme.CncSurface
+import com.example.ui.theme.CncSurfaceVariant
+import com.example.ui.theme.CncTextMuted
+import com.example.ui.theme.CncTextPrimary
+import com.example.ui.theme.CncWarningAmber
 
 @Composable
 fun IndustrialTopBar(
@@ -34,26 +82,25 @@ fun IndustrialTopBar(
     architecture: HardwareArchitecture,
     userRole: UserRole,
     isSimulated: Boolean,
-    latencyMs: Int = 2,
-    errorCount: Int = 0,
-    unitSystem: UnitSystem = UnitSystem.METRIC,
-    onToggleUnitSystem: () -> Unit = {},
     onToggleEstop: () -> Unit,
     onPowerOn: () -> Unit,
     onPowerOff: () -> Unit,
     onSelectCoordSystem: (String) -> Unit,
     onSelectRole: (UserRole) -> Unit,
-    onOpenConfig: () -> Unit,
+    modifier: Modifier = Modifier,
+    latencyMs: Int = 2,
+    errorCount: Int = 0,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
+    onToggleUnitSystem: () -> Unit = {},
     onOpenCyberScanner: () -> Unit = {},
     onOpenCalculator: () -> Unit = {},
     onOpenToolTable: () -> Unit = {},
     onOpenLogs: () -> Unit = {},
     onOpenAxisCalibration: () -> Unit = {},
     onOpenManual: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
-    var coordMenuExpanded by remember { mutableStateOf(false) }
-    var roleMenuExpanded by remember { mutableStateOf(false) }
+    var coordMenuExpanded by remember { mutableStateOf(value = false) }
+    var roleMenuExpanded by remember { mutableStateOf(value = false) }
 
     val coordSystems = listOf("G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3")
     val toolsScrollState = rememberScrollState()
@@ -64,33 +111,33 @@ fun IndustrialTopBar(
         modifier = modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.statusBars)
-            .border(width = 1.dp, color = CncCardBorder)
+            .border(width = 1.dp, color = CncCardBorder),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 6.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // =========================================================================
             // FIXED / PINNED LEFT CONTROLS: E-STOP, Machine Power, State Indicator
             // =========================================================================
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
             ) {
                 // Emergency Stop Button
                 val isEstop = machineState == MachineStateEnum.ESTOP
                 val estopBg by animateColorAsState(
                     targetValue = if (isEstop) CncEstopRed else Color(0xFF3E1218),
-                    label = "estop_color"
+                    label = "estop_color",
                 )
 
                 Button(
                     onClick = onToggleEstop,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = estopBg,
-                        contentColor = Color.White
+                        contentColor = Color.White,
                     ),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
@@ -99,30 +146,30 @@ fun IndustrialTopBar(
                         .border(
                             width = 2.dp,
                             color = if (isEstop) Color.White else CncEstopRed,
-                            shape = RoundedCornerShape(8.dp)
-                        )
+                            shape = RoundedCornerShape(8.dp),
+                        ),
                 ) {
                     Icon(
                         imageVector = if (isEstop) Icons.Default.Warning else Icons.Default.Block,
                         contentDescription = "ESTOP Button",
                         tint = Color.White,
-                        modifier = Modifier.size(15.dp)
+                        modifier = Modifier.size(15.dp),
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(
                         text = if (isEstop) "E-STOP" else "E-STOP",
                         fontWeight = FontWeight.Black,
                         fontSize = 11.sp,
-                        letterSpacing = 0.5.sp
+                        letterSpacing = 0.5.sp,
                     )
                 }
 
                 // Power ON / OFF Button
                 if (!isEstop) {
-                    val isPowerOn = machineState == MachineStateEnum.ON ||
-                            machineState == MachineStateEnum.RUNNING ||
-                            machineState == MachineStateEnum.IDLE ||
-                            machineState == MachineStateEnum.PAUSED
+                    val isPowerOn = (machineState == MachineStateEnum.ON) ||
+                            (machineState == MachineStateEnum.RUNNING) ||
+                            (machineState == MachineStateEnum.IDLE) ||
+                            (machineState == MachineStateEnum.PAUSED)
                     IconButton(
                         onClick = { if (isPowerOn) onPowerOff() else onPowerOn() },
                         modifier = Modifier
@@ -132,14 +179,14 @@ fun IndustrialTopBar(
                             .border(
                                 1.dp,
                                 if (isPowerOn) CncActiveGreen else CncTextMuted,
-                                RoundedCornerShape(8.dp)
-                            )
+                                RoundedCornerShape(8.dp),
+                            ),
                     ) {
                         Icon(
                             imageVector = Icons.Default.PowerSettingsNew,
                             contentDescription = "Machine Power",
                             tint = if (isPowerOn) CncActiveGreen else CncTextMuted,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(18.dp),
                         )
                     }
                 }
@@ -158,7 +205,7 @@ fun IndustrialTopBar(
                         .clip(RoundedCornerShape(6.dp))
                         .background(stateColor.copy(alpha = 0.15f))
                         .border(1.dp, stateColor, RoundedCornerShape(6.dp))
-                        .padding(horizontal = 6.dp, vertical = 4.dp)
+                        .padding(horizontal = 6.dp, vertical = 4.dp),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
@@ -229,7 +276,7 @@ fun IndustrialTopBar(
                             contentColor = CncCyberCyan,
                             containerColor = CncSurfaceVariant
                         ),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                        border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
                             brush = androidx.compose.ui.graphics.SolidColor(CncCyberCyan.copy(alpha = 0.6f))
                         ),
                         modifier = Modifier.height(34.dp)
@@ -296,7 +343,7 @@ fun IndustrialTopBar(
                         onDismissRequest = { roleMenuExpanded = false },
                         modifier = Modifier.background(CncCardBg)
                     ) {
-                        UserRole.values().forEach { role ->
+                        UserRole.entries.forEach { role ->
                             DropdownMenuItem(
                                 text = {
                                     Text(
@@ -313,14 +360,22 @@ fun IndustrialTopBar(
                     }
                 }
 
-                // 4. Latency Badge
-                Box(
+                // 4. Latency & Arch Badge
+                Column(
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
                         .background(CncSurfaceVariant)
                         .border(1.dp, CncCardBorder, RoundedCornerShape(6.dp))
-                        .padding(horizontal = 6.dp, vertical = 6.dp)
+                        .padding(horizontal = 6.dp, vertical = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Text(
+                        if (isSimulated) "SIM: ${architecture.name}" else "REAL: ${architecture.name}",
+                        fontSize = 7.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSimulated) CncWarningAmber else CncActiveGreen,
+                        maxLines = 1
+                    )
                     Text(
                         "${latencyMs}ms",
                         fontSize = 10.sp,
@@ -408,7 +463,7 @@ fun IndustrialTopBar(
                         .border(1.dp, CncCyberCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
                 ) {
                     Icon(
-                        imageVector = Icons.Default.MenuBook,
+                        imageVector = Icons.AutoMirrored.Filled.MenuBook,
                         contentDescription = "CNC Manual & SOPs",
                         tint = CncCyberCyan,
                         modifier = Modifier.size(17.dp)
@@ -431,7 +486,7 @@ fun IndustrialTopBar(
                                     containerColor = CncEstopRed,
                                     contentColor = Color.White
                                 ) {
-                                    Text("$errorCount", fontSize = 8.sp)
+                                    Text(errorCount.toString(), fontSize = 8.sp)
                                 }
                             }
                         }
@@ -443,23 +498,6 @@ fun IndustrialTopBar(
                             modifier = Modifier.size(17.dp)
                         )
                     }
-                }
-
-                // 11. Settings / Config Button
-                IconButton(
-                    onClick = onOpenConfig,
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(CncSurfaceVariant)
-                        .border(1.dp, CncCardBorder, RoundedCornerShape(6.dp))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = CncTextPrimary,
-                        modifier = Modifier.size(17.dp)
-                    )
                 }
             }
         }
