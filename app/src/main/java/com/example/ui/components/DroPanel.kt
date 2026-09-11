@@ -30,6 +30,7 @@ enum class DroDisplayMode {
 
 @Composable
 fun DroPanel(
+    modifier: Modifier = Modifier,
     axes: Map<String, AxisCoord>,
     currentCoordSystem: String,
     hasServoTorque: Boolean,
@@ -38,7 +39,6 @@ fun DroPanel(
     onZeroAll: () -> Unit,
     onHomeAxis: (String) -> Unit,
     onHomeAll: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
     var displayMode by remember { mutableStateOf(DroDisplayMode.WORK) }
 
@@ -46,21 +46,21 @@ fun DroPanel(
         colors = CardDefaults.cardColors(containerColor = CncCardBg),
         shape = RoundedCornerShape(12.dp),
         border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CncCardBorder)),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             // DRO Header & Mode Switcher
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Speed,
                         contentDescription = "DRO",
                         tint = CncCyberCyan,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -68,7 +68,7 @@ fun DroPanel(
                         fontWeight = FontWeight.Black,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp,
-                        color = CncTextPrimary
+                        color = CncTextPrimary,
                     )
                 }
 
@@ -83,7 +83,7 @@ fun DroPanel(
                     listOf(
                         DroDisplayMode.WORK to "WORK ($currentCoordSystem)",
                         DroDisplayMode.MACHINE to "MACHINE (G53)",
-                        DroDisplayMode.DTG to "DTG"
+                        DroDisplayMode.DTG to "DTG",
                     ).forEach { (mode, label) ->
                         val isSelected = displayMode == mode
                         Box(
@@ -115,8 +115,7 @@ fun DroPanel(
                         hasServoTorque = hasServoTorque,
                         unitSystem = unitSystem,
                         onZero = { onZeroAxis(axis.name) },
-                        onHome = { onHomeAxis(axis.name) }
-                    )
+                    ) { onHomeAxis(axis.name) }
                 }
             }
 
@@ -166,7 +165,7 @@ fun DroAxisRow(
     hasServoTorque: Boolean,
     unitSystem: UnitSystem = UnitSystem.METRIC,
     onZero: () -> Unit,
-    onHome: () -> Unit
+    onHome: () -> Unit,
 ) {
     val axisColor = when (axis.name) {
         "X" -> AxisXColor
@@ -232,6 +231,11 @@ fun DroAxisRow(
                             .size(6.dp)
                             .clip(CircleShape)
                             .background(if (axis.isHomed) CncActiveGreen else CncEstopRed)
+                            .border(
+                                1.5.dp,
+                                if (axis.isHomed) CncActiveGreenGlow else CncEstopGlow,
+                                CircleShape,
+                            ),
                     )
                 }
 
@@ -323,7 +327,7 @@ fun DroAxisRow(
                             modifier = Modifier
                                 .width(80.dp)
                                 .height(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
+                                .clip(RoundedCornerShape(2.dp)),
                         )
                     }
                 }
