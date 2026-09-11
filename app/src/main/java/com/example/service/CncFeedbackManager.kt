@@ -12,18 +12,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
-class CncFeedbackManager(private val context: Context) {
+class CncFeedbackManager(context: Context) {
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
+    private val attributionContext = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        context.createAttributionContext("vibration")
+    } else {
+        context
+    }
 
     private val vibrator: Vibrator? by lazy {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+                val vibratorManager = attributionContext.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
                 vibratorManager?.defaultVibrator
             } else {
                 @Suppress("DEPRECATION")
-                context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+                attributionContext.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
             }
         } catch (_: Exception) {
             null
@@ -107,7 +114,7 @@ class CncFeedbackManager(private val context: Context) {
         scope.launch {
             try {
                 toneGenerator?.startTone(ToneGenerator.TONE_SUP_ERROR, 350)
-                delay(400)
+                delay(400.milliseconds)
                 toneGenerator?.startTone(ToneGenerator.TONE_SUP_ERROR, 350)
             } catch (_: Exception) {}
         }
