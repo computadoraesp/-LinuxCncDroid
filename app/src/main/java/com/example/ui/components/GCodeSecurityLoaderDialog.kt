@@ -26,7 +26,7 @@ import com.example.ui.theme.*
 @Composable
 fun GCodeSecurityLoaderDialog(
     onDismiss: () -> Unit,
-    onLoadValidatedGCode: (String, String) -> Unit
+    onLoadValidatedGCode: (String, String) -> Unit,
 ) {
     val scanner = remember { CncSecurityScanner() }
     var selectedPresetTitle by remember { mutableStateOf("Trochoidal Aluminum Pocket (Safe)") }
@@ -167,7 +167,8 @@ fun GCodeSecurityLoaderDialog(
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(threatLevel.displayName, fontWeight = FontWeight.Black, fontSize = 12.sp, color = bannerBorder)
-                                Text("${scanResult.threats.size} Threats • Scan: ${scanResult.scanDurationMs}ms • ${scanResult.totalLines} lines", fontSize = 10.sp, color = CncTextSecondary)
+                                val motionText = if (scanResult.hasMotion) "Movement Code Detected" else "No Axis Motion Found"
+                                Text("${scanResult.threats.size} Threats • $motionText • ${scanResult.totalLines} lines", fontSize = 10.sp, color = CncTextSecondary)
                             }
                         }
 
