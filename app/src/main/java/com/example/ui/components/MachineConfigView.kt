@@ -1,17 +1,50 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.PlayCircleOutline
+import androidx.compose.material.icons.filled.SettingsEthernet
+import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,7 +56,15 @@ import androidx.compose.ui.unit.sp
 import com.example.data.local.MachineProfileEntity
 import com.example.model.CapabilitiesManifest
 import com.example.model.HardwareArchitecture
-import com.example.ui.theme.*
+import com.example.ui.theme.CncActiveGreen
+import com.example.ui.theme.CncCardBg
+import com.example.ui.theme.CncCardBorder
+import com.example.ui.theme.CncCyberCyan
+import com.example.ui.theme.CncEstopRed
+import com.example.ui.theme.CncSurface
+import com.example.ui.theme.CncSurfaceVariant
+import com.example.ui.theme.CncTextPrimary
+import com.example.ui.theme.CncTextSecondary
 
 @Composable
 fun MachineConfigView(
@@ -32,34 +73,37 @@ fun MachineConfigView(
     onSwitchArchitecture: (HardwareArchitecture) -> Unit,
     onConnectHost: (String, Int) -> Unit,
     onSaveProfile: (String, String, Int, String) -> Unit,
+    modifier: Modifier = Modifier,
+    onDeleteProfile: (Long) -> Unit = {},
+    onWipeAllData: () -> Unit = {},
     onOpenMetrologyCalibration: () -> Unit = {},
     onOpenManual: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     var hostIpText by remember { mutableStateOf(capabilities.hostIp) }
     var portText by remember { mutableStateOf(capabilities.port.toString()) }
     var profileNameText by remember { mutableStateOf("") }
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(value = false) }
+    var showWipeConfirm by remember { mutableStateOf(value = false) }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = CncCardBg),
         shape = RoundedCornerShape(12.dp),
         border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CncCardBorder)),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             // Quick Tools Bar (Metrology & Manual)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 OutlinedButton(
                     onClick = onOpenMetrologyCalibration,
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = CncActiveGreen, containerColor = CncSurfaceVariant),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CncActiveGreen.copy(alpha = 0.6f)),
+                    border = BorderStroke(1.dp, CncActiveGreen.copy(alpha = 0.6f)),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                    modifier = Modifier.weight(1f).height(36.dp)
+                    modifier = Modifier.weight(1f).height(36.dp),
                 ) {
                     Icon(imageVector = Icons.Default.Straighten, contentDescription = null, tint = CncActiveGreen, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
@@ -69,12 +113,12 @@ fun MachineConfigView(
                 OutlinedButton(
                     onClick = onOpenManual,
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = CncCyberCyan, containerColor = CncSurfaceVariant),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CncCyberCyan.copy(alpha = 0.6f)),
+                    border = BorderStroke(1.dp, CncCyberCyan.copy(alpha = 0.6f)),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                     modifier = Modifier.weight(1f).height(36.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.MenuBook, contentDescription = null, tint = CncCyberCyan, modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = CncCyberCyan, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("MANUAL TÉCNICO & SOPS", fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
@@ -98,7 +142,7 @@ fun MachineConfigView(
                     contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = CncSurfaceVariant,
-                        contentColor = CncCyberCyan
+                        contentColor = CncCyberCyan,
                     ),
                     modifier = Modifier.height(30.dp)
                 ) {
@@ -200,7 +244,7 @@ fun MachineConfigView(
             Text("TARGET HARDWARE ARCHITECTURE (CAPABILITIES DISCOVERY)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                HardwareArchitecture.values().forEach { arch ->
+                HardwareArchitecture.entries.forEach { arch ->
                     val isSelected = capabilities.architecture == arch
 
                     Surface(
@@ -259,7 +303,7 @@ fun MachineConfigView(
                             .clickable {
                                 hostIpText = profile.hostIp
                                 portText = profile.port.toString()
-                                val archEnum = HardwareArchitecture.values().find { it.name == profile.architecture } ?: HardwareArchitecture.ETHERCAT_DELTA
+                                val archEnum = HardwareArchitecture.entries.find { it.name == profile.architecture } ?: HardwareArchitecture.ETHERCAT_DELTA
                                 onSwitchArchitecture(archEnum)
                                 onConnectHost(profile.hostIp, profile.port)
                             }
@@ -276,12 +320,59 @@ fun MachineConfigView(
                                 Text("${profile.hostIp}:${profile.port} • ${profile.architecture}", fontSize = 10.sp, color = CncTextSecondary, fontFamily = FontFamily.Monospace)
                             }
 
-                            Icon(imageVector = Icons.Default.PlayCircleOutline, contentDescription = "Load Profile", tint = CncCyberCyan)
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                IconButton(
+                                    onClick = { onDeleteProfile(profile.id) },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Profile", tint = CncEstopRed.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
+                                }
+                                Icon(imageVector = Icons.Default.PlayCircleOutline, contentDescription = "Load Profile", tint = CncCyberCyan)
+                            }
                         }
                     }
                 }
             }
+
+            // Compliance: Data Management (GDPR/Play Store)
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = { showWipeConfirm = true },
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = CncEstopRed),
+                border = BorderStroke(1.dp, CncEstopRed.copy(alpha = 0.5f)),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth().height(40.dp)
+            ) {
+                Icon(imageVector = Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("WIPE ALL APP DATA (FACTORY RESET)", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+            }
         }
+    }
+
+    if (showWipeConfirm) {
+        AlertDialog(
+            onDismissRequest = { showWipeConfirm = false },
+            title = { Text("Factory Reset Data?", fontWeight = FontWeight.Bold) },
+            text = { Text("This will permanently delete all saved machine profiles and custom MDI macros. This action cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onWipeAllData()
+                        showWipeConfirm = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = CncEstopRed)
+                ) {
+                    Text("YES, WIPE EVERYTHING")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showWipeConfirm = false }) {
+                    Text("Cancel")
+                }
+            },
+            containerColor = CncCardBg
+        )
     }
 
     // Add Profile Dialog
