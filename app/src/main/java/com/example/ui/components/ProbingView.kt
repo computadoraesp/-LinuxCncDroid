@@ -1,16 +1,38 @@
 package com.example.ui.components
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.CompareArrows
+import androidx.compose.material.icons.filled.Adjust
+import androidx.compose.material.icons.filled.CropFree
+import androidx.compose.material.icons.filled.FullscreenExit
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Sensors
+import androidx.compose.material.icons.filled.SwapVert
+import androidx.compose.material.icons.filled.VerticalAlignBottom
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,7 +43,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.ProbeInfo
-import com.example.ui.theme.*
+import com.example.ui.theme.AxisXColor
+import com.example.ui.theme.AxisYColor
+import com.example.ui.theme.AxisZColor
+import com.example.ui.theme.CncActiveGreen
+import com.example.ui.theme.CncCardBg
+import com.example.ui.theme.CncCardBorder
+import com.example.ui.theme.CncCyberCyan
+import com.example.ui.theme.CncDroDigits
+import com.example.ui.theme.CncEstopRed
+import com.example.ui.theme.CncSurface
+import com.example.ui.theme.CncSurfaceVariant
+import com.example.ui.theme.CncTextPrimary
+import com.example.ui.theme.CncTextSecondary
+import com.example.ui.theme.CncWarningAmber
 import java.util.Locale
 
 data class ProbeRoutineItem(
@@ -29,7 +64,7 @@ data class ProbeRoutineItem(
     val title: String,
     val description: String,
     val icon: ImageVector,
-    val gcodeMacro: String
+    val gcodeMacro: String,
 )
 
 @Composable
@@ -43,7 +78,13 @@ fun ProbingView(
         ProbeRoutineItem("boss_center", "External Boss Center", "Finds external circular boss center", Icons.Default.Adjust, "O101 CALL [BOSS_CENTER]"),
         ProbeRoutineItem("corner_out", "Outside Corner Finder", "Probes X+ and Y+ to locate corner zero", Icons.Default.CropFree, "O102 CALL [CORNER_OUT]"),
         ProbeRoutineItem("corner_in", "Inside Pocket Corner", "Finds inside pocket origin vertex", Icons.Default.FullscreenExit, "O103 CALL [CORNER_IN]"),
-        ProbeRoutineItem("edge_x", "X-Axis Edge Touch", "Single touch on X face to set X zero", Icons.Default.CompareArrows, "O104 CALL [EDGE_X]"),
+        ProbeRoutineItem(
+            id = "edge_x",
+            title = "X-Axis Edge Touch",
+            description = "Single touch on X face to set X zero",
+            icon = Icons.AutoMirrored.Filled.CompareArrows,
+            gcodeMacro = "O104 CALL [EDGE_X]",
+        ),
         ProbeRoutineItem("edge_y", "Y-Axis Edge Touch", "Single touch on Y face to set Y zero", Icons.Default.SwapVert, "O105 CALL [EDGE_Y]"),
         ProbeRoutineItem("toolsetter_z", "Toolsetter Z-Touch", "Auto tool length measurement with reference puck", Icons.Default.VerticalAlignBottom, "O106 CALL [TOOLSETTER_Z]")
     )
