@@ -37,7 +37,7 @@ Crafted natively in **Kotlin** using **Jetpack Compose** and **Material 3 Indust
 * **Continuous & Incremental Jog**: On-screen directional pads with dynamic velocity sliders.
 
 #### 3. Interactive 3D G-Code Toolpath Visualizer
-* **Isometric 3D Engine**: Interactive 3D render with multi-touch pinch-to-zoom, orbital rotation, and panning.
+* **Isometric 3D Engine**: Interactive 3D render with multitouch pinch-to-zoom, orbital rotation, and panning.
 * **Trajectory Color Coding**:
   * Rapid traverse moves ($G0$) in dashed warning lines.
   * Linear cutting feeds ($G1$) and circular arcs ($G2/G3$) highlighted with distinct color codings.
@@ -78,6 +78,65 @@ Crafted natively in **Kotlin** using **Jetpack Compose** and **Material 3 Indust
   * **Parallel Port (LPT)** software step generation.
 * **Telemetry Monitor**:
   * Real-time 1 kHz servo-thread frequency counter, microsecond jitter gauge, packet monitor, and CiA 402 drive state machine view.
+
+---
+
+### 🏛️ Technical Architecture
+
+LinuxCncDroid follows the modern **Clean Architecture** patterns using the **MVVM (Model-View-ViewModel)** design pattern and **Unidirectional Data Flow (UDF)**.
+
+```mermaid
+graph TD
+    subgraph "UI Layer (Jetpack Compose)"
+        Screen[CncMainScreen]
+        Comp[Modular Components]
+    end
+
+    subgraph "Domain & State (ViewModel)"
+        VM[CncViewModel]
+    end
+
+    subgraph "Data & Hardware Layer"
+        Engine[LinuxCncEngine Service]
+        DB[(Room SQLite DB)]
+        Scanner[Cybersecurity Scanner]
+        Net[WebSocket / REST Client]
+    end
+
+    subgraph "External Controllers"
+        CNC[LinuxCNC / Machinekit]
+    end
+
+    Comp -->|User Events| VM
+    Screen --> Comp
+    VM -->|UI State Flow| Screen
+    VM --> Engine
+    Engine -->|Flow Updates| VM
+    Engine --> Net
+    Net <-->|TCP/IP| CNC
+    VM --> DB
+    Engine --> Scanner
+```
+
+#### Key Components:
+- **`LinuxCncEngine`**: The core service managing the real-time kinematics loop, telemetry aggregation, and communication protocols.
+- **`CncViewModel`**: Preserves industrial state using `SavedStateHandle` and orchestrates data flow between the engine and the UI.
+- **`CncSecurityScanner`**: A specialized module that inspects incoming G-Code for malicious payloads or dangerous kinematic commands before execution.
+- **`NetworkConnectivityObserver`**: A reactive monitor that detects changes in the device's network state to ensure reliable machine-tool connectivity.
+
+---
+
+### 🗺️ 2024-2025 Feature Roadmap
+
+- [ ] **Phase 1: Advanced Metrology** (Q3 2024)
+  - Integration of ISO 230-2 bidirectional compensation.
+  - Thermal expansion drift sensors monitoring.
+- [ ] **Phase 2: Intelligent G-Code Assistant** (Q4 2024)
+  - LLM-powered G-Code optimization and error correction.
+  - Predictive tool wear analysis based on cutting hours.
+- [ ] **Phase 3: Multi-Machine Orchestration** (Q1 2025)
+  - Simultaneous monitoring of multiple machine profiles in a shop-floor view.
+  - Unified alert dashboard for EtherCAT bus failures across multiple CNCs.
 
 ---
 
@@ -165,6 +224,65 @@ Construida íntegramente en **Kotlin** con **Jetpack Compose** y arquitectura **
   * **Puerto Paralelo (LPT)** con generador de pasos por software.
 * **Monitor de Telemetría**:
   * Frecuencia de servo-hilo (1000 Hz / 1 kHz), jitter en microsegundos, paquetes transmitidos y monitor de estados CiA 402.
+
+---
+
+### 🏛️ Arquitectura Técnica
+
+LinuxCncDroid sigue patrones modernos de **Clean Architecture** utilizando el patrón de diseño **MVVM (Model-View-ViewModel)** y **Flujo de Datos Unidireccional (UDF)**.
+
+```mermaid
+graph TD
+    subgraph "Capa de UI (Jetpack Compose)"
+        Screen[CncMainScreen]
+        Comp[Componentes Modulares]
+    end
+
+    subgraph "Dominio y Estado (ViewModel)"
+        VM[CncViewModel]
+    end
+
+    subgraph "Capa de Datos y Hardware"
+        Engine[Servicio LinuxCncEngine]
+        DB[(Base de Datos Room SQLite)]
+        Scanner[Escáner de Ciberseguridad]
+        Net[Cliente WebSocket / REST]
+    end
+
+    subgraph "Controladores Externos"
+        CNC[LinuxCNC / Machinekit]
+    end
+
+    Comp -->|Eventos de Usuario| VM
+    Screen --> Comp
+    VM -->|Flujo de Estado UI| Screen
+    VM --> Engine
+    Engine -->|Actualizaciones de Flow| VM
+    Engine --> Net
+    Net <-->|TCP/IP| CNC
+    VM --> DB
+    Engine --> Scanner
+```
+
+#### Componentes Clave:
+- **`LinuxCncEngine`**: El servicio principal que gestiona el bucle de cinemática en tiempo real, la agregación de telemetría y los protocolos de comunicación.
+- **`CncViewModel`**: Preserva el estado industrial utilizando `SavedStateHandle` y orquesta el flujo de datos entre el motor y la interfaz de usuario.
+- **`CncSecurityScanner`**: Un módulo especializado que inspecciona el G-Code entrante en busca de cargas maliciosas o comandos cinemáticos peligrosos antes de su ejecución.
+- **`NetworkConnectivityObserver`**: Un monitor reactivo que detecta cambios en el estado de red del dispositivo para asegurar una conectividad fiable con la máquina-herramienta.
+
+---
+
+### 🗺️ Hoja de Ruta (Roadmap) 2024-2025
+
+- [ ] **Fase 1: Metrología Avanzada** (T3 2024)
+  - Integración de compensación bidireccional según ISO 230-2.
+  - Monitoreo de sensores de deriva por expansión térmica.
+- [ ] **Fase 2: Asistente de G-Code Inteligente** (T4 2024)
+  - Optimización y corrección de errores de G-Code mediante modelos de lenguaje (LLM).
+  - Análisis predictivo de desgaste de herramientas basado en horas de corte.
+- [ ] **Fase 3: Orquestación Multi-Máquina** (T1 2025)
+  - Supervisión simultánea de múltiples perfiles de máquina en una vista de planta.
+  - Panel de alertas unificado para fallos en buses EtherCAT en múltiples CNCs.
 
 ---
 
