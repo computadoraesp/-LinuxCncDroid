@@ -1,6 +1,5 @@
 package com.example.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
@@ -29,7 +28,7 @@ private val IndustrialDarkColorScheme = darkColorScheme(
     onSurface = CncTextPrimary,
     surfaceVariant = CncSurfaceVariant,
     onSurfaceVariant = CncTextSecondary,
-    outline = CncCardBorder
+    outline = CncCardBorder,
 )
 
 @Composable
@@ -41,14 +40,4 @@ fun LinuxCncTheme(
         typography = Typography,
         content = content
     )
-}
-
-// Keep backwards-compat alias
-@Composable
-fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
-    content: @Composable () -> Unit
-) {
-    LinuxCncTheme(content = content)
 }
