@@ -5,22 +5,56 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CenterFocusStrong
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.ViewInAr
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -28,7 +62,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.AxisCoord
 import com.example.model.GCodeSegment
-import com.example.ui.theme.*
+import com.example.ui.theme.AxisXColor
+import com.example.ui.theme.AxisYColor
+import com.example.ui.theme.CncActiveGreen
+import com.example.ui.theme.CncCardBg
+import com.example.ui.theme.CncCardBorder
+import com.example.ui.theme.CncCyberCyan
+import com.example.ui.theme.CncEstopRed
+import com.example.ui.theme.CncSurface
+import com.example.ui.theme.CncSurfaceVariant
+import com.example.ui.theme.CncTextMuted
+import com.example.ui.theme.CncTextPrimary
+import com.example.ui.theme.CncTextSecondary
+import com.example.ui.theme.CncWarningAmber
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
@@ -42,17 +88,17 @@ enum class ViewPerspective {
 
 @Composable
 fun ToolpathVisualizer3D(
+    modifier: Modifier = Modifier,
     gcodeList: List<GCodeSegment>,
     activeLineIndex: Int,
     axes: Map<String, AxisCoord>,
     fileName: String = "face_pocket_contour.ngc",
     elapsedSeconds: Long = 0L,
     estimatedTotalSeconds: Long = 180L,
-    feedRate: Double = 1500.0,
+    @Suppress("UNUSED_PARAMETER") feedRate: Double = 1500.0,
     spindleRpm: Double = 18000.0,
     activeToolDiameter: Double = 6.0,
     onOpenLoader: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     var perspective by remember { mutableStateOf(ViewPerspective.ISO_3D) }
     var zoomScale by remember { mutableFloatStateOf(3.2f) }
@@ -62,7 +108,7 @@ fun ToolpathVisualizer3D(
 
     // Auto-scroll G-Code tracker
     LaunchedEffect(activeLineIndex) {
-        if (gcodeList.isNotEmpty() && activeLineIndex in gcodeList.indices) {
+        if (gcodeList.isNotEmpty() && (activeLineIndex in gcodeList.indices)) {
             listState.animateScrollToItem(max(0, activeLineIndex - 2))
         }
     }
@@ -104,14 +150,14 @@ fun ToolpathVisualizer3D(
         colors = CardDefaults.cardColors(containerColor = CncCardBg),
         shape = RoundedCornerShape(12.dp),
         border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(CncCardBorder)),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             // Header Bar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = Icons.Default.ViewInAr, contentDescription = "3D View", tint = CncCyberCyan, modifier = Modifier.size(18.dp))
@@ -125,11 +171,18 @@ fun ToolpathVisualizer3D(
                         color = CncWarningAmber,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "DIM: X${(boundingBox.first.second - boundingBox.first.first).toInt()} Y${(boundingBox.second.second - boundingBox.second.first).toInt()} Z${(boundingBox.third.second - boundingBox.third.first).toInt()}",
+                        fontSize = 9.sp,
+                        color = CncTextSecondary,
+                        fontFamily = FontFamily.Monospace
+                    )
                 }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     FilledTonalButton(
                         onClick = onOpenLoader,
@@ -255,23 +308,23 @@ fun ToolpathVisualizer3D(
                             val isCurrent = index == activeLineIndex
 
                             val p1 = when (perspective) {
-                                ViewPerspective.TOP_XY -> Offset(originX + seg.startX * zoomScale, originY - seg.startY * zoomScale)
-                                ViewPerspective.FRONT_XZ -> Offset(originX + seg.startX * zoomScale, originY - seg.startZ * zoomScale)
-                                ViewPerspective.SIDE_YZ -> Offset(originX + seg.startY * zoomScale, originY - seg.startZ * zoomScale)
+                                ViewPerspective.TOP_XY -> Offset((originX + (seg.startX * zoomScale)), (originY - (seg.startY * zoomScale)))
+                                ViewPerspective.FRONT_XZ -> Offset((originX + (seg.startX * zoomScale)), (originY - (seg.startZ * zoomScale)))
+                                ViewPerspective.SIDE_YZ -> Offset((originX + (seg.startY * zoomScale)), (originY - (seg.startZ * zoomScale)))
                                 ViewPerspective.ISO_3D -> {
-                                    val isoX = originX + (seg.startX - seg.startY * 0.7f) * zoomScale * 0.8f
-                                    val isoY = originY - (seg.startZ + (seg.startX + seg.startY) * 0.35f) * zoomScale * 0.8f
+                                    val isoX = originX + ((seg.startX - (seg.startY * 0.7f)) * zoomScale * 0.8f)
+                                    val isoY = originY - ((seg.startZ + ((seg.startX + seg.startY) * 0.35f)) * zoomScale * 0.8f)
                                     Offset(isoX, isoY)
                                 }
                             }
 
                             val p2 = when (perspective) {
-                                ViewPerspective.TOP_XY -> Offset(originX + seg.endX * zoomScale, originY - seg.endY * zoomScale)
-                                ViewPerspective.FRONT_XZ -> Offset(originX + seg.endX * zoomScale, originY - seg.endZ * zoomScale)
-                                ViewPerspective.SIDE_YZ -> Offset(originX + seg.endY * zoomScale, originY - seg.endZ * zoomScale)
+                                ViewPerspective.TOP_XY -> Offset((originX + (seg.endX * zoomScale)), (originY - (seg.endY * zoomScale)))
+                                ViewPerspective.FRONT_XZ -> Offset((originX + (seg.endX * zoomScale)), (originY - (seg.endZ * zoomScale)))
+                                ViewPerspective.SIDE_YZ -> Offset((originX + (seg.endY * zoomScale)), (originY - (seg.endZ * zoomScale)))
                                 ViewPerspective.ISO_3D -> {
-                                    val isoX = originX + (seg.endX - seg.endY * 0.7f) * zoomScale * 0.8f
-                                    val isoY = originY - (seg.endZ + (seg.endX + seg.endY) * 0.35f) * zoomScale * 0.8f
+                                    val isoX = originX + ((seg.endX - (seg.endY * 0.7f)) * zoomScale * 0.8f)
+                                    val isoY = originY - ((seg.endZ + ((seg.endX + seg.endY) * 0.35f)) * zoomScale * 0.8f)
                                     Offset(isoX, isoY)
                                 }
                             }
@@ -300,25 +353,25 @@ fun ToolpathVisualizer3D(
                         val toolZ = axes["Z"]?.workPos?.toFloat() ?: 0f
 
                         val toolPos = when (perspective) {
-                            ViewPerspective.TOP_XY -> Offset(originX + toolX * zoomScale, originY - toolY * zoomScale)
-                            ViewPerspective.FRONT_XZ -> Offset(originX + toolX * zoomScale, originY - toolZ * zoomScale)
-                            ViewPerspective.SIDE_YZ -> Offset(originX + toolY * zoomScale, originY - toolZ * zoomScale)
+                            ViewPerspective.TOP_XY -> Offset((originX + (toolX * zoomScale)), (originY - (toolY * zoomScale)))
+                            ViewPerspective.FRONT_XZ -> Offset((originX + (toolX * zoomScale)), (originY - (toolZ * zoomScale)))
+                            ViewPerspective.SIDE_YZ -> Offset((originX + (toolY * zoomScale)), (originY - (toolZ * zoomScale)))
                             ViewPerspective.ISO_3D -> {
-                                val isoX = originX + (toolX - toolY * 0.7f) * zoomScale * 0.8f
-                                val isoY = originY - (toolZ + (toolX + toolY) * 0.35f) * zoomScale * 0.8f
+                                val isoX = originX + ((toolX - (toolY * 0.7f)) * zoomScale * 0.8f)
+                                val isoY = originY - ((toolZ + ((toolX + toolY) * 0.35f)) * zoomScale * 0.8f)
                                 Offset(isoX, isoY)
                             }
                         }
 
                         // Draw Realistic 3D Toolholder & Carbide Endmill Flute
-                        val toolRadiusPx = (activeToolDiameter.toFloat() / 2f * zoomScale).coerceIn(4f, 16f)
+                        val toolRadiusPx = ((activeToolDiameter.toFloat() / 2f) * zoomScale).coerceIn(4f, 16f)
 
                         // 1. Toolholder ISO Cone Body (Silver/Steel Gradient)
                         val holderPath = Path().apply {
-                            moveTo(toolPos.x - toolRadiusPx * 2.2f, toolPos.y - 45f)
-                            lineTo(toolPos.x + toolRadiusPx * 2.2f, toolPos.y - 45f)
-                            lineTo(toolPos.x + toolRadiusPx * 1.3f, toolPos.y - 20f)
-                            lineTo(toolPos.x - toolRadiusPx * 1.3f, toolPos.y - 20f)
+                            moveTo((toolPos.x - (toolRadiusPx * 2.2f)), (toolPos.y - 45f))
+                            lineTo((toolPos.x + (toolRadiusPx * 2.2f)), (toolPos.y - 45f))
+                            lineTo((toolPos.x + (toolRadiusPx * 1.3f)), (toolPos.y - 20f))
+                            lineTo((toolPos.x - (toolRadiusPx * 1.3f)), (toolPos.y - 20f))
                             close()
                         }
                         drawPath(
@@ -463,7 +516,7 @@ fun ToolpathVisualizer3D(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(imageVector = Icons.Default.Timer, contentDescription = "Timer", tint = CncCyberCyan, modifier = Modifier.size(14.dp))
