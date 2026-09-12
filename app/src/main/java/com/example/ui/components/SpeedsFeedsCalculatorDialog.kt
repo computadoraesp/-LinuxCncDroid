@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.model.MaterialPreset
+import com.example.model.SpeedFeedCalculation
 import com.example.ui.theme.*
 import java.util.Locale
 import kotlin.math.PI
@@ -28,18 +30,18 @@ val STANDARD_MATERIALS = listOf(
     MaterialPreset("mat_steel1018", "Mild Steel (AISI 1018)", "Ferrous", 90.0, 0.035, 1.8),
     MaterialPreset("mat_ss304", "Stainless Steel 304", "Exotic / Tough", 55.0, 0.025, 2.2),
     MaterialPreset("mat_wood", "Hardwood / Birch Plywood", "Wood & Composites", 350.0, 0.080, 0.3),
-    MaterialPreset("mat_pom", "POM / Delrin / Acetal", "Plastics", 180.0, 0.060, 0.4)
+    MaterialPreset("mat_pom", "POM / Delrin / Acetal", "Plastics", 180.0, 0.060, 0.4),
 )
 
 @Composable
 fun SpeedsFeedsCalculatorDialog(
     onDismiss: () -> Unit,
-    onApplyToCnc: (rpm: Double, feedMmMin: Double) -> Unit
+    onApplyToCnc: (rpm: Double, feedMmMin: Double) -> Unit,
 ) {
     var selectedMaterial by remember { mutableStateOf(STANDARD_MATERIALS[0]) }
-    var toolDiameter by remember { mutableStateOf(6.0) }
-    var flutes by remember { mutableStateOf(2) }
-    var isRoughing by remember { mutableStateOf(false) }
+    var toolDiameter by remember { mutableDoubleStateOf(6.0) }
+    var flutes by remember { mutableIntStateOf(2) }
+    var isRoughing by remember { mutableStateOf(value = false) }
 
     // Formula Calculations
     val vc = if (isRoughing) selectedMaterial.surfaceSpeedMMin * 0.85 else selectedMaterial.surfaceSpeedMMin
@@ -50,13 +52,39 @@ fun SpeedsFeedsCalculatorDialog(
     val wocAe = if (isRoughing) toolDiameter * 0.4 else toolDiameter * 0.1
     val estimatedPowerKw = (calculatedFeed * docAp * wocAe * selectedMaterial.powerFactor / 60000.0).coerceAtLeast(0.1)
 
+    val currentCalculation = SpeedFeedCalculation(
+        material = selectedMaterial,
+        toolDiameterMm = toolDiameter,
+        flutes = flutes,
+        calculatedRpm = calculatedRpm,
+        calculatedFeedMmMin = calculatedFeed,
+        recommendedDocMm = docAp,
+        recommendedWocMm = wocAe,
+        spindlePowerKw = estimatedPowerKw,
+    )
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Calculate, contentDescription = "Calculator", tint = CncCyberCyan, modifier = Modifier.size(22.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("SPEEDS & FEEDS CALCULATOR", fontWeight = FontWeight.Black, fontSize = 14.sp, color = CncTextPrimary)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Calculate, contentDescription = "Calculator", tint = CncCyberCyan, modifier = Modifier.size(22.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("SPEEDS & FEEDS CALCULATOR", fontWeight = FontWeight.Black, fontSize = 14.sp, color = CncTextPrimary)
+                }
+
+                IconButton(
+                    onClick = {
+                        println("SpeedFeedCalculation: $currentCalculation")
+                    },
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(Icons.Default.Info, contentDescription = "Log Detail", tint = CncCyberCyan, modifier = Modifier.size(18.dp))
+                }
             }
         },
         text = {
@@ -161,7 +189,11 @@ fun SpeedsFeedsCalculatorDialog(
                             }
                         }
 
-                        Divider(color = CncCardBorder)
+                        HorizontalDivider(
+                            Modifier,
+                            DividerDefaults.Thickness,
+                            color = CncCardBorder
+                        )
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Depth (Ap): ${String.format(Locale.US, "%.2f", docAp)} mm", fontSize = 10.sp, color = CncTextSecondary)
