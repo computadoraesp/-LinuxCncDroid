@@ -1,16 +1,51 @@
 package com.example.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.RotateRight
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ChangeHistory
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Construction
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.GpsFixed
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.filled.VerticalAlignBottom
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,7 +59,16 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.model.CncToolItem
 import com.example.model.ToolType
-import com.example.ui.theme.*
+import com.example.ui.theme.CncCardBg
+import com.example.ui.theme.CncCardBorder
+import com.example.ui.theme.CncCyberCyan
+import com.example.ui.theme.CncEstopRed
+import com.example.ui.theme.CncRunningGreen
+import com.example.ui.theme.CncSurfaceBg
+import com.example.ui.theme.CncSurfaceVariant
+import com.example.ui.theme.CncTextPrimary
+import com.example.ui.theme.CncTextSecondary
+import com.example.ui.theme.CncWarningAmber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,11 +80,11 @@ fun ToolTableDialog(
     onMountTool: (Int) -> Unit,
     onUpdateTool: (CncToolItem) -> Unit,
     onDeleteTool: (Int) -> Unit,
-    onTouchOffZ: (Int) -> Unit
+    onTouchOffZ: (Int) -> Unit,
 ) {
     var selectedFilter by remember { mutableStateOf<ToolType?>(null) }
     var editingTool by remember { mutableStateOf<CncToolItem?>(null) }
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(value = false) }
 
     val filteredTools = remember(tools, selectedFilter) {
         if (selectedFilter == null) tools else tools.filter { it.toolType == selectedFilter }
@@ -48,7 +92,7 @@ fun ToolTableDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
         Card(
             colors = CardDefaults.cardColors(containerColor = CncSurfaceBg),
@@ -56,21 +100,21 @@ fun ToolTableDialog(
             border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(CncCardBorder)),
             modifier = Modifier
                 .fillMaxWidth(0.95f)
-                .fillMaxHeight(0.88f)
+                .fillMaxHeight(0.88f),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 // Header
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Construction,
                             contentDescription = "Tool Table",
                             tint = CncCyberCyan,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
@@ -78,13 +122,13 @@ fun ToolTableDialog(
                                 text = "TOOL TABLE & POCKET MANAGER (tool.tbl)",
                                 fontWeight = FontWeight.Black,
                                 fontSize = 14.sp,
-                                color = CncTextPrimary
+                                color = CncTextPrimary,
                             )
                             Text(
                                 text = "Mounted: T${activeTool.id} • ${activeTool.description} (G43 H${activeTool.id})",
                                 fontSize = 10.sp,
                                 fontFamily = FontFamily.Monospace,
-                                color = CncWarningAmber
+                                color = CncWarningAmber,
                             )
                         }
                     }
@@ -94,7 +138,7 @@ fun ToolTableDialog(
                             onClick = { showAddDialog = true },
                             shape = RoundedCornerShape(6.dp),
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                            colors = ButtonDefaults.filledTonalButtonColors(containerColor = CncSurfaceVariant)
+                            colors = ButtonDefaults.filledTonalButtonColors(containerColor = CncSurfaceVariant),
                         ) {
                             Icon(imageVector = Icons.Default.Add, contentDescription = "Add Tool", modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
@@ -124,7 +168,7 @@ fun ToolTableDialog(
                         )
                     )
 
-                    ToolType.values().take(4).forEach { type ->
+                    ToolType.entries.toTypedArray().take(4).forEach { type ->
                         val count = tools.count { it.toolType == type }
                         if (count > 0) {
                             FilterChip(
@@ -156,9 +200,8 @@ fun ToolTableDialog(
                             currentSpindleZ = currentSpindleZ,
                             onMount = { onMountTool(toolItem.id) },
                             onEdit = { editingTool = toolItem },
-                            onDelete = { onDeleteTool(toolItem.id) },
-                            onTouchOff = { onTouchOffZ(toolItem.id) }
-                        )
+                            onDelete = { onDeleteTool(toolItem.id) }
+                        ) { onTouchOffZ(toolItem.id) }
                     }
                 }
             }
@@ -170,11 +213,10 @@ fun ToolTableDialog(
         EditToolDetailsDialog(
             tool = editingTool!!,
             onDismiss = { editingTool = null },
-            onSave = { updated ->
-                onUpdateTool(updated)
-                editingTool = null
-            }
-        )
+        ) { updated ->
+            onUpdateTool(updated)
+            editingTool = null
+        }
     }
 
     // Add New Tool Dialog
@@ -194,12 +236,11 @@ fun ToolTableDialog(
                 lifeMinutesMax = 120.0
             ),
             isNew = true,
-            onDismiss = { showAddDialog = false },
-            onSave = { newTool ->
-                onUpdateTool(newTool)
-                showAddDialog = false
-            }
-        )
+            onDismiss = { showAddDialog = false }
+        ) { newTool ->
+            onUpdateTool(newTool)
+            showAddDialog = false
+        }
     }
 }
 
@@ -207,10 +248,10 @@ fun ToolTableDialog(
 fun ToolCardItem(
     tool: CncToolItem,
     isCurrentlyActive: Boolean,
-    currentSpindleZ: Double,
+    @Suppress("UNUSED_PARAMETER") currentSpindleZ: Double,
     onMount: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit,
+    @Suppress("UNUSED_PARAMETER") onDelete: () -> Unit,
     onTouchOff: () -> Unit
 ) {
     val lifePct = (tool.lifeMinutesCurrent / tool.lifeMinutesMax).toFloat().coerceIn(0f, 1f)
@@ -275,10 +316,27 @@ fun ToolCardItem(
                         Text(
                             text = "Pocket #${tool.pocket} • ${tool.toolType.displayName} • ${tool.flutes} Flutes • Max ${tool.maxRpm.toInt()} RPM",
                             fontSize = 9.5.sp,
-                            color = CncTextSecondary
+                            color = CncTextSecondary,
                         )
                     }
                 }
+
+                // Tool Icon from Type
+                Icon(
+                    imageVector = when (tool.toolType) {
+                        ToolType.ENDMILL -> Icons.Default.Construction
+                        ToolType.BALLNOSE -> Icons.Default.VerticalAlignBottom
+                        ToolType.FACE_MILL -> Icons.Default.Layers
+                        ToolType.DRILL -> Icons.Default.Edit
+                        ToolType.CHAMFER -> Icons.Default.ChangeHistory
+                        ToolType.TAP -> Icons.Default.Edit
+                        ToolType.TOUCH_PROBE -> Icons.Default.GpsFixed
+                        ToolType.FLY_CUTTER -> Icons.AutoMirrored.Filled.RotateRight
+                    },
+                    contentDescription = tool.toolType.iconName,
+                    tint = CncCyberCyan.copy(alpha = 0.4f),
+                    modifier = Modifier.size(24.dp)
+                )
 
                 // Mount / Edit Actions
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
