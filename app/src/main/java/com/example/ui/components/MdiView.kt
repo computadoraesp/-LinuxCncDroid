@@ -8,8 +8,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +31,7 @@ fun MdiView(
     macros: List<MdiMacroEntity>,
     onCommandTextChange: (String) -> Unit,
     onExecuteCommand: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = CncCardBg),
@@ -84,7 +86,7 @@ fun MdiView(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.height(52.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Send, contentDescription = "Send Command")
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "Send Command")
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("RUN", fontWeight = FontWeight.Black)
                 }
@@ -111,7 +113,7 @@ fun MdiView(
                 }
             }
 
-            Divider(color = CncCardBorder)
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, color = CncCardBorder)
 
             // Programmable Macros Grid
             Text("PROGRAMMABLE MACROS", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
@@ -138,7 +140,7 @@ fun MdiView(
                 }
             }
 
-            Divider(color = CncCardBorder)
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, color = CncCardBorder)
 
             // Command Execution History
             Text("RECENT COMMAND HISTORY", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
