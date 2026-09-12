@@ -1,24 +1,48 @@
 package com.example.ui.components
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.RotateRight
+import androidx.compose.material.icons.filled.Adjust
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.pointerInput
@@ -32,20 +56,37 @@ import androidx.compose.ui.unit.sp
 import com.example.model.AxisCoord
 import com.example.model.MpgMultiplier
 import com.example.model.UnitSystem
-import com.example.ui.theme.*
-import kotlin.math.*
+import com.example.ui.theme.CncAxisA
+import com.example.ui.theme.CncAxisBlue
+import com.example.ui.theme.CncAxisGreen
+import com.example.ui.theme.CncAxisRed
+import com.example.ui.theme.CncCardBg
+import com.example.ui.theme.CncCardBorder
+import com.example.ui.theme.CncCyberCyan
+import com.example.ui.theme.CncEstopRed
+import com.example.ui.theme.CncRunningGreen
+import com.example.ui.theme.CncSurfaceBg
+import com.example.ui.theme.CncSurfaceVariant
+import com.example.ui.theme.CncTextMuted
+import com.example.ui.theme.CncTextPrimary
+import com.example.ui.theme.CncTextSecondary
+import com.example.ui.theme.CncWarningAmber
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun VirtualMpgWheel(
     axes: Map<String, AxisCoord>,
     selectedAxis: String,
     selectedMultiplier: MpgMultiplier,
-    unitSystem: UnitSystem = UnitSystem.METRIC,
     onSelectAxis: (String) -> Unit,
     onSelectMultiplier: (MpgMultiplier) -> Unit,
     onMpgStep: (axis: String, direction: Int, multiplier: MpgMultiplier) -> Unit,
     onZeroSelectedAxis: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
 ) {
     var rotationAngleDeg by remember { mutableFloatStateOf(0f) }
     var accumulatedAngleDelta by remember { mutableFloatStateOf(0f) }
@@ -58,21 +99,21 @@ fun VirtualMpgWheel(
         colors = CardDefaults.cardColors(containerColor = CncCardBg),
         shape = RoundedCornerShape(12.dp),
         border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(CncCardBorder)),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.RotateRight,
+                        imageVector = Icons.AutoMirrored.Filled.RotateRight,
                         contentDescription = "MPG Wheel",
                         tint = CncCyberCyan,
                         modifier = Modifier.size(18.dp)
@@ -146,7 +187,7 @@ fun VirtualMpgWheel(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                MpgMultiplier.values().forEach { mult ->
+                MpgMultiplier.entries.forEach { mult ->
                     val isSelected = selectedMultiplier == mult
                     Surface(
                         onClick = { onSelectMultiplier(mult) },
@@ -230,14 +271,14 @@ fun VirtualMpgWheel(
                 ) {
                     Canvas(modifier = Modifier.fillMaxSize()) {
                         val center = Offset(size.width / 2f, size.height / 2f)
-                        val radius = size.minDimension / 2f - 8.dp.toPx()
+                        val radius = (size.minDimension / 2f) - 8.dp.toPx()
 
                         // Draw outer graduated ring ticks (100 divisions)
                         rotate(rotationAngleDeg, pivot = center) {
                             for (i in 0 until 100) {
-                                val angleRad = (i * 3.6 * Math.PI / 180.0).toFloat()
-                                val isMajor = (i % 10 == 0)
-                                val isMedium = (i % 5 == 0 && !isMajor)
+                                val angleRad = ((i * 3.6 * Math.PI) / 180.0).toFloat()
+                                val isMajor = ((i % 10) == 0)
+                                val isMedium = (((i % 5) == 0) && !isMajor)
 
                                 val tickLength = if (isMajor) 14.dp.toPx() else if (isMedium) 9.dp.toPx() else 5.dp.toPx()
                                 val tickWidth = if (isMajor) 2.dp.toPx() else 1.dp.toPx()
@@ -264,7 +305,7 @@ fun VirtualMpgWheel(
 
                                     drawText(
                                         textMeasurer = textMeasurer,
-                                        text = "$i",
+                                        text = i.toString(),
                                         topLeft = Offset(textX - 8.dp.toPx(), textY - 6.dp.toPx()),
                                         style = TextStyle(
                                             color = CncCyberCyan,
