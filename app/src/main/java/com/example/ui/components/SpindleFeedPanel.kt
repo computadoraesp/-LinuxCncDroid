@@ -1,13 +1,16 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +34,6 @@ fun SpindleFeedPanel(
     feed: FeedInfo,
     coolant: CoolantInfo,
     machineState: MachineStateEnum,
-    unitSystem: UnitSystem = UnitSystem.METRIC,
     onToggleSpindle: () -> Unit,
     onSetSpindleRpm: (Double) -> Unit,
     onSpindleOverride: (Int) -> Unit,
@@ -41,20 +43,21 @@ fun SpindleFeedPanel(
     onCycleStart: () -> Unit,
     onFeedHold: () -> Unit,
     onCycleStop: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    unitSystem: UnitSystem = UnitSystem.METRIC,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = CncCardBg),
         shape = RoundedCornerShape(12.dp),
         border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CncCardBorder)),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
             // Section 1: Cycle Execution Controls (START / PAUSE / STOP)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 // CYCLE START
                 val isRunning = machineState == MachineStateEnum.RUNNING
@@ -104,7 +107,7 @@ fun SpindleFeedPanel(
                 }
             }
 
-            Divider(color = CncCardBorder)
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, color = CncCardBorder)
 
             // Section 2: Spindle Control & RPM
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -114,7 +117,7 @@ fun SpindleFeedPanel(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(imageVector = Icons.Default.RotateRight, contentDescription = "Spindle", tint = CncWarningAmber, modifier = Modifier.size(18.dp))
+                        Icon(imageVector = Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Spindle", tint = CncWarningAmber, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("SPINDLE MOTOR", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = CncTextPrimary)
                     }
@@ -128,6 +131,7 @@ fun SpindleFeedPanel(
                             containerColor = if (spindle.isEnabled) CncActiveGreen else CncSurfaceVariant,
                             contentColor = if (spindle.isEnabled) Color.Black else CncTextSecondary
                         ),
+                        border = if (spindle.isEnabled) BorderStroke(2.dp, CncActiveGreenGlow) else null,
                         modifier = Modifier.height(30.dp)
                     ) {
                         Text(if (spindle.isEnabled) "SPINDLE ON" else "SPINDLE OFF", fontSize = 10.sp, fontWeight = FontWeight.Black)
@@ -140,6 +144,11 @@ fun SpindleFeedPanel(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(6.dp))
                         .background(CncSurface)
+                        .border(
+                            width = if (spindle.isEnabled) 1.dp else 0.dp,
+                            color = if (spindle.isEnabled) CncWarningAmberGlow else Color.Transparent,
+                            shape = RoundedCornerShape(6.dp)
+                        )
                         .padding(horizontal = 10.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -194,7 +203,7 @@ fun SpindleFeedPanel(
                 )
             }
 
-            Divider(color = CncCardBorder)
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, color = CncCardBorder)
 
             // Section 3: Feedrate Override & Coolant
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
