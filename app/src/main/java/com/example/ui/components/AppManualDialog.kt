@@ -378,7 +378,7 @@ private fun getManualSections(): List<DocSectionItem> {
         DocSectionItem(
             id = "safety_interlocks",
             titleRes = R.string.manual_sec1_title,
-            category = "SEGURIDAD",
+            category = "SECURITY",
             iconName = "ic_security",
             summaryRes = R.string.manual_sec1_summary,
             detailedContentRes = R.string.manual_sec1_content,
@@ -422,7 +422,7 @@ private fun getManualSections(): List<DocSectionItem> {
         DocSectionItem(
             id = "tool_table",
             titleRes = R.string.manual_sec5_title,
-            category = "HERRAMIENTAS",
+            category = "TOOLS",
             iconName = "ic_tools",
             summaryRes = R.string.manual_sec5_summary,
             detailedContentRes = R.string.manual_sec5_content,
