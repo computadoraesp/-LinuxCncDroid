@@ -267,7 +267,7 @@
     <string name="calib_uncertainty_label">INSTR.-UNSICHERHEIT ±(mm)</string>
     <string name="calib_presets_label">Presets:</string>
     <string name="calib_section2_header">2. SCHRITT-FÜR-SCHRITT ASSISTENT</string>
-    <string name="calib_point_info">PUNKT %1$d/%2$d : SEKTOR %3$d%% (%4$.1f mm)</string>
+    <string name="calib_point_info">PUNKT %1$d/%2$d: SEKTOR %3$d%% (%4 $.1f mm)</string>
     <string name="calib_drive_axis_btn">AUF %s mm FAHREN</string>
     <string name="calib_step1">• Schritt 1: Achse auf Soll-Position %s mm fahren.</string>
     <string name="calib_step2">• Schritt 2: Physikalischen Ist-Wert am Messgerät ablesen.</string>
@@ -283,6 +283,14 @@
     <string name="calib_export_text">Diese Tabelle bildet die Fehler direkt im HAL ab:</string>
     <string name="calib_copy_clipboard">IN ZWISCHENABLAGE KOPIEREN</string>
     <string name="calib_toast_copied">comp.tbl kopiert</string>
+
+
+
+    <string name="calib_preset_dial">Messuhr (±0.003)</string>
+    <string name="calib_preset_glass">Glasmaßstab (±0.001)</string>
+    <string name="calib_preset_micrometer">Mikrometer (±0.002)</string>
+    <string name="calib_preset_laser">Laser (±0.0005)</string>
+
 
     <!-- Camera View -->
     <string name="camera_header">INDUSTRIELLES VISION-SYSTEM</string>
@@ -390,7 +398,7 @@
         <item>To calibrate its Z length, lower the tip until it touches the table sensor and press \'TOUCH-OFF (G43.1)\'.</item>
     </string-array>
     <string-array name="manual_sec5_safety">
-        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or tool holder.</item>
+        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or toolholder.</item>
     </string-array>
 
     <string name="manual_sec6_title">6. 3D Probe Cycles (WCS Probing)</string>

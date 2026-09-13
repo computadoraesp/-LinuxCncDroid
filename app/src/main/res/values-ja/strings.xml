@@ -284,6 +284,13 @@
     <string name="calib_copy_clipboard">クリップボードへコピー</string>
     <string name="calib_toast_copied">comp.tbl をコピーしました</string>
 
+
+    <string name="calib_preset_dial">ダイヤルインジケーター (±0.003)</string>
+    <string name="calib_preset_glass">ガラススケール (±0.001)</string>
+    <string name="calib_preset_micrometer">マイクロメーター (±0.002)</string>
+    <string name="calib_preset_laser">レーザー (±0.0005)</string>
+
+
     <!-- Camera View -->
     <string name="camera_header">産業用ビジョンシステム</string>
     <string name="camera_permission_required">カメラへのアクセス許可が必要です</string>
@@ -390,7 +397,7 @@
         <item>To calibrate its Z length, lower the tip until it touches the table sensor and press \'TOUCH-OFF (G43.1)\'.</item>
     </string-array>
     <string-array name="manual_sec5_safety">
-        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or tool holder.</item>
+        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or toolholder.</item>
     </string-array>
 
     <string name="manual_sec6_title">6. 3D Probe Cycles (WCS Probing)</string>

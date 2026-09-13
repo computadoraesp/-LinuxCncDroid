@@ -284,6 +284,13 @@
     <string name="calib_copy_clipboard">COPIAR AL PORTAPAPELES</string>
     <string name="calib_toast_copied">comp.tbl copiado al portapapeles</string>
 
+
+    <string name="calib_preset_dial">Indicador de carátula (±0.003)</string>
+    <string name="calib_preset_glass">Escala de vidrio (±0.001)</string>
+    <string name="calib_preset_micrometer">Micrómetro (±0.002)</string>
+    <string name="calib_preset_laser">Láser (±0.0005)</string>
+
+
     <!-- Camera View -->
     <string name="camera_header">VISIÓN ÓPTICA INDUSTRIAL Y CENTRADO (CNC CAM)</string>
     <string name="camera_permission_required">ACCESO A CÁMARA REQUERIDO</string>
@@ -337,7 +344,7 @@
     </string-array>
     <string-array name="manual_sec1_safety">
         <item>Nunca intente mover los ejes manualmente mientras el ciclo esté en ejecución.</item>
-        <item>Verifique que la parada de emergencia física externa esté en serie con el relé de seguridad en el armario eléctrico.</item>
+        <item>Verifique que la parada de emergencia física externa esté en sèrie com el relé de seguretat en el armario eléctrico.</item>
     </string-array>
 
     <string name="manual_sec2_title">2. Calibración Metrológica (ISO 230–2)</string>
@@ -385,7 +392,7 @@
     <string name="manual_sec5_summary">Gestión de fresas T1-T99, compensación de longitud H (G43), calibración rápida y vida útil de la herramienta.</string>
     <string name="manual_sec5_content">El gestor de herramientas se sincroniza directamente con el archivo \'tool.tbl\' de LinuxCNC:\n\n• MONTAR HERRAMIENTA (M6): Carga la herramienta en el husillo y activa la compensación G43 Hx.\n• CALIBRAR Z (G43.1): Permite calibrar la longitud de la herramienta actual tomando la coordenada Z del husillo con un solo toque.\n• MONITORIZACIÓN DE DESGASTE: Alerta cuando el tiempo de corte acumulado supera el 85%% de la vida estimada de la herramienta.</string>
     <string-array name="manual_sec5_sop">
-        <item>Abra la Tabla de Herramientas desde el icono de la llave inglesa en la barra superior.</item>
+        <item>Abra la Tabla de Herramientas des del icono de la llave inglesa en la barra superior.</item>
         <item>Para montar una herramienta, localice la ranura deseada y pulse \'MONTAR (M6)\'.</item>
         <item>Para calibrar su longitud Z, baje la punta hasta que toque el sensor de la mesa y pulse \'CALIBRAR Z (G43.1)\'.</item>
     </string-array>

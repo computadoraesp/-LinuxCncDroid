@@ -137,7 +137,7 @@
     <string name="mpg_step_neg">− PAS</string>
     <string name="jog_z_axis">AXE Z</string>
     <string name="jog_a_axis">AXE A</string>
-    <string name="jog_style_mode_style">MODE: %1$s | STYLE: %2$s</string>
+    <string name="jog_style_mode_style">MODE: %1$s | STYLE : %2$s</string>
 
     <!-- Spindle & Feed Controls -->
     <string name="spindle_actual_rpm">RPM RÉEL</string>
@@ -163,7 +163,7 @@
     <string name="tool_set_current_z">FIXER Z ACTUEL</string>
     <string name="tool_mount">MONTER</string>
     <string name="tool_new">NOUVEL OUTIL</string>
-    <string name="tool_life">Vie de l\'outil: %1$.1f / %2$d min (%3$d%%)</string>
+    <string name="tool_life">Vie de l\'outil : %1$.1f / %2$d min (%3$d%%)</string>
     <string name="tt_header">TABLE DES OUTILS &amp; MAGASIN (tool.tbl)</string>
     <string name="tt_mounted_info">Monté: T%1$d • %2$s (G43 H%1$d)</string>
     <string name="tt_all_filter">TOUS (%d)</string>
@@ -233,7 +233,7 @@
     <string name="logs_filter_errors">ERREURS</string>
     <string name="logs_filter_security">SÉCURITÉ</string>
     <string name="logs_filter_warnings">AVERTISSEMENTS</string>
-    <string name="logs_no_entries">Aucun journal d\'événements enregistré pour le filtre \'%s\'</string>
+    <string name="logs_no_entries">Aucun journal d\'événements enregistrés pour le filtre \'%s\'</string>
 
     <!-- Machine Config & Profiles -->
     <string name="config_title">CONFIGURATION MATÉRIELLE</string>
@@ -255,7 +255,7 @@
     <string name="config_factory_reset_confirm">OUI, TOUT EFFACER</string>
     <string name="config_add_profile_title">Ajouter Profil</string>
     <string name="config_machine_name_label">Nom Machine</string>
-    <string name="config_ip_address_placeholder">Adresse IP (ex: 192.168.1.100)</string>
+    <string name="config_ip_address_placeholder">Adresse IP (ex : 192.168.1.100)</string>
 
     <!-- Calibration Dialog -->
     <string name="calib_header">CALIBRAGE MÉTROLOGIQUE (ISO 230–2)</string>
@@ -269,9 +269,9 @@
     <string name="calib_section2_header">2. ASSISTANT PAS À PAS</string>
     <string name="calib_point_info">POINT %1$d/%2$d : SECTEUR %3$d%% (%4$.1f mm)</string>
     <string name="calib_drive_axis_btn">DÉPLACER AXE À %s mm</string>
-    <string name="calib_step1">• Etape 1: Positionnez l\'axe à %s mm.</string>
-    <string name="calib_step2">• Etape 2: Lisez la valeur sur l\'instrument.</string>
-    <string name="calib_step3">• Etape 3: Entrez la valeur mesurée.</string>
+    <string name="calib_step1">• Etape 1 : Positionnez l\'axe à %s mm.</string>
+    <string name="calib_step2">• Etape 2 : Lisez la valeur sur l\'instrument.</string>
+    <string name="calib_step3">• Etape 3 : Entrez la valeur mesurée.</string>
     <string name="calib_measured_val_label">VALEUR MESURÉE (mm)</string>
     <string name="calib_save_next_btn">ENREGISTRER &amp; SUIVANT</string>
     <string name="calib_section3_header">3. COURBE D\'ERREUR &amp; BANDES D\'INCERTITUDE</string>
@@ -284,7 +284,14 @@
     <string name="calib_copy_clipboard">COPIER DANS PRESSE-PAPIERS</string>
     <string name="calib_toast_copied">comp.tbl copié</string>
 
-    <!-- Camera View -->
+
+    <string name="calib_preset_dial">Comparateur (±0.003)</string>
+    <string name="calib_preset_glass">Règle en verre (±0.001)</string>
+    <string name="calib_preset_micrometer">Micromètre (±0.002)</string>
+    <string name="calib_preset_laser">Laser (±0.0005)</string>
+
+
+    <!-- Caméra View -->
     <string name="camera_header">SYSTÈME DE VISION INDUSTRIELLE</string>
     <string name="camera_permission_required">ACCÈS CAMÉRA REQUIS</string>
     <string name="camera_permission_text">La caméra est utilisée pour l\'alignement optique.</string>
@@ -390,7 +397,7 @@
         <item>To calibrate its Z length, lower the tip until it touches the table sensor and press \'TOUCH-OFF (G43.1)\'.</item>
     </string-array>
     <string-array name="manual_sec5_safety">
-        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or tool holder.</item>
+        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or toolholder.</item>
     </string-array>
 
     <string name="manual_sec6_title">6. 3D Probe Cycles (WCS Probing)</string>

@@ -284,6 +284,12 @@
     <string name="calib_copy_clipboard">复制到剪贴板</string>
     <string name="calib_toast_copied">comp.tbl 已复制</string>
 
+    <string name="calib_preset_dial">指示表 (±0.003)</string>
+    <string name="calib_preset_glass">玻璃尺 (±0.001)</string>
+    <string name="calib_preset_micrometer">千分尺 (±0.002)</string>
+    <string name="calib_preset_laser">激光 (±0.0005)</string>
+
+
     <!-- Camera View -->
     <string name="camera_header">工业视觉系统</string>
     <string name="camera_permission_required">需要相机权限</string>
@@ -390,7 +396,7 @@
         <item>To calibrate its Z length, lower the tip until it touches the table sensor and press \'TOUCH-OFF (G43.1)\'.</item>
     </string-array>
     <string-array name="manual_sec5_safety">
-        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or tool holder.</item>
+        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or toolholder.</item>
     </string-array>
 
     <string name="manual_sec6_title">6. 3D Probe Cycles (WCS Probing)</string>

@@ -284,6 +284,14 @@
     <string name="calib_copy_clipboard">클립보드에 복사</string>
     <string name="calib_toast_copied">comp.tbl이 복사되었습니다</string>
 
+
+
+    <string name="calib_preset_dial">다이얼 인디케이터 (±0.003)</string>
+    <string name="calib_preset_glass">유리 스케일 (±0.001)</string>
+    <string name="calib_preset_micrometer">마이크로미터 (±0.002)</string>
+    <string name="calib_preset_laser">레이저 (±0.0005)</string>
+
+
     <!-- Camera View -->
     <string name="camera_header">산업용 비전 시스템</string>
     <string name="camera_permission_required">카메라 접근 권한이 필요합니다</string>
@@ -390,7 +398,7 @@
         <item>To calibrate its Z length, lower the tip until it touches the table sensor and press \'TOUCH-OFF (G43.1)\'.</item>
     </string-array>
     <string-array name="manual_sec5_safety">
-        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or tool holder.</item>
+        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or toolholder.</item>
     </string-array>
 
     <string name="manual_sec6_title">6. 3D Probe Cycles (WCS Probing)</string>
