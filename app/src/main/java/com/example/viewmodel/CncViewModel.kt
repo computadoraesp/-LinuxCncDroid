@@ -1,6 +1,9 @@
 package com.example.viewmodel
 
 import android.app.Application
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -60,6 +63,19 @@ class CncViewModel(application: Application, private val savedStateHandle: Saved
     val activeTool: StateFlow<CncToolItem> = engine.activeTool
     val cycleElapsedSeconds: StateFlow<Long> = engine.cycleElapsedSeconds
     val cycleEstimatedTotalSeconds: StateFlow<Long> = engine.cycleEstimatedTotalSeconds
+
+    // --- Battery Monitoring (no permission required — sticky broadcast) ---
+    private val _batteryLevelPct = MutableStateFlow(100)
+    val batteryLevelPct: StateFlow<Int> = _batteryLevelPct.asStateFlow()
+
+    private val _isCharging = MutableStateFlow(false)
+    val isCharging: StateFlow<Boolean> = _isCharging.asStateFlow()
+
+    /** Whether the screen keep-alive flag should be active.
+     *  True only when the machine is actively running or homing. */
+    val keepScreenOn: StateFlow<Boolean> = engine.machineState
+        .map { it == MachineStateEnum.RUNNING || it == MachineStateEnum.HOMING }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     // Jog style: BUTTON_PAD vs VIRTUAL_MPG
     private val _jogStyle = MutableStateFlow(JogControlStyle.BUTTON_PAD)
@@ -121,6 +137,38 @@ class CncViewModel(application: Application, private val savedStateHandle: Saved
         seedInitialData()
         observeEngineStates()
         observeConnectivity()
+        readBatteryStatus()
+    }
+
+    /** Reads the sticky battery broadcast once at startup to populate initial state. */
+    private fun readBatteryStatus() {
+        val ctx = getApplication<Application>()
+        val intent: Intent? = ctx.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        intent?.let { updateBatteryState(it) }
+    }
+
+    /** Called from MainActivity whenever the system sends a battery-changed broadcast. */
+    fun onBatteryChanged(intent: Intent) {
+        updateBatteryState(intent)
+    }
+
+    private fun updateBatteryState(intent: Intent) {
+        val level  = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+        val scale  = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100)
+        val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+
+        val pct = if (scale > 0) (level * 100 / scale) else 0
+        val wasAbove20 = _batteryLevelPct.value > 20
+        _batteryLevelPct.value = pct
+
+        _isCharging.value = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                status == BatteryManager.BATTERY_STATUS_FULL
+
+        // Fire alert only when crossing the 20 % threshold downward, not on every update
+        if (wasAbove20 && pct <= 20 && !_isCharging.value) {
+            engine.logEvent(LogSeverity.WARNING, "BATTERY", "Low battery: $pct%%. Connect charger.")
+            feedbackManager.playLowBatteryAlert()
+        }
     }
 
     private fun observeConnectivity() {
@@ -142,6 +190,7 @@ class CncViewModel(application: Application, private val savedStateHandle: Saved
                         if ((engine.activeGCodeLine.value > 0) && engine.loadedGCode.value.isNotEmpty()) {
                             if (engine.activeGCodeLine.value >= (engine.loadedGCode.value.size - 1)) {
                                 feedbackManager.playCycleCompleteSound()
+                                feedbackManager.playCycleCompleteHaptic()
                             }
                         }
                     }
