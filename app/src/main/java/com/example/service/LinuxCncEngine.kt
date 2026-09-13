@@ -220,6 +220,10 @@ class LinuxCncEngine {
     private var webSocket: WebSocket? = null
     private var isConnectedToRealServer = false
 
+    private var reconnectJob: Job? = null
+    private var currentBackoffMs = 1000L
+    private val maxBackoffMs = 30000L
+
     init {
         loadSampleGCode()
         startKinematicsLoop()
@@ -601,7 +605,7 @@ class LinuxCncEngine {
             logEvent(LogSeverity.INFO, "CYCLE", "Cycle Started: Executing program '${_loadedFileName.value}'")
             sendRemoteCommand("CYCLE_START", emptyMap())
         } else {
-            logEvent(LogSeverity.WARNING, "CYCLE", "Cannot start cycle: Machine is ${_machineState.value.displayName}")
+            logEvent(LogSeverity.WARNING, "CYCLE", "Cannot start cycle: Machine is ${_machineState.value.name}")
         }
     }
 
@@ -721,12 +725,24 @@ class LinuxCncEngine {
 
     // Network / Live Server Connection
     fun connectToHost(hostIp: String, port: Int = 8000) {
+        reconnectJob?.cancel()
+        currentBackoffMs = 1000L
+        _capabilities.value = _capabilities.value.copy(hostIp = hostIp, port = port)
+        internalConnect()
+    }
+
+    private fun internalConnect() {
+        val hostIp = _capabilities.value.hostIp
+        val port = _capabilities.value.port
+        if (hostIp.isEmpty()) return
+
         scope.launch {
-            _capabilities.value = _capabilities.value.copy(hostIp = hostIp, port = port)
             try {
-                okHttpClient = OkHttpClient.Builder()
-                    .readTimeout(0, TimeUnit.MILLISECONDS)
-                    .build()
+                if (okHttpClient == null) {
+                    okHttpClient = OkHttpClient.Builder()
+                        .readTimeout(0, TimeUnit.MILLISECONDS)
+                        .build()
+                }
 
                 val request = Request.Builder()
                     .url("ws://$hostIp:$port/ws/telemetry")
@@ -739,6 +755,8 @@ class LinuxCncEngine {
                         isConnectedToRealServer = true
                         _isSimulatedMode.value = false
                         _capabilities.value = _capabilities.value.copy(isConnected = true, pingMs = 5)
+                        currentBackoffMs = 1000L // Reset backoff on success
+                        logEvent(LogSeverity.INFO, "NETWORK", "Connected to LinuxCNC Host")
                     }
 
                     override fun onMessage(webSocket: WebSocket, text: String) {
@@ -746,21 +764,30 @@ class LinuxCncEngine {
                     }
 
                     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                        isConnectedToRealServer = false
-                        _isSimulatedMode.value = true
-                        _capabilities.value = _capabilities.value.copy(isConnected = false)
+                        handleDisconnect("WebSocket Failure: ${t.message}")
                     }
 
                     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                        isConnectedToRealServer = false
-                        _isSimulatedMode.value = true
+                        handleDisconnect("WebSocket Closed")
                     }
-                },
-            )
+                })
             } catch (e: Exception) {
-                logEvent(LogSeverity.ERROR, "NETWORK", "Connection failed: ${e.message}")
-                _isSimulatedMode.value = true
+                handleDisconnect("Connection failed: ${e.message}")
             }
+        }
+    }
+
+    private fun handleDisconnect(reason: String) {
+        isConnectedToRealServer = false
+        _isSimulatedMode.value = true
+        _capabilities.value = _capabilities.value.copy(isConnected = false)
+        logEvent(LogSeverity.WARNING, "NETWORK", "$reason. Reconnecting in ${currentBackoffMs / 1000}s...")
+        
+        reconnectJob?.cancel()
+        reconnectJob = scope.launch {
+            delay(currentBackoffMs.milliseconds)
+            currentBackoffMs = (currentBackoffMs * 2).coerceAtMost(maxBackoffMs)
+            internalConnect()
         }
     }
 
