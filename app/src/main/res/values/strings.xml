@@ -1,115 +1,425 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">LinuxCncDroid</string>
-    <string name="app_description">Universal Industrial HMI interface for LinuxCNC</string>
 
     <!-- Navigation Tabs -->
     <string name="tab_control">CONTROL</string>
     <string name="tab_toolpath">TOOLPATH</string>
+    <string name="tab_camera">CAMERA</string>
     <string name="tab_probing">PROBING</string>
     <string name="tab_ethercat">ETHERCAT</string>
     <string name="tab_mdi">MDI</string>
     <string name="tab_logs">LOGS</string>
     <string name="tab_config">CONFIG</string>
 
+    <!-- Common -->
+    <string name="common_cancel" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="common_close">CLOSE</string>
+    <string name="common_save">SAVE</string>
+    <string name="common_init">INIT</string>
+    <string name="common_execute">EXECUTE</string>
+    <string name="common_zero">ZERO</string>
+
+    <string name="state_estop_disp">ESTOP ACTIVE</string>
+    <string name="state_off_disp">MACHINE OFF</string>
+    <string name="state_on_disp">MACHINE READY</string>
+    <string name="state_idle_disp">IDLE</string>
+    <string name="state_running_disp">CYCLE RUNNING</string>
+    <string name="state_paused_disp">FEED HOLD / PAUSED</string>
+    <string name="state_homing_disp">HOMING AXES</string>
+    <string name="state_error_disp">SYSTEM ERROR</string>
+
+    <string name="mode_manual_disp">MANUAL</string>
+    <string name="mode_mdi_disp">MDI CONSOLE</string>
+    <string name="mode_auto_disp">AUTO PROGRAM</string>
+
+    <string name="arch_ethercat_name">EtherCAT + Delta B3/A3 Servos</string>
+    <string name="arch_ethercat_desc">High-speed 100Mbps bus, real-time torque/temperature telemetry, CiA 402 drives</string>
+    <string name="arch_mesa_name">Mesa 7i96S / 7i76E FPGA</string>
+    <string name="arch_mesa_desc">Hardware Step/Dir generation, high-speed differential encoders, isolated I/O</string>
+    <string name="arch_parport_name">Parallel Port (Legacy Step/Dir)</string>
+    <string name="arch_parport_desc">Software step generation, standard LinuxCNC HAL motion kernel</string>
+    <string name="arch_closed_loop_name">Closed-Loop Stepper Hybrid</string>
+    <string name="arch_closed_loop_desc">Encoder step loss detection, fast positioning with step/dir abstraction</string>
+
+    <string name="role_operator_disp">Operator (Control &amp; Jog)</string>
+    <string name="role_viewer_disp">Viewer (Read-Only DRO)</string>
+    <string name="role_admin_disp">Administrator (Full Tuning &amp; MDI)</string>
+
+    <string name="tool_type_endmill_disp">Flat Endmill</string>
+    <string name="tool_type_ballnose_disp">Ball Nose</string>
+    <string name="tool_type_facemill_disp">Face Mill</string>
+    <string name="tool_type_drill_disp">Twist Drill</string>
+    <string name="tool_type_chamfer_disp">Chamfer Mill</string>
+    <string name="tool_type_tap_disp">Thread Tap</string>
+    <string name="tool_type_probe_disp">3D Touch Probe</string>
+    <string name="tool_type_flycutter_disp">Fly Cutter</string>
+
+    <string name="jog_style_pad_disp">KEYPAD</string>
+    <string name="jog_style_mpg_disp">MPG WHEEL</string>
+
+    <string name="log_info_disp">INFO</string>
+    <string name="log_warn_disp">WARN</string>
+    <string name="log_error_disp">ERROR</string>
+    <string name="log_crit_disp">CRITICAL</string>
+    <string name="log_security_disp">SECURITY</string>
+
+    <string name="threat_clean_disp">SECURE / VERIFIED</string>
+    <string name="threat_suspicious_disp">SECURITY WARNING</string>
+    <string name="threat_blocked_disp">THREAT BLOCKED</string>
+
+    <string name="mat_al6061_name">Aluminium 6061-T6</string>
+    <string name="mat_al6061_cat">Non-Ferrous</string>
+    <string name="mat_steel1018_name">Mild Steel (AISI 1018)</string>
+    <string name="mat_steel1018_cat">Ferrous</string>
+    <string name="mat_ss304_name">Stainless Steel 304</string>
+    <string name="mat_ss304_cat">Exotic / Tough</string>
+    <string name="mat_wood_name">Hardwood / Birch Plywood</string>
+    <string name="mat_wood_cat">Wood &amp; Composites</string>
+    <string name="mat_pom_name">POM / Delrin / Acetal</string>
+    <string name="mat_pom_cat">Plastics</string>
+
+    <string name="macro_zero_all_label">Zero All (G54)</string>
+    <string name="macro_zero_all_desc">Set current location as G54 Work Zero</string>
+    <string name="macro_park_label">Park Position</string>
+    <string name="macro_park_desc">Retract Z and move table forward</string>
+    <string name="macro_warmup_label">Spindle Warmup</string>
+    <string name="macro_warmup_desc">3-Stage spindle bearing warmup cycle</string>
+    <string name="macro_laser_label">Laser Crosshair</string>
+    <string name="macro_laser_desc">Toggle optical alignment laser crosshair</string>
+    <string name="macro_probe_z_label">Tool Length Touch</string>
+    <string name="macro_probe_z_desc">Execute toolsetter probe touch routine</string>
+
+    <string name="profile_workshop_vmc">Workshop VMC-850 (EtherCAT + Delta)</string>
+    <string name="profile_prototype_router">Prototype Router (Mesa 7i96S FPGA)</string>
+    <string name="profile_mini_mill">Mini Mill (Parallel Port Legacy)</string>
+
+    <string name="reticle_crosshair">CROSSHAIR (0.01mm)</string>
+    <string name="reticle_concentric">CONCENTRIC CIRCLES</string>
+    <string name="reticle_grid">METROLOGICAL GRID</string>
+    <string name="reticle_corner">CORNER FINDER (EDGE)</string>
+    <string name="reticle_none">NO RETICLE</string>
+
     <!-- Header & Top Bar -->
-    <string name="state_estop">EMERGENCY STOP (ESTOP)</string>
-    <string name="state_on">MACHINE ON / READY</string>
-    <string name="state_off">MACHINE POWER OFF</string>
-    <string name="state_running">CYCLE RUNNING</string>
-    <string name="state_paused">FEED HOLD / PAUSED</string>
-    <string name="state_error">FAULT / ALARM</string>
-    <string name="role_operator">OPERATOR</string>
-    <string name="role_technician">TECHNICIAN</string>
-    <string name="role_admin">ADMIN</string>
-    <string name="simulated_badge">SIMULATION</string>
-    <string name="hardware_badge">HARDWARE</string>
+    <string name="topbar_estop">E-STOP</string>
+    <string name="topbar_power_on">POWER ON</string>
+    <string name="topbar_power_off">POWER OFF</string>
+    <string name="topbar_wcs_label">%s Work Coordinate</string>
+    <string name="topbar_cyber_scanner_desc">Cybersecurity Scanner</string>
+    <string name="topbar_speeds_feeds_desc">Speeds and Feeds</string>
+    <string name="topbar_tool_table_desc">Tool Table Manager</string>
+    <string name="topbar_axis_metrology_desc">Axis Metrology Calibration</string>
+    <string name="topbar_manual_desc">CNC Manual &amp; SOPs</string>
+    <string name="topbar_event_logs_desc">Event Logs</string>
+    <string name="topbar_sim_mode">SIM: %s</string>
+    <string name="topbar_real_mode">REAL: %s</string>
 
     <!-- DRO Panel -->
     <string name="dro_title">DIGITAL READOUT (DRO)</string>
-    <string name="dro_zero_all">ZERO ALL (G92)</string>
-    <string name="dro_home_all">HOME ALL (G28)</string>
-    <string name="dro_work_pos">WORK (G54-G59)</string>
-    <string name="dro_mach_pos">MACHINE ABS (G53)</string>
-    <string name="dro_dtg">DISTANCE TO GO</string>
-    <string name="dro_servo_torque">SERVO LOAD / TORQUE</string>
+    <string name="dro_zero_all">ZERO ALL AXES</string>
+    <string name="dro_home_all">HOME ALL AXES</string>
+    <string name="dro_work_pos">WORK (%s)</string>
+    <string name="dro_mach_pos">MACHINE (G53)</string>
+    <string name="dro_dtg">DTG</string>
+    <string name="dro_torque">TORQUE: %s%%</string>
+    <string name="dro_drive_temp">DRV: %s°C</string>
 
     <!-- Jog & MPG Controls -->
     <string name="jog_title">MANUAL JOG CONTROL</string>
     <string name="jog_mode_pad">BUTTON PAD</string>
     <string name="jog_mode_mpg">VIRTUAL MPG WHEEL</string>
-    <string name="jog_cont">CONTINUOUS</string>
-    <string name="jog_step">INCREMENTAL</string>
-    <string name="jog_feedrate">Jog Feedrate</string>
-    <string name="mpg_header">VIRTUAL MPG HANDWHEEL (VOLANTE)</string>
+    <string name="jog_cont">CONT</string>
+    <string name="jog_step">STEP</string>
+    <string name="jog_feedrate">Jog Feedrate:</string>
+    <string name="mpg_header">VIRTUAL MPG HANDWHEEL</string>
     <string name="mpg_detents">100 DETENTS / 360°</string>
     <string name="mpg_axis_select">SELECT AXIS</string>
-    <string name="mpg_multiplier">MULTIPLIER</string>
     <string name="mpg_step_pos">+ STEP</string>
     <string name="mpg_step_neg">− STEP</string>
+    <string name="jog_z_axis">Z-AXIS</string>
+    <string name="jog_a_axis">A-AXIS</string>
+    <string name="jog_style_mode_style">MODE: %1$s | STYLE: %2$s</string>
 
     <!-- Spindle & Feed Controls -->
-    <string name="spindle_title">SPINDLE &amp; FEEDRATE CONTROL</string>
-    <string name="spindle_rpm">RPM</string>
-    <string name="spindle_load">LOAD</string>
-    <string name="spindle_temp">TEMP</string>
-    <string name="spindle_override">SPINDLE OVERRIDE</string>
+    <string name="spindle_actual_rpm">ACTUAL RPM</string>
     <string name="feed_override">FEEDRATE OVERRIDE</string>
-    <string name="rapid_override">RAPID OVERRIDE</string>
-    <string name="btn_cycle_start">CYCLE START (G-CODE)</string>
-    <string name="btn_feed_hold">FEED HOLD / PAUSE</string>
-    <string name="btn_cycle_stop">ABORT / STOP</string>
-    <string name="coolant_mist">MIST (M7)</string>
-    <string name="coolant_flood">FLOOD (M8)</string>
+    <string name="btn_cycle_start">CYCLE START</string>
+    <string name="btn_feed_hold">FEEDHOLD</string>
+    <string name="btn_cycle_stop">ABORT</string>
+    <string name="coolant_mist">MIST ON (M7)</string>
+    <string name="coolant_mist_off">MIST OFF</string>
+    <string name="coolant_flood">FLOOD ON (M8)</string>
+    <string name="coolant_flood_off">FLOOD OFF</string>
+    <string name="spindle_motor_header">SPINDLE MOTOR</string>
+    <string name="spindle_on">SPINDLE ON</string>
+    <string name="spindle_off">SPINDLE OFF</string>
+    <string name="spindle_set_rpm">SET: %d RPM</string>
+    <string name="spindle_override_label">OVERRIDE: %d%%</string>
+    <string name="spindle_feed_info">%1$d%% (%2$s)</string>
 
     <!-- Tool Table & ATC -->
-    <string name="tool_table_title">TOOL TABLE &amp; POCKET MANAGER (tool.tbl)</string>
-    <string name="tool_active_mounted">Mounted Tool</string>
     <string name="tool_diameter">DIAMETER (D)</string>
     <string name="tool_length_offset">LENGTH OFFSET (H)</string>
     <string name="tool_touch_off">TOUCH-OFF (G43.1)</string>
     <string name="tool_set_current_z">SET CURRENT Z</string>
     <string name="tool_mount">MOUNT</string>
     <string name="tool_new">NEW TOOL</string>
-    <string name="tool_life">Tool Life</string>
+    <string name="tool_life">Tool Life: %1$.1f / %2$d min (%3$d%%)</string>
+    <string name="tt_header">TOOL TABLE &amp; POCKET MANAGER (tool.tbl)</string>
+    <string name="tt_mounted_info">Mounted: T%1$d • %2$s (G43 H%1$d)</string>
+    <string name="tt_all_filter">ALL (%d)</string>
+    <string name="tt_spindle_active">SPINDLE ACTIVE (M6)</string>
+    <string name="tt_edit_title">EDIT TOOL T%d</string>
+    <string name="tt_new_title">ADD NEW TOOL (tool.tbl)</string>
+    <string name="tt_tool_num_label">Tool (T#)</string>
+    <string name="tt_pocket_num_label">Pocket (P#)</string>
+    <string name="tt_description_label">Description</string>
+    <string name="tt_diameter_label">Diameter (mm)</string>
+    <string name="tt_length_h_label">Length Offset H</string>
+    <string name="tt_flutes_label">Flutes</string>
+    <string name="tt_max_rpm_label">Max RPM</string>
+    <string name="tt_save_btn">SAVE TOOL</string>
 
     <!-- Toolpath 3D View -->
-    <string name="toolpath_title">3D REAL-TIME TOOLPATH &amp; TOOLHEAD</string>
     <string name="view_top">TOP</string>
     <string name="view_iso">ISO 3D</string>
     <string name="view_front">FRONT</string>
     <string name="toolpath_load_scan">LOAD / SCAN</string>
-    <string name="toolpath_run_time">RUN</string>
-    <string name="toolpath_rem_time">REM</string>
-    <string name="toolpath_block">BLOCK</string>
+    <string name="toolpath_run_time">RUN:</string>
+    <string name="toolpath_rem_time">REM: %s</string>
+    <string name="tp_header">3D REAL-TIME TOOLPATH &amp; TOOLHEAD</string>
+    <string name="tp_dim_info">DIM: X%1$d Y%2$d Z%3$d</string>
+    <string name="tp_block_info">BLOCK %1$d/%2$d (%3$d%%)</string>
+    <string name="tp_vc_info">Vc: %d m/min</string>
 
     <!-- Probing & Calibration -->
-    <string name="probing_title">3D TOUCH PROBE &amp; WORK OFFSET WCS</string>
-    <string name="probe_status_clear">CLEAR / ARMED</string>
-    <string name="probe_status_tripped">TRIPPED / CONTACT</string>
-    <string name="probe_bore">BORE / POCKET CENTER (X/Y)</string>
-    <string name="probe_boss">BOSS / CYLINDER CENTER (X/Y)</string>
-    <string name="probe_corner_xy">CORNER FINDER (XY DATUM)</string>
-    <string name="probe_surface_z">SURFACE HEIGHT (Z TOUCH-OFF)</string>
+    <string name="probing_title">3D PROBE &amp; METROLOGY (LEVEL 2)</string>
+    <string name="probe_status_clear">PROBE READY</string>
+    <string name="probe_status_tripped">PROBE TRIPPED</string>
+    <string name="probe_bore">Internal Bore Center</string>
+    <string name="probe_boss">External Boss Center</string>
+    <string name="probe_corner_xy">Outside Corner Finder</string>
+    <string name="probe_surface_z">Toolsetter Z-Touch</string>
+    <string name="probe_last_contact_x">LAST CONTACT X</string>
+    <string name="probe_last_contact_y">LAST CONTACT Y</string>
+    <string name="probe_last_contact_z">LAST CONTACT Z</string>
+    <string name="probe_routines_header">AUTOMATED PROBING CYCLES</string>
+    <string name="probe_executing">PROBING…</string>
 
     <!-- EtherCAT & Telemetry -->
-    <string name="ethercat_title">ETHERCAT INDUSTRIAL BUS TELEMETRY</string>
-    <string name="ethercat_master_state">Master State: OP (Operational)</string>
-    <string name="ethercat_cycle_jitter">Real-Time Jitter</string>
-    <string name="ethercat_lost_frames">Lost Frames</string>
+    <string name="ethercat_title">ETHERCAT BUS &amp; SERVO TELEMETRY (LEVEL 3)</string>
+    <string name="ethercat_cycle_jitter">DC SYNC JITTER</string>
+    <string name="ethercat_lost_frames">PACKET LOSS</string>
+    <string name="ethercat_deterministic">100 Mbps DETERMINISTIC</string>
+    <string name="ethercat_bus_cycle">BUS CYCLE</string>
+    <string name="ethercat_slave_nodes">SLAVE NODES</string>
+    <string name="ethercat_smart_drives">DELTA ASDA-B3 CiA 402 SMART DRIVES</string>
+    <string name="ethercat_torque_load">TORQUE LOAD: %s %%</string>
+    <string name="ethercat_drive_temp">DRIVE TEMP: %s °C</string>
+    <string name="ethercat_diagnostic_status">DIAGNOSTIC STATUS:</string>
 
     <!-- MDI & Macros -->
-    <string name="mdi_title">MANUAL DATA INPUT (MDI)</string>
-    <string name="mdi_execute">EXECUTE (ENTER)</string>
-    <string name="mdi_quick_macros">QUICK INDUSTRIAL MACROS</string>
+    <string name="mdi_title">MANUAL DATA INPUT (MDI) TERMINAL</string>
+    <string name="mdi_execute">RUN</string>
+    <string name="mdi_placeholder">Enter G-Code (e.g., G0 X50 Y20 Z5, M3 S12000)</string>
+    <string name="mdi_macros_header">PROGRAMMABLE MACROS</string>
+    <string name="mdi_history_header">RECENT COMMAND HISTORY</string>
 
     <!-- Alarms & Event Logs -->
-    <string name="logs_title">INDUSTRIAL DIAGNOSTICS &amp; ALARMS</string>
+    <string name="logs_title">ALARM EVENT LOG</string>
     <string name="logs_clear">CLEAR LOGS</string>
-    <string name="logs_simulate_alarm">SIMULATE FAULT</string>
+    <string name="logs_simulate_alarm">SIMULATE ALARM</string>
+
+    <string name="logs_filter_all">ALL</string>
+    <string name="logs_filter_errors">ERRORS</string>
+    <string name="logs_filter_security">SECURITY</string>
+    <string name="logs_filter_warnings">WARNINGS</string>
+    <string name="logs_no_entries">No event logs recorded for filter \'%s\'</string>
 
     <!-- Machine Config & Profiles -->
-    <string name="config_title">MACHINE CONFIGURATION &amp; IP PROFILES</string>
-    <string name="config_architecture">CONTROLLER ARCHITECTURE</string>
-    <string name="config_connect">CONNECT TO LINUXCNC HOST</string>
-    <string name="config_save_profile">SAVE PROFILE</string>
+    <string name="config_title">HARDWARE ABSTRACTION &amp; PROFILES</string>
+    <string name="config_architecture">TARGET HARDWARE ARCHITECTURE (CAPABILITIES DISCOVERY)</string>
+    <string name="config_connect">CONNECT</string>
+    <string name="config_save_profile">NEW PROFILE</string>
+    <string name="config_metrology_calib_btn">METROLOGICAL CALIBRATION (ISO 230–2)</string>
+    <string name="config_manual_btn">TECHNICAL MANUAL &amp; SOPS</string>
+    <string name="config_app_name">LinuxCNC Droid HMI</string>
+    <string name="config_app_subtitle">Universal Industrial Controller • Level 1–3</string>
+    <string name="config_app_tech_stack">LinuxCNC NML / HAL • EtherCAT • Delta ASDA-B3</string>
+    <string name="config_middleware_header">LINUXCNC MIDDLEWARE SERVER (WEBSOCKET / REST)</string>
+    <string name="config_host_ip_label">Host IP / Hostname</string>
+    <string name="config_port_label">Port</string>
+    <string name="config_saved_profiles_header">SAVED MACHINE PROFILES</string>
+    <string name="config_wipe_data_btn">WIPE ALL APP DATA (FACTORY RESET)</string>
+    <string name="config_factory_reset_title">Factory Reset Data?</string>
+    <string name="config_factory_reset_text">This will permanently delete all saved machine profiles and custom MDI macros. This action cannot be undone.</string>
+    <string name="config_factory_reset_confirm">YES, WIPE EVERYTHING</string>
+    <string name="config_add_profile_title">Add Machine Profile</string>
+    <string name="config_machine_name_label">Machine Name</string>
+    <string name="config_ip_address_placeholder">IP Address (e.g. 192.168.1.100 or 10.42.0.1)</string>
+
+    <!-- Calibration Dialog -->
+    <string name="calib_header">METROLOGICAL AXIS CALIBRATION (ISO 230–2)</string>
+    <string name="calib_subtitle">Screw Pitch Error Mapping &amp; Expanded Uncertainty Evaluation</string>
+    <string name="calib_section1_header">1. CALIBRATION PARAMETERS &amp; INSTRUMENT UNCERTAINTY</string>
+    <string name="calib_init_btn">INIT SESSION</string>
+    <string name="calib_axis_label">AXIS</string>
+    <string name="calib_travel_label">TOTAL TRAVEL (mm)</string>
+    <string name="calib_uncertainty_label">INST. UNCERTAINTY ±(mm)</string>
+    <string name="calib_presets_label">Presets:</string>
+    <string name="calib_section2_header">2. STEP-BY-STEP CALIBRATION WIZARD (EVERY 10% TRAVEL)</string>
+    <string name="calib_point_info">POINT %1$d/%2$d : SECTOR %3$d%% (%4$.1f mm)</string>
+    <string name="calib_drive_axis_btn">DRIVE AXIS TO %smm</string>
+    <string name="calib_step1">• Step 1: Position the axis at the nominal coordinate %s mm.</string>
+    <string name="calib_step2">• Step 2: Perform the physical reading on the master instrument (dial/micrometer).</string>
+    <string name="calib_step3">• Step 3: Enter the observed actual measured value.</string>
+    <string name="calib_measured_val_label">ACTUAL MEASURED VALUE (mm)</string>
+    <string name="calib_save_next_btn">SAVE &amp; NEXT</string>
+    <string name="calib_section3_header">3. METROLOGY ERROR CURVE &amp; UNCERTAINTY BANDS</string>
+    <string name="calib_export_btn">EXPORT comp.tbl</string>
+    <string name="calib_max_error">MAX ERROR (E_max)</string>
+    <string name="calib_uncertainty_band">EXPANDED UNCERTAINTY U (k=2)</string>
+    <string name="calib_mean_bias">MEAN SECTOR BIAS</string>
+    <string name="calib_export_title">LinuxCNC Screw Comp Table (comp.tbl)</string>
+    <string name="calib_export_text">This compensation table maps the errors for every 10%% of the axis directly into the LinuxCNC HAL (linear_comp module) for real-time compensation:</string>
+    <string name="calib_copy_clipboard">COPY TO CLIPBOARD</string>
+    <string name="calib_toast_copied">comp.tbl copied to clipboard</string>
+
+    <string name="calib_preset_dial">Dial Ind (±0.003)</string>
+    <string name="calib_preset_glass">Glass Scale (±0.001)</string>
+    <string name="calib_preset_micrometer">Micrometer (±0.002)</string>
+    <string name="calib_preset_laser">Laser (±0.0005)</string>
+
+    <!-- Camera View -->
+    <string name="camera_header">INDUSTRIAL OPTICAL VISION SYSTEM &amp; CENTERING (CNC CAM)</string>
+    <string name="camera_permission_required">INDUSTRIAL CAMERA ACCESS REQUIRED</string>
+    <string name="camera_permission_text">The camera is used for optical edge inspection, workpiece zero centering (Optical WCS Alignment), slot verification, and visual axis calibration.</string>
+    <string name="camera_grant_permission_btn">GRANT CAMERA PERMISSION</string>
+    <string name="camera_telemetry_header">OPTICAL ALIGNMENT TELEMETRY</string>
+    <string name="camera_telemetry_info">WCS: %1$s | ZOOM: %2$.1fx | SCALE: %3$dmm</string>
+    <string name="camera_recentre_btn">RE-CENTER RETICLE</string>
+    <string name="camera_micro_alignment_label">OPTICAL MICRO-ALIGNMENT:</string>
+    <string name="camera_zero_x">ZERO X</string>
+    <string name="camera_zero_y">ZERO Y</string>
+
+    <!-- Speeds & Feeds Calculator -->
+    <string name="calc_header">SPEEDS &amp; FEEDS CALCULATOR</string>
+    <string name="calc_material_header">TARGET WORKPIECE MATERIAL</string>
+    <string name="calc_diameter_label">DIAMETER (mm)</string>
+    <string name="calc_flutes_label">FLUTES (Z)</string>
+    <string name="calc_spindle_speed">SPINDLE SPEED</string>
+    <string name="calc_feedrate">FEEDRATE (F)</string>
+    <string name="calc_depth_ap">Depth (Ap): %s mm</string>
+    <string name="calc_stepover_ae">Stepover (Ae): %s mm</string>
+    <string name="calc_power">Power: %s kW</string>
+    <string name="calc_apply_btn">APPLY TO CNC</string>
+
+    <!-- G-Code Security Loader -->
+    <string name="sl_header">G-CODE CYBERSECURITY &amp; FILE LOADER</string>
+    <string name="sl_presets_header">SAMPLE &amp; BENCHMARK G-CODE SCRIPTS</string>
+    <string name="sl_analysis_header">DETECTED SECURITY FINDINGS</string>
+    <string name="sl_threats_info">%1$d Threats • %2$s • %3$d lines</string>
+    <string name="sl_load_btn">LOAD INTO CNC</string>
+    <string name="sl_pass">PASSED</string>
+    <string name="sl_block">BLOCKED</string>
+
+    <!-- Attribution -->
+    <string name="cnc_attribution_label">LinuxCNC Droid HMI Service</string>
+
+    <!-- Manual Content -->
+    <string name="manual_title">CNC OPERATION &amp; TECHNICAL REFERENCE MANUAL</string>
+    <string name="manual_subtitle">Complete Guide to Safety, DRO, MPG, Probing, EtherCAT, and Metrological Calibration</string>
+    <string name="manual_search_placeholder">Search manual (e.g., calibration, alarm, MPG, WCS, E-STOP)…</string>
+    <string name="manual_sop_title">STANDARD OPERATING PROCEDURE (SOP)</string>
+    <string name="manual_safety_title">SAFETY STANDARDS &amp; INTERLOCKS</string>
+
+    <string name="manual_sec1_title">1. Safety and Interlocks</string>
+    <string name="manual_sec1_summary">Machine states, permitted controls during machining, and alarm recovery.</string>
+    <string name="manual_sec1_content">The LinuxCNC Droid HMI architecture implements industrial interlocks according to ISO 23125:\n\n• RUNNING STATE (Cycle in progress):\n  – Active: Emergency Stop (E–STOP), Feed Hold (Immediate pause), Abort/Stop, Feed Overrides (0–150%%) and Spindle (50–120%%), Coolant.\n  - Blocked: Manual Jog (buttons and MPG dial), Zeroing (G92), Homing (G28), MDI, and configuration changes.\n\n• ALARM MANAGEMENT &amp; RECOVERY:\n  - When a fault is triggered (servo overload, limit switch, thermal limit), the path planner stops in &lt;1ms and preserves the active G-Code line.\n  - To resume:\n    1. Physically clear the cause.\n    2. In the LOGS tab, press \'CLEAR LOGS / RESET\'.\n    3. Press \'POWER ON\'.\n    4. Press \'CYCLE START\' to continue from the line where the fault occurred.</string>
+    <string-array name="manual_sec1_sop">
+        <item>In case of imminent collision, press the red E-STOP button in the top bar.</item>
+        <item>To correct vibration (chatter), adjust the Spindle Override slider up or Feed Override down without stopping the program.</item>
+        <item>After an alarm stop, check the error code in the LOGS tab before re-energizing.</item>
+    </string-array>
+    <string-array name="manual_sec1_safety">
+        <item>Never attempt to move axes manually while the cycle is running.</item>
+        <item>Verify that the external physical emergency stop is in series with the safety relay in the electrical cabinet.</item>
+    </string-array>
+
+    <string name="manual_sec2_title">2. Metrological Calibration (ISO 230–2)</string>
+    <string name="manual_sec2_summary">Calibration standard every 10% of the axis, uncertainty calculation, and leadscrew compensation (comp.tbl).</string>
+    <string name="manual_sec2_content">The metrological assistant allows evaluating and correcting ballscrew pitch error (Pitch Error Mapping) according to ISO 230–2:\n\n• 10%%%% SECTOR METHOD:\n  The total axis travel is divided into 10 intervals (0%%, 10%%, 20%%, …, 100%%).\n  At each point, the operator takes a reading with their master instrument (micrometer, dial indicator, optical scale).\n\n• COMBINED UNCERTAINTY CALCULATION (ISO/IEC 17025):\n  Integrates the operator\'s instrument uncertainty (U_inst) with the axis repeatability.\n  Calculates the Expanded Uncertainty U with a coverage factor k=2 (95%% confidence level).\n\n• DIRECT APPLICATION IN LINUXCNC (comp.tbl):\n  Upon completion, the system generates the \'comp.tbl\' file for the \'linear_comp\' HAL module. LinuxCNC will actively compensate for deviations in real-time during cutting.</string>
+    <string-array name="manual_sec2_sop">
+        <item>Open the Metrological Calibration dialog from the top bar (ruler/compass icon).</item>
+        <item>Select the axis (X, Y, or Z), travel length, and declare your instrument\'s uncertainty (e.g., ±0.003 mm).</item>
+        <item>Press \'INIT SESSION\' to generate the 11 test points.</item>
+        <item>For each point, press \'DRIVE AXIS\' to position the head at the nominal coordinate.</item>
+        <item>Read the master instrument, enter the measured value, and press \'SAVE &amp; NEXT\'.</item>
+        <item>At 100% completion, review the error curve and press \'EXPORT comp.tbl\' to copy the compensation table to your LinuxCNC configuration.</item>
+    </string-array>
+    <string-array name="manual_sec2_safety">
+        <item>Ensure the spindle is at normal operating temperature (15 minutes of prior rotation) to avoid thermal drift during measurement.</item>
+        <item>Fix the dial indicator firmly to the bed with a rigid magnetic base.</item>
+    </string-array>
+
+    <string name="manual_sec3_title">3. DRO and Coordinate Systems</string>
+    <string name="manual_sec3_summary">DRO digital readout, WCS G54-G59 work origin, G53 machine coordinates, and servo torque.</string>
+    <string name="manual_sec3_content">The DRO panel displays real-time positions with 3-decimal resolution (0.001 mm):\n\n• COORDINATE MODES:\n  - WORK POS (G54 to G59): Coordinates relative to the workpiece origin.\n  - MACHINE ABS (G53): Physical absolute coordinates of the frame relative to the Home limit switches.\n  - DISTANCE TO GO (DTG): Remaining distance to the end of the current G-Code block.\n\n• SERVO TELEMETRY:\n  Monitors the percentage load of the servo drive (%% Torque). Sustained values above 85%% indicate guide wear or excessive feed rate.</string>
+    <string-array name="manual_sec3_sop">
+        <item>Select the desired work system from the top bar selector (G54 by default).</item>
+        <item>To zero an individual axis, use the axis ZERO button in the DRO panel.</item>
+        <item>To reference all axes to the physical limit switches, press \'HOME ALL (G28)\'.</item>
+    </string-array>
+    <string-array name="manual_sec3_safety">
+        <item>Never zero G92 coordinates with the cutter inside the material without verifying safety heights.</item>
+    </string-array>
+
+    <string name="manual_sec4_title">4. Virtual MPG Electronic Handwheel</string>
+    <string name="manual_sec4_summary">Industrial 100-division touch handwheel with x1, x10, x100, x1000 resolution multipliers.</string>
+    <string name="manual_sec4_content">The virtual MPG handwheel faithfully emulates a physical electronic handwheel (Handwheel MPG):\n\n• 100 DIVISIONS PER REVOLUTION (3.6° per tactile detent).\n• MULTIPLIERS:\n  - x1: 0.001 mm / step (Final micrometric alignment).\n  - x10: 0.010 mm / step (Precision approach).\n  - x100: 0.100 mm / step (Fast workpiece positioning).\n  - x1000: 1.000 mm / step (Long table travel).\n• HAPTIC FEEDBACK: Emits a vibration and acoustic click at each 3.6° notch.</string>
+    <string-array name="manual_sec4_sop">
+        <item>In the Jog panel, select the \'VIRTUAL MPG WHEEL\' tab.</item>
+        <item>Choose the axis to move (X, Y, Z, or A) in the axis selector.</item>
+        <item>Select the appropriate multiplier (start with x10 for safety).</item>
+        <item>Turn the handle with your finger clockwise (+) or counter-clockwise (-) while observing the DRO response.</item>
+    </string-array>
+    <string-array name="manual_sec4_safety">
+        <item>On the Z-axis near the vise or workpiece, use exclusively x1 or x10 multipliers to avoid spindle collisions.</item>
+    </string-array>
+
+    <string name="manual_sec5_title">5. Tool Table and ATC (tool.tbl)</string>
+    <string name="manual_sec5_summary">Management of T1-T99 cutters, H length compensation (G43), fast Touch-Off, and tool life.</string>
+    <string name="manual_sec5_content">The tool manager synchronizes directly with the LinuxCNC \'tool.tbl\' file:\n\n• MOUNT TOOL (M6): Loads the tool into the spindle and activates G43 Hx compensation.\n• TOUCH-OFF Z (G43.1): Allows calibrating the current tool length by taking the spindle Z coordinate with a single touch.\n• WEAR MONITORING: Alerts when accumulated cutting time exceeds 85%% of estimated tool life.</string>
+    <string-array name="manual_sec5_sop">
+        <item>Open the Tool Table from the wrench icon in the top bar.</item>
+        <item>To mount a tool, locate the desired slot and press \'MOUNT (M6)\'.</item>
+        <item>To calibrate its Z length, lower the tip until it touches the table sensor and press \'TOUCH-OFF (G43.1)\'.</item>
+    </string-array>
+    <string-array name="manual_sec5_safety">
+        <item>Verify that the maximum RPM assigned to the tool does not exceed the capacity of the collet or toolholder.</item>
+    </string-array>
+
+    <string name="manual_sec6_title">6. 3D Probe Cycles (WCS Probing)</string>
+    <string name="manual_sec6_summary">Automated routines for centering holes, cylinders, corners, and Z-height sensing.</string>
+    <string name="manual_sec6_content">The PROBING tab includes kinematic routines with electrical contact stop (G38.2):\n\n• BORE CENTER: Probes in 4 quadrants (-X, +X, -Y, +Y) and calculates the exact hole center.\n• BOSS CENTER: Probes the 4 external faces of a cylinder to find the center axis.\n• CORNER FINDER: Locates the XY vertex of a corner to set the workpiece origin.\n• SURFACE HEIGHT Z: Descends until contact to set the Z=0 plane.</string>
+    <string-array name="manual_sec6_sop">
+        <item>Mount the 3D probe and connect the signal cable to the PROBE port.</item>
+        <item>Position the probe manually inside the hole or over the surface.</item>
+        <item>In the PROBING tab, press the desired routine (e.g., BORE CENTER).</item>
+        <item>The system will execute the contacts and automatically update WCS G54.</item>
+    </string-array>
+    <string-array name="manual_sec6_safety">
+        <item>Test the probe indicator LED by gently touching it with your hand before starting an automatic cycle.</item>
+    </string-array>
+
+    <string name="manual_sec7_title">7. EtherCAT Bus Telemetry</string>
+    <string name="manual_sec7_summary">Real-time monitoring of CiA402 slaves, cycle jitter, and lost frames.</string>
+    <string name="manual_sec7_content">The EtherCAT monitor reports the health of the industrial automation network:\n\n• MASTER STATE: Must remain in OP (Operational).\n• CYCLE JITTER: Real-time clock time variation. Values &lt; 5 µs are optimal.\n• LOST FRAMES: If this counter rises above 0, check shielded cabling and grounding.</string>
+    <string-array name="manual_sec7_sop">
+        <item>Access the ETHERCAT tab.</item>
+        <item>Verify that all servo drives for X, Y, Z axes appear in \'OP\' state.</item>
+        <item>Monitor drive temperatures during heavy machining work.</item>
+    </string-array>
+    <string-array name="manual_sec7_safety">
+        <item>If the master enters INIT or PRE-OP state during machining, the machine will execute an instantaneous safety stop.</item>
+    </string-array>
 </resources>
