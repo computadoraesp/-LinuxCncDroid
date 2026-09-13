@@ -113,7 +113,7 @@ class CncSecurityScanner {
                         SecurityThreat(
                             code = "SEC-WARN-006",
                             title = "Suspicious Encoded Payload in G-Code Comment",
-                            description = "Detected high-entropy Base64/Hex blob embedded inside comment. Potential trojan steganography.",
+                            description = "Detected high-entropy Base64/Hex blob embedded inside comment. Potential Trojan steganography.",
                             lineNumber = lineNum,
                             lineContent = line.take(50) + "...",
                             severity = LogSeverity.WARNING
