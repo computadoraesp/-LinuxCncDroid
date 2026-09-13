@@ -1,0 +1,6 @@
+{
+  "name": "LinuxCncDroid",
+  "description": "Industrial LinuxCNC HMI controller with real-time DRO, virtual MPG handwheel, 3D toolpath viewer, metrological calibration, and EtherCAT telemetry.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
