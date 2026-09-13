@@ -1,19 +1,46 @@
+# --- Android Studio / IntelliJ ---
+.idea/
 *.iml
-.gradle
-.kotlin
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+*.ipr
+*.iws
+
+# --- Gradle ---
+.gradle/
+build/
+**/build/
 local.properties
-.env
+
+# --- Kotlin / Java ---
+out/
+*.class
+
+# --- NDK / C++ ---
+.cxx/
+externalNativeBuild/
+
+# --- Logs ---
+*.log
+
+# --- OS-specific ---
+.DS_Store
+Thumbs.db
+
+# --- Captures ---
+captures/
+
+# --- Keystores ---
+*.jks
+*.keystore
 debug.keystore
-my-upload-key.jks
+
+# --- Environment / Secrets ---
+.env
+*.env
+
+# --- Android specific ---
+*.apk
+*.ap_
+*.aab
+
+# --- Cache ---
+.cache/
