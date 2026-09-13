@@ -21,11 +21,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
+import com.example.model.MachineStateEnum
 import com.example.data.local.MdiMacroEntity
 import com.example.ui.theme.*
 
 @Composable
 fun MdiView(
+    machineState: MachineStateEnum = MachineStateEnum.IDLE,
     commandText: String,
     history: List<String>,
     macros: List<MdiMacroEntity>,
@@ -33,6 +37,8 @@ fun MdiView(
     onExecuteCommand: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val isEnabled = machineState != MachineStateEnum.RUNNING && machineState != MachineStateEnum.ESTOP && machineState != MachineStateEnum.ERROR
+
     Card(
         colors = CardDefaults.cardColors(containerColor = CncCardBg),
         shape = RoundedCornerShape(12.dp),
@@ -47,9 +53,9 @@ fun MdiView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(imageVector = Icons.Default.Terminal, contentDescription = "MDI", tint = CncCyberCyan, modifier = Modifier.size(18.dp))
+                    Icon(imageVector = Icons.Default.Terminal, contentDescription = stringResource(R.string.mdi_title), tint = CncCyberCyan, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("MANUAL DATA INPUT (MDI) TERMINAL", fontWeight = FontWeight.Black, fontSize = 12.sp, color = CncTextPrimary)
+                    Text(stringResource(R.string.mdi_title), fontWeight = FontWeight.Black, fontSize = 12.sp, color = CncTextPrimary)
                 }
             }
 
@@ -62,7 +68,8 @@ fun MdiView(
                 OutlinedTextField(
                     value = commandText,
                     onValueChange = onCommandTextChange,
-                    placeholder = { Text("Enter G-Code (e.g., G0 X50 Y20 Z5, M3 S12000)", color = CncTextMuted, fontSize = 12.sp) },
+                    enabled = isEnabled,
+                    placeholder = { Text(stringResource(R.string.mdi_placeholder), color = CncTextMuted, fontSize = 12.sp) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = CncSurface,
@@ -79,6 +86,7 @@ fun MdiView(
 
                 Button(
                     onClick = { onExecuteCommand(commandText) },
+                    enabled = isEnabled && commandText.isNotBlank(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = CncCyberCyan,
                         contentColor = Color(0xFF00363D)
@@ -86,9 +94,9 @@ fun MdiView(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.height(52.dp)
                 ) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "Send Command")
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = stringResource(R.string.mdi_execute))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("RUN", fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.mdi_execute), fontWeight = FontWeight.Black)
                 }
             }
 
@@ -106,7 +114,7 @@ fun MdiView(
                             .clip(RoundedCornerShape(4.dp))
                             .background(CncSurfaceVariant)
                             .border(1.dp, CncCardBorder, RoundedCornerShape(4.dp))
-                            .clickable { onCommandTextChange(gcode) }
+                            .clickable(enabled = isEnabled) { onCommandTextChange(gcode) }
                     ) {
                         Text(gcode, fontSize = 9.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = CncCyberCyan)
                     }
@@ -116,7 +124,7 @@ fun MdiView(
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = CncCardBorder)
 
             // Programmable Macros Grid
-            Text("PROGRAMMABLE MACROS", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
+            Text(stringResource(R.string.mdi_macros_header), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -129,7 +137,7 @@ fun MdiView(
                         border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CncCardBorder)),
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { onExecuteCommand(macro.command) }
+                            .clickable(enabled = isEnabled) { onExecuteCommand(macro.command) }
                     ) {
                         Column(modifier = Modifier.padding(8.dp)) {
                             Text(macro.label, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = CncWarningAmber)
@@ -143,7 +151,7 @@ fun MdiView(
             HorizontalDivider(Modifier, DividerDefaults.Thickness, color = CncCardBorder)
 
             // Command Execution History
-            Text("RECENT COMMAND HISTORY", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
+            Text(stringResource(R.string.mdi_history_header), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
 
             Surface(
                 color = CncSurface,
@@ -159,7 +167,7 @@ fun MdiView(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(4.dp))
-                                .clickable { onCommandTextChange(cmd) }
+                                .clickable(enabled = isEnabled) { onCommandTextChange(cmd) }
                                 .padding(horizontal = 6.dp, vertical = 3.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
