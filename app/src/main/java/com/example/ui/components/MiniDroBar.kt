@@ -22,6 +22,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.AxisCoord
 import com.example.model.UnitSystem
 import com.example.ui.theme.AxisXColor
@@ -62,7 +64,7 @@ fun MiniDroBar(
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
                 Text(
-                    text = "$currentCoordSystem (${unitSystem.shortLabel})",
+                    text = stringResource(R.string.dro_work_pos, currentCoordSystem) + " (${unitSystem.shortLabel})",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Black,
                     color = CncCyberCyan,

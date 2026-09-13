@@ -41,8 +41,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.AxisCoord
 import com.example.model.JogControlStyle
+import com.example.model.MachineStateEnum
 import com.example.model.MpgMultiplier
 import com.example.model.TaskMode
 import com.example.model.UnitSystem
@@ -64,6 +67,7 @@ import com.example.ui.theme.CncWarningAmber
 @Composable
 fun JogControlPad(
     modifier: Modifier = Modifier,
+    machineState: MachineStateEnum = MachineStateEnum.IDLE,
     axes: List<String>,
     axesMap: Map<String, AxisCoord> = emptyMap(),
     jogStyle: JogControlStyle = JogControlStyle.BUTTON_PAD,
@@ -86,6 +90,10 @@ fun JogControlPad(
     onStopJog: () -> Unit,
     onStepJog: (String, Int, Double) -> Unit,
 ) {
+    val isEnabled = (machineState != MachineStateEnum.RUNNING) &&
+            (machineState != MachineStateEnum.ESTOP) &&
+            (machineState != MachineStateEnum.ERROR)
+
     if (jogStyle == JogControlStyle.VIRTUAL_MPG) {
         Column(modifier = modifier) {
             // Style Selector Bar
@@ -100,6 +108,7 @@ fun JogControlPad(
                 selectedAxis = mpgAxis,
                 selectedMultiplier = mpgMultiplier,
                 unitSystem = unitSystem,
+                isEnabled = isEnabled,
                 onSelectAxis = onSelectMpgAxis,
                 onSelectMultiplier = onSelectMpgMultiplier,
                 onMpgStep = onMpgStep,
@@ -137,7 +146,7 @@ fun JogControlPad(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "MANUAL JOG CONTROL",
+                        text = stringResource(R.string.jog_title),
                         fontWeight = FontWeight.Black,
                         fontSize = 11.sp,
                         letterSpacing = 0.5.sp,
@@ -157,14 +166,14 @@ fun JogControlPad(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(if (jogStyle == JogControlStyle.BUTTON_PAD) CncCyberCyan else Color.Transparent)
-                                .clickable { onSelectJogStyle(JogControlStyle.BUTTON_PAD) }
+                                .clickable(enabled = isEnabled) { onSelectJogStyle(JogControlStyle.BUTTON_PAD) }
                                 .padding(horizontal = 6.dp, vertical = 3.dp),
                         ) {
                             Text(
-                                text = JogControlStyle.BUTTON_PAD.displayName,
+                                text = stringResource(R.string.jog_mode_pad),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (jogStyle == JogControlStyle.BUTTON_PAD) Color(0xFF00363D) else CncTextSecondary
+                                color = if (jogStyle == JogControlStyle.BUTTON_PAD) Color(0xFF00363D) else CncTextSecondary,
                             )
                         }
 
@@ -172,14 +181,14 @@ fun JogControlPad(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(if (jogStyle == JogControlStyle.VIRTUAL_MPG) CncCyberCyan else Color.Transparent)
-                                .clickable { onSelectJogStyle(JogControlStyle.VIRTUAL_MPG) }
+                                .clickable(enabled = isEnabled) { onSelectJogStyle(JogControlStyle.VIRTUAL_MPG) }
                                 .padding(horizontal = 6.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = JogControlStyle.VIRTUAL_MPG.displayName,
+                                text = stringResource(R.string.jog_mode_mpg),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (jogStyle == JogControlStyle.VIRTUAL_MPG) Color(0xFF00363D) else CncTextSecondary
+                                color = if (jogStyle == JogControlStyle.VIRTUAL_MPG) Color(0xFF00363D) else CncTextSecondary,
                             )
                         }
                     }
@@ -195,11 +204,11 @@ fun JogControlPad(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(if (isContinuous) CncWarningAmber else Color.Transparent)
-                                .clickable { onToggleContinuous(true) }
+                                .clickable(enabled = isEnabled) { onToggleContinuous(true) }
                                 .padding(horizontal = 6.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = "CONT",
+                                text = stringResource(R.string.jog_cont),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (isContinuous) Color.Black else CncTextSecondary
@@ -210,14 +219,14 @@ fun JogControlPad(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(if (!isContinuous) CncCyberCyan else Color.Transparent)
-                                .clickable { onToggleContinuous(false) }
+                                .clickable(enabled = isEnabled) { onToggleContinuous(false) }
                                 .padding(horizontal = 6.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = "STEP",
+                                text = stringResource(R.string.jog_step),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (!isContinuous) Color.Black else CncTextSecondary
+                                color = if (!isContinuous) Color.Black else CncTextSecondary,
                             )
                         }
                     }
@@ -230,7 +239,7 @@ fun JogControlPad(
             if (!isContinuous) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     stepResolutions.forEach { step ->
                         val isSelected = selectedStepMm == step
@@ -247,7 +256,7 @@ fun JogControlPad(
                                 .clip(RoundedCornerShape(6.dp))
                                 .background(if (isSelected) CncCyberCyan else CncSurfaceVariant)
                                 .border(1.dp, if (isSelected) CncCyberCyan else CncCardBorder, RoundedCornerShape(6.dp))
-                                .clickable { onSelectStep(step) }
+                                .clickable(enabled = isEnabled) { onSelectStep(step) }
                         ) {
                             Text(
                                 text = label,
@@ -267,7 +276,7 @@ fun JogControlPad(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Jog Feedrate:", fontSize = 10.sp, color = CncTextSecondary)
+                        Text(stringResource(R.string.jog_feedrate), fontSize = 10.sp, color = CncTextSecondary)
                         Text(
                             text = unitSystem.formatSpeed(jogSpeedMmMin),
                             fontSize = 10.sp,
@@ -279,6 +288,7 @@ fun JogControlPad(
                     Slider(
                         value = jogSpeedMmMin.toFloat(),
                         onValueChange = { onSpeedChange(it.toDouble()) },
+                        enabled = isEnabled,
                         valueRange = 100f..5000f,
                         colors = SliderDefaults.colors(
                             thumbColor = CncWarningAmber,
@@ -297,14 +307,14 @@ fun JogControlPad(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 // XY Planar Cross Pad
                 Box(
                     modifier = Modifier
                         .size(150.dp)
                         .background(CncSurfaceBg, RoundedCornerShape(12.dp))
-                        .border(1.dp, CncCardBorder, RoundedCornerShape(12.dp))
+                        .border(1.dp, CncCardBorder, RoundedCornerShape(12.dp)),
                 ) {
                     // Center XY Label
                     Text(
@@ -319,6 +329,7 @@ fun JogControlPad(
                     JogTouchButton(
                         label = "Y+",
                         color = AxisYColor,
+                        enabled = isEnabled,
                         modifier = Modifier.align(Alignment.TopCenter).padding(top = 6.dp),
                         onDown = {
                             if (isContinuous) onStartJog("Y", 1, jogSpeedMmMin)
@@ -330,6 +341,7 @@ fun JogControlPad(
                     JogTouchButton(
                         label = "Y-",
                         color = AxisYColor,
+                        enabled = isEnabled,
                         modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp),
                         onDown = {
                             if (isContinuous) onStartJog("Y", -1, jogSpeedMmMin)
@@ -341,6 +353,7 @@ fun JogControlPad(
                     JogTouchButton(
                         label = "X-",
                         color = AxisXColor,
+                        enabled = isEnabled,
                         modifier = Modifier.align(Alignment.CenterStart).padding(start = 6.dp),
                         onDown = {
                             if (isContinuous) onStartJog("X", -1, jogSpeedMmMin)
@@ -352,6 +365,7 @@ fun JogControlPad(
                     JogTouchButton(
                         label = "X+",
                         color = AxisXColor,
+                        enabled = isEnabled,
                         modifier = Modifier.align(Alignment.CenterEnd).padding(end = 6.dp),
                         onDown = {
                             if (isContinuous) onStartJog("X", 1, jogSpeedMmMin)
@@ -363,13 +377,14 @@ fun JogControlPad(
                 // Z-Axis Column
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Text("Z-AXIS", fontSize = 10.sp, fontWeight = FontWeight.Black, color = AxisZColor)
+                    Text(stringResource(R.string.jog_z_axis), fontSize = 10.sp, fontWeight = FontWeight.Black, color = AxisZColor)
 
                     JogTouchButton(
                         label = "Z+",
                         color = AxisZColor,
+                        enabled = isEnabled,
                         size = 48.dp,
                         onDown = {
                             if (isContinuous) onStartJog("Z", 1, jogSpeedMmMin)
@@ -380,6 +395,7 @@ fun JogControlPad(
                     JogTouchButton(
                         label = "Z-",
                         color = AxisZColor,
+                        enabled = isEnabled,
                         size = 48.dp,
                         onDown = {
                             if (isContinuous) onStartJog("Z", -1, jogSpeedMmMin)
@@ -394,11 +410,12 @@ fun JogControlPad(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Text("A-AXIS", fontSize = 10.sp, fontWeight = FontWeight.Black, color = AxisAColor)
+                        Text(stringResource(R.string.jog_a_axis), fontSize = 10.sp, fontWeight = FontWeight.Black, color = AxisAColor)
 
                         JogTouchButton(
                             label = "A+",
                             color = AxisAColor,
+                            enabled = isEnabled,
                             size = 48.dp,
                             onDown = {
                                 if (isContinuous) onStartJog("A", 1, jogSpeedMmMin)
@@ -409,6 +426,7 @@ fun JogControlPad(
                         JogTouchButton(
                             label = "A-",
                             color = AxisAColor,
+                            enabled = isEnabled,
                             size = 48.dp,
                             onDown = {
                                 if (isContinuous) onStartJog("A", -1, jogSpeedMmMin)
@@ -441,7 +459,7 @@ fun JogStyleHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "MODE: ${taskMode.displayName} | STYLE: ${currentStyle.displayName}",
+                text = stringResource(R.string.jog_style_mode_style, stringResource(taskMode.displayNameRes), stringResource(currentStyle.displayNameRes)),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Black,
                 color = CncCyberCyan,
@@ -460,7 +478,7 @@ fun JogStyleHeader(
                         text = "PAD",
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (currentStyle == JogControlStyle.BUTTON_PAD) Color(0xFF00363D) else CncTextSecondary
+                        color = if (currentStyle == JogControlStyle.BUTTON_PAD) Color(0xFF00363D) else CncTextSecondary,
                     )
                 }
 
@@ -490,8 +508,9 @@ fun JogTouchButton(
     color: Color,
     modifier: Modifier = Modifier,
     size: Dp = 42.dp,
+    enabled: Boolean = true,
     onDown: () -> Unit,
-    onUp: () -> Unit
+    onUp: () -> Unit,
 ) {
     var isPressed by remember { mutableStateOf(value = false) }
 
@@ -500,9 +519,10 @@ fun JogTouchButton(
         modifier = modifier
             .size(size)
             .clip(RoundedCornerShape(8.dp))
-            .background(if (isPressed) color else CncSurfaceVariant)
-            .border(1.5.dp, color, RoundedCornerShape(8.dp))
+            .background(if (isPressed) color else if (enabled) CncSurfaceVariant else CncSurfaceVariant.copy(alpha = 0.5f))
+            .border(1.5.dp, if (enabled) color else CncTextMuted, RoundedCornerShape(8.dp))
             .pointerInteropFilter { event ->
+                if (!enabled) return@pointerInteropFilter false
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
                         isPressed = true
@@ -516,14 +536,14 @@ fun JogTouchButton(
                     }
                     else -> false
                 }
-            }
+            },
     ) {
         Text(
             text = label,
             fontSize = 13.sp,
             fontWeight = FontWeight.Black,
             fontFamily = FontFamily.Monospace,
-            color = if (isPressed) Color.Black else color
+            color = if (isPressed) Color.Black else color,
         )
     }
 }

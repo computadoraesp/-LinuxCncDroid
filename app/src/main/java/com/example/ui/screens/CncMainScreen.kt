@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,17 +76,6 @@ import com.example.ui.theme.CncSurfaceVariant
 import com.example.ui.theme.CncTextPrimary
 import com.example.ui.theme.CncTextSecondary
 import com.example.viewmodel.CncViewModel
-
-fun CncNavigationTab.getTitle(): String = when (this) {
-    CncNavigationTab.CONTROL -> "CONTROL"
-    CncNavigationTab.TOOLPATH -> "TOOLPATH"
-    CncNavigationTab.CAMERA -> "CÁMARA"
-    CncNavigationTab.PROBING -> "PROBING"
-    CncNavigationTab.ETHERCAT -> "ETHERCAT"
-    CncNavigationTab.MDI -> "MDI"
-    CncNavigationTab.LOGS -> "LOGS"
-    CncNavigationTab.CONFIG -> "CONFIG"
-}
 
 @Composable
 fun CncNavigationTab.getIcon(): ImageVector = when (this) {
@@ -222,7 +212,7 @@ fun CncMainScreen(
                                     ) {
                                         Icon(
                                             imageVector = tab.getIcon(),
-                                            contentDescription = tab.getTitle(),
+                                            contentDescription = stringResource(tab.titleRes),
                                             tint = if (isSelected) CncCyberCyan else CncTextSecondary,
                                             modifier = Modifier.size(18.dp),
                                         )
@@ -230,14 +220,14 @@ fun CncMainScreen(
                                 } else {
                                     Icon(
                                         imageVector = tab.getIcon(),
-                                        contentDescription = tab.getTitle(),
+                                        contentDescription = stringResource(tab.titleRes),
                                         tint = if (isSelected) CncCyberCyan else CncTextSecondary,
                                         modifier = Modifier.size(18.dp),
                                     )
                                 }
 
                                 Text(
-                                    text = tab.getTitle(),
+                                    text = stringResource(tab.titleRes),
                                     color = if (isSelected) CncCyberCyan else CncTextPrimary,
                                     fontSize = 12.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
@@ -269,6 +259,7 @@ fun CncMainScreen(
                     CncNavigationTab.CONTROL -> {
                         // Digital Readout (DRO) Panel
                         DroPanel(
+                            machineState = machineState,
                             axes = axes,
                             currentCoordSystem = currentCoordSystem,
                             hasServoTorque = capabilities.hasServoTorque,
@@ -282,6 +273,7 @@ fun CncMainScreen(
                         JogControlPad(
                             axes = capabilities.axes,
                             axesMap = axes,
+                            machineState = machineState,
                             jogStyle = jogStyle,
                             taskMode = taskMode,
                             mpgAxis = mpgAxis,
@@ -391,6 +383,7 @@ fun CncMainScreen(
                         ) { viewModel.zeroAxis(it) }
 
                         MdiView(
+                            machineState = machineState,
                             commandText = mdiText,
                             history = mdiHistory,
                             macros = macros,

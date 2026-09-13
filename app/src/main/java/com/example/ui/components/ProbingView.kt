@@ -42,6 +42,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.ProbeInfo
 import com.example.ui.theme.AxisXColor
 import com.example.ui.theme.AxisYColor
@@ -74,9 +76,9 @@ fun ProbingView(
     modifier: Modifier = Modifier
 ) {
     val routines = listOf(
-        ProbeRoutineItem("bore_center", "Internal Bore Center", "Finds (X, Y) center of circle using 4-point probing", Icons.Default.RadioButtonUnchecked, "O100 CALL [BORE_CENTER]"),
-        ProbeRoutineItem("boss_center", "External Boss Center", "Finds external circular boss center", Icons.Default.Adjust, "O101 CALL [BOSS_CENTER]"),
-        ProbeRoutineItem("corner_out", "Outside Corner Finder", "Probes X+ and Y+ to locate corner zero", Icons.Default.CropFree, "O102 CALL [CORNER_OUT]"),
+        ProbeRoutineItem("bore_center", stringResource(R.string.probe_bore), "Finds (X, Y) center of circle using 4-point probing", Icons.Default.RadioButtonUnchecked, "O100 CALL [BORE_CENTER]"),
+        ProbeRoutineItem("boss_center", stringResource(R.string.probe_boss), "Finds external circular boss center", Icons.Default.Adjust, "O101 CALL [BOSS_CENTER]"),
+        ProbeRoutineItem("corner_out", stringResource(R.string.probe_corner_xy), "Probes X+ and Y+ to locate corner zero", Icons.Default.CropFree, "O102 CALL [CORNER_OUT]"),
         ProbeRoutineItem("corner_in", "Inside Pocket Corner", "Finds inside pocket origin vertex", Icons.Default.FullscreenExit, "O103 CALL [CORNER_IN]"),
         ProbeRoutineItem(
             id = "edge_x",
@@ -86,7 +88,7 @@ fun ProbingView(
             gcodeMacro = "O104 CALL [EDGE_X]",
         ),
         ProbeRoutineItem("edge_y", "Y-Axis Edge Touch", "Single touch on Y face to set Y zero", Icons.Default.SwapVert, "O105 CALL [EDGE_Y]"),
-        ProbeRoutineItem("toolsetter_z", "Toolsetter Z-Touch", "Auto tool length measurement with reference puck", Icons.Default.VerticalAlignBottom, "O106 CALL [TOOLSETTER_Z]")
+        ProbeRoutineItem("toolsetter_z", stringResource(R.string.probe_surface_z), "Auto tool length measurement with reference puck", Icons.Default.VerticalAlignBottom, "O106 CALL [TOOLSETTER_Z]")
     )
 
     Card(
@@ -103,9 +105,9 @@ fun ProbingView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(imageVector = Icons.Default.Sensors, contentDescription = "Probe", tint = CncCyberCyan, modifier = Modifier.size(18.dp))
+                    Icon(imageVector = Icons.Default.Sensors, contentDescription = stringResource(R.string.probing_title), tint = CncCyberCyan, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("3D PROBE & METROLOGY (NIVEL 2)", fontWeight = FontWeight.Black, fontSize = 12.sp, color = CncTextPrimary)
+                    Text(stringResource(R.string.probing_title), fontWeight = FontWeight.Black, fontSize = 12.sp, color = CncTextPrimary)
                 }
 
                 // Probe Tripped Sensor Indicator
@@ -126,7 +128,7 @@ fun ProbingView(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (isTripped) "PROBE TRIPPED" else "PROBE READY",
+                        text = if (isTripped) stringResource(R.string.probe_status_tripped) else stringResource(R.string.probe_status_clear),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (isTripped) CncEstopRed else CncActiveGreen
@@ -148,7 +150,7 @@ fun ProbingView(
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("LAST CONTACT X", fontSize = 9.sp, color = AxisXColor, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.probe_last_contact_x), fontSize = 9.sp, color = AxisXColor, fontWeight = FontWeight.Bold)
                         Text(
                             String.format(Locale.US, "%+07.3f", probeInfo.lastContactX),
                             fontSize = 14.sp,
@@ -158,7 +160,7 @@ fun ProbingView(
                         )
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("LAST CONTACT Y", fontSize = 9.sp, color = AxisYColor, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.probe_last_contact_y), fontSize = 9.sp, color = AxisYColor, fontWeight = FontWeight.Bold)
                         Text(
                             String.format(Locale.US, "%+07.3f", probeInfo.lastContactY),
                             fontSize = 14.sp,
@@ -168,7 +170,7 @@ fun ProbingView(
                         )
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("LAST CONTACT Z", fontSize = 9.sp, color = AxisZColor, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.probe_last_contact_z), fontSize = 9.sp, color = AxisZColor, fontWeight = FontWeight.Bold)
                         Text(
                             String.format(Locale.US, "%+07.3f", probeInfo.lastContactZ),
                             fontSize = 14.sp,
@@ -181,7 +183,7 @@ fun ProbingView(
             }
 
             // Routine Selection Grid
-            Text("AUTOMATED PROBING CYCLES", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
+            Text(stringResource(R.string.probe_routines_header), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
 
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 routines.forEach { routine ->
@@ -231,7 +233,7 @@ fun ProbingView(
                                 ),
                                 modifier = Modifier.height(30.dp)
                             ) {
-                                Text(if (isExecuting) "PROBING..." else "EXECUTE", fontSize = 10.sp, fontWeight = FontWeight.Black)
+                                Text(if (isExecuting) stringResource(R.string.probe_executing) else stringResource(R.string.common_execute), fontSize = 10.sp, fontWeight = FontWeight.Black)
                             }
                         }
                     }

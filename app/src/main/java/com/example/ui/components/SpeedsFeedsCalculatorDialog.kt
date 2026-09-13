@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.MaterialPreset
 import com.example.model.SpeedFeedCalculation
 import com.example.ui.theme.*
@@ -26,11 +28,11 @@ import kotlin.math.PI
 import kotlin.math.roundToInt
 
 val STANDARD_MATERIALS = listOf(
-    MaterialPreset("mat_al6061", "Aluminium 6061-T6", "Non-Ferrous", 220.0, 0.045, 0.8),
-    MaterialPreset("mat_steel1018", "Mild Steel (AISI 1018)", "Ferrous", 90.0, 0.035, 1.8),
-    MaterialPreset("mat_ss304", "Stainless Steel 304", "Exotic / Tough", 55.0, 0.025, 2.2),
-    MaterialPreset("mat_wood", "Hardwood / Birch Plywood", "Wood & Composites", 350.0, 0.080, 0.3),
-    MaterialPreset("mat_pom", "POM / Delrin / Acetal", "Plastics", 180.0, 0.060, 0.4),
+    MaterialPreset("mat_al6061", R.string.mat_al6061_name, R.string.mat_al6061_cat, 220.0, 0.045, 0.8),
+    MaterialPreset("mat_steel1018", R.string.mat_steel1018_name, R.string.mat_steel1018_cat, 90.0, 0.035, 1.8),
+    MaterialPreset("mat_ss304", R.string.mat_ss304_name, R.string.mat_ss304_cat, 55.0, 0.025, 2.2),
+    MaterialPreset("mat_wood", R.string.mat_wood_name, R.string.mat_wood_cat, 350.0, 0.080, 0.3),
+    MaterialPreset("mat_pom", R.string.mat_pom_name, R.string.mat_pom_cat, 180.0, 0.060, 0.4),
 )
 
 @Composable
@@ -72,9 +74,9 @@ fun SpeedsFeedsCalculatorDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Calculate, contentDescription = "Calculator", tint = CncCyberCyan, modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.Calculate, contentDescription = stringResource(R.string.calc_header), tint = CncCyberCyan, modifier = Modifier.size(22.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("SPEEDS & FEEDS CALCULATOR", fontWeight = FontWeight.Black, fontSize = 14.sp, color = CncTextPrimary)
+                    Text(stringResource(R.string.calc_header), fontWeight = FontWeight.Black, fontSize = 14.sp, color = CncTextPrimary)
                 }
 
                 IconButton(
@@ -90,7 +92,7 @@ fun SpeedsFeedsCalculatorDialog(
         text = {
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Material Selector
-                Text("TARGET WORKPIECE MATERIAL", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
+                Text(stringResource(R.string.calc_material_header), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     STANDARD_MATERIALS.forEach { mat ->
                         val isSelected = selectedMaterial.id == mat.id
@@ -112,8 +114,8 @@ fun SpeedsFeedsCalculatorDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text(mat.name, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = CncTextPrimary)
-                                    Text("Vc: ${mat.surfaceSpeedMMin.toInt()} m/min • ${mat.category}", fontSize = 9.sp, color = CncTextSecondary)
+                                    Text(stringResource(mat.nameRes), fontWeight = FontWeight.Bold, fontSize = 11.sp, color = CncTextPrimary)
+                                    Text("Vc: ${mat.surfaceSpeedMMin.toInt()} m/min • ${stringResource(mat.categoryRes)}", fontSize = 9.sp, color = CncTextSecondary)
                                 }
                                 if (isSelected) {
                                     Icon(Icons.Default.Check, contentDescription = "Selected", tint = CncActiveGreen, modifier = Modifier.size(16.dp))
@@ -126,7 +128,7 @@ fun SpeedsFeedsCalculatorDialog(
                 // Tool Diameter and Flutes Row
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("DIAMETER (mm)", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
+                        Text(stringResource(R.string.calc_diameter_label), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             listOf(3.0, 6.0, 8.0, 12.0).forEach { dia ->
@@ -148,7 +150,7 @@ fun SpeedsFeedsCalculatorDialog(
                     }
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("FLUTES (Z)", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
+                        Text(stringResource(R.string.calc_flutes_label), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             listOf(1, 2, 3, 4).forEach { f ->
@@ -180,11 +182,11 @@ fun SpeedsFeedsCalculatorDialog(
                     Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("SPINDLE SPEED", fontSize = 9.sp, color = CncWarningAmber, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.calc_spindle_speed), fontSize = 9.sp, color = CncWarningAmber, fontWeight = FontWeight.Bold)
                                 Text("${calculatedRpm.roundToInt()} RPM", fontSize = 14.sp, fontWeight = FontWeight.Black, color = CncTextPrimary, fontFamily = FontFamily.Monospace)
                             }
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("FEEDRATE (F)", fontSize = 9.sp, color = CncActiveGreen, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.calc_feedrate), fontSize = 9.sp, color = CncActiveGreen, fontWeight = FontWeight.Bold)
                                 Text("${calculatedFeed.roundToInt()} mm/min", fontSize = 14.sp, fontWeight = FontWeight.Black, color = CncTextPrimary, fontFamily = FontFamily.Monospace)
                             }
                         }
@@ -196,9 +198,9 @@ fun SpeedsFeedsCalculatorDialog(
                         )
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Depth (Ap): ${String.format(Locale.US, "%.2f", docAp)} mm", fontSize = 10.sp, color = CncTextSecondary)
-                            Text("Stepover (Ae): ${String.format(Locale.US, "%.2f", wocAe)} mm", fontSize = 10.sp, color = CncTextSecondary)
-                            Text("Power: ${String.format(Locale.US, "%.2f", estimatedPowerKw)} kW", fontSize = 10.sp, color = CncCyberCyan)
+                            Text(stringResource(R.string.calc_depth_ap, String.format(Locale.US, "%.2f", docAp)), fontSize = 10.sp, color = CncTextSecondary)
+                            Text(stringResource(R.string.calc_stepover_ae, String.format(Locale.US, "%.2f", wocAe)), fontSize = 10.sp, color = CncTextSecondary)
+                            Text(stringResource(R.string.calc_power, String.format(Locale.US, "%.2f", estimatedPowerKw)), fontSize = 10.sp, color = CncCyberCyan)
                         }
                     }
                 }
@@ -216,14 +218,14 @@ fun SpeedsFeedsCalculatorDialog(
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Icon(Icons.Default.Bolt, contentDescription = "Apply")
+                Icon(Icons.Default.Bolt, contentDescription = stringResource(R.string.calc_apply_btn))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("APPLY TO CNC", fontWeight = FontWeight.Black, fontSize = 11.sp)
+                Text(stringResource(R.string.calc_apply_btn), fontWeight = FontWeight.Black, fontSize = 11.sp)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("CLOSE", color = CncTextSecondary)
+                Text(stringResource(R.string.common_close), color = CncTextSecondary)
             }
         },
         containerColor = CncCardBg

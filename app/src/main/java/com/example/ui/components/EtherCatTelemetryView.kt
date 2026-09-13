@@ -30,6 +30,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.EtherCatMasterInfo
 import com.example.model.EtherCatSlaveInfo
 import com.example.ui.theme.CncActiveGreen
@@ -65,9 +67,9 @@ fun EtherCatTelemetryView(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(imageVector = Icons.Default.Hub, contentDescription = "EtherCAT", tint = CncActiveGreen, modifier = Modifier.size(18.dp))
+                    Icon(imageVector = Icons.Default.Hub, contentDescription = stringResource(R.string.tab_ethercat), tint = CncActiveGreen, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("ETHERCAT BUS & SERVO TELEMETRY (NIVEL 3)", fontWeight = FontWeight.Black, fontSize = 12.sp, color = CncTextPrimary)
+                    Text(stringResource(R.string.ethercat_title), fontWeight = FontWeight.Black, fontSize = 12.sp, color = CncTextPrimary)
                 }
 
                 Box(
@@ -77,7 +79,7 @@ fun EtherCatTelemetryView(
                         .border(1.dp, CncActiveGreen, RoundedCornerShape(6.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                 ) {
-                    Text("100 Mbps DETERMINISTIC", fontSize = 9.sp, fontWeight = FontWeight.Black, color = CncActiveGreen)
+                    Text(stringResource(R.string.ethercat_deterministic), fontSize = 9.sp, fontWeight = FontWeight.Black, color = CncActiveGreen)
                 }
             }
 
@@ -95,26 +97,26 @@ fun EtherCatTelemetryView(
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("BUS CYCLE", fontSize = 9.sp, color = CncTextMuted, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ethercat_bus_cycle), fontSize = 9.sp, color = CncTextMuted, fontWeight = FontWeight.Bold)
                         Text("${masterInfo.busCycleTimeUs} µs (1kHz)", fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = CncCyberCyan)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("DC SYNC JITTER", fontSize = 9.sp, color = CncTextMuted, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ethercat_cycle_jitter), fontSize = 9.sp, color = CncTextMuted, fontWeight = FontWeight.Bold)
                         Text("±${masterInfo.dcOffsetNs} ns", fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = CncActiveGreen)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("SLAVE NODES", fontSize = 9.sp, color = CncTextMuted, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ethercat_slave_nodes), fontSize = 9.sp, color = CncTextMuted, fontWeight = FontWeight.Bold)
                         Text("${masterInfo.slaveCount} ONLINE", fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = CncTextPrimary)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("PACKET LOSS", fontSize = 9.sp, color = CncTextMuted, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ethercat_lost_frames), fontSize = 9.sp, color = CncTextMuted, fontWeight = FontWeight.Bold)
                         Text("0.00 %", fontSize = 12.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = CncActiveGreen)
                     }
                 }
             }
 
             // Servo Drives Live Status Cards (Delta B3 / A3)
-            Text("DELTA ASDA-B3 CiA 402 SMART DRIVES", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
+            Text(stringResource(R.string.ethercat_smart_drives), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 slaves.forEach { slave ->
@@ -166,7 +168,7 @@ fun EtherCatTelemetryView(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = "TORQUE LOAD: ${String.format(Locale.US, "%.1f", torque)} %",
+                                    text = stringResource(R.string.ethercat_torque_load, String.format(Locale.US, "%.1f", torque)),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     fontFamily = FontFamily.Monospace,
@@ -174,7 +176,7 @@ fun EtherCatTelemetryView(
                                 )
 
                                 Text(
-                                    text = "DRIVE TEMP: ${String.format(Locale.US, "%.1f", slave.driveTempC)} °C",
+                                    text = stringResource(R.string.ethercat_drive_temp, String.format(Locale.US, "%.1f", slave.driveTempC)),
                                     fontSize = 10.sp,
                                     fontFamily = FontFamily.Monospace,
                                     color = CncTextSecondary
@@ -196,7 +198,7 @@ fun EtherCatTelemetryView(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("DIAGNOSTIC STATUS:", fontSize = 9.sp, color = CncTextMuted)
+                                Text(stringResource(R.string.ethercat_diagnostic_status), fontSize = 9.sp, color = CncTextMuted)
                                 Text(
                                     text = slave.alarmCode,
                                     fontSize = 9.sp,

@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.*
 import com.example.service.CncSecurityScanner
 import com.example.ui.theme.*
@@ -64,15 +66,15 @@ fun GCodeSecurityLoaderDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Shield, contentDescription = "Cybersecurity", tint = CncCyberCyan, modifier = Modifier.size(22.dp))
+                Icon(Icons.Default.Shield, contentDescription = stringResource(R.string.sl_header), tint = CncCyberCyan, modifier = Modifier.size(22.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("G-CODE CYBERSECURITY & FILE LOADER", fontWeight = FontWeight.Black, fontSize = 14.sp, color = CncTextPrimary)
+                Text(stringResource(R.string.sl_header), fontWeight = FontWeight.Black, fontSize = 14.sp, color = CncTextPrimary)
             }
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Presets Bar
-                Text("SAMPLE & BENCHMARK G-CODE SCRIPTS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
+                Text(stringResource(R.string.sl_presets_header), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     listOf(
                         "Safe Trochoidal" to """
@@ -160,20 +162,20 @@ fun GCodeSecurityLoaderDialog(
                                     ThreatLevel.SUSPICIOUS -> Icons.Default.WarningAmber
                                     ThreatLevel.MALWARE_BLOCKED -> Icons.Default.GppBad
                                 },
-                                contentDescription = "Security Status",
+                                contentDescription = stringResource(threatLevel.displayNameRes),
                                 tint = bannerBorder,
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
-                                Text(threatLevel.displayName, fontWeight = FontWeight.Black, fontSize = 12.sp, color = bannerBorder)
+                                Text(stringResource(threatLevel.displayNameRes), fontWeight = FontWeight.Black, fontSize = 12.sp, color = bannerBorder)
                                 val motionText = if (scanResult.hasMotion) "Movement Code Detected" else "No Axis Motion Found"
-                                Text("${scanResult.threats.size} Threats • $motionText • ${scanResult.totalLines} lines", fontSize = 10.sp, color = CncTextSecondary)
+                                Text(stringResource(R.string.sl_threats_info, scanResult.threats.size, motionText, scanResult.totalLines), fontSize = 10.sp, color = CncTextSecondary)
                             }
                         }
 
                         Text(
-                            text = if (scanResult.isExecutable) "PASSED" else "BLOCKED",
+                            text = if (scanResult.isExecutable) stringResource(R.string.sl_pass) else stringResource(R.string.sl_block),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Black,
                             color = if (scanResult.isExecutable) CncActiveGreen else CncEstopRed
@@ -183,7 +185,7 @@ fun GCodeSecurityLoaderDialog(
 
                 // Detailed Threats List (if any)
                 if (scanResult.threats.isNotEmpty()) {
-                    Text("DETECTED SECURITY FINDINGS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
+                    Text(stringResource(R.string.sl_analysis_header), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncTextSecondary)
                     Surface(
                         color = CncSurface,
                         shape = RoundedCornerShape(6.dp),
@@ -271,14 +273,14 @@ fun GCodeSecurityLoaderDialog(
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Icon(Icons.Default.FileDownload, contentDescription = "Load")
+                Icon(Icons.Default.FileDownload, contentDescription = stringResource(R.string.sl_load_btn))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("LOAD INTO CNC", fontWeight = FontWeight.Black, fontSize = 11.sp)
+                Text(stringResource(R.string.sl_load_btn), fontWeight = FontWeight.Black, fontSize = 11.sp)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("CANCEL", color = CncTextSecondary)
+                Text(stringResource(R.string.common_cancel), color = CncTextSecondary)
             }
         },
         containerColor = CncCardBg

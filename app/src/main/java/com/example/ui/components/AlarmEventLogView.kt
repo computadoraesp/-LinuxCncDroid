@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.CncEventLog
 import com.example.model.LogSeverity
 import com.example.ui.theme.*
@@ -32,14 +34,20 @@ fun AlarmEventLogView(
     onSimulateAlarm: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedFilter by remember { mutableStateOf("ALL") }
+    val filterOptions = listOf(
+        stringResource(R.string.logs_filter_all),
+        stringResource(R.string.logs_filter_errors),
+        stringResource(R.string.logs_filter_security),
+        stringResource(R.string.logs_filter_warnings)
+    )
+    var selectedFilter by remember { mutableStateOf(filterOptions[0]) }
     val dateFormat = remember { SimpleDateFormat("HH:mm:ss.SSS", Locale.US) }
 
     val filteredLogs = remember(logs, selectedFilter) {
         when (selectedFilter) {
-            "ERRORS" -> logs.filter { it.severity == LogSeverity.ERROR || it.severity == LogSeverity.CRITICAL }
-            "SECURITY" -> logs.filter { it.severity == LogSeverity.SECURITY }
-            "WARNINGS" -> logs.filter { it.severity == LogSeverity.WARNING }
+            filterOptions[1] -> logs.filter { it.severity == LogSeverity.ERROR || it.severity == LogSeverity.CRITICAL }
+            filterOptions[2] -> logs.filter { it.severity == LogSeverity.SECURITY }
+            filterOptions[3] -> logs.filter { it.severity == LogSeverity.WARNING }
             else -> logs
         }
     }
@@ -58,9 +66,9 @@ fun AlarmEventLogView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(imageVector = Icons.Default.NotificationsActive, contentDescription = "Logs", tint = CncWarningAmber, modifier = Modifier.size(18.dp))
+                    Icon(imageVector = Icons.Default.NotificationsActive, contentDescription = stringResource(R.string.logs_title), tint = CncWarningAmber, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("INDUSTRIAL EVENT LOG & ALARM AUDIT", fontWeight = FontWeight.Black, fontSize = 12.sp, color = CncTextPrimary)
+                    Text(stringResource(R.string.logs_title), fontWeight = FontWeight.Black, fontSize = 12.sp, color = CncTextPrimary)
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -74,7 +82,7 @@ fun AlarmEventLogView(
                         ),
                         modifier = Modifier.height(28.dp)
                     ) {
-                        Text("TEST ALARM", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.logs_simulate_alarm), fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     }
 
                     FilledTonalButton(
@@ -87,14 +95,14 @@ fun AlarmEventLogView(
                         ),
                         modifier = Modifier.height(28.dp)
                     ) {
-                        Text("CLEAR", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.logs_clear), fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
 
             // Filter Chips
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                listOf("ALL", "ERRORS", "SECURITY", "WARNINGS").forEach { filterName ->
+                filterOptions.forEach { filterName ->
                     val isSelected = selectedFilter == filterName
                     Box(
                         contentAlignment = Alignment.Center,
@@ -126,7 +134,7 @@ fun AlarmEventLogView(
             ) {
                 if (filteredLogs.isEmpty()) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                        Text("No event logs recorded for filter '$selectedFilter'", fontSize = 11.sp, color = CncTextMuted)
+                        Text(stringResource(R.string.logs_no_entries, selectedFilter), fontSize = 11.sp, color = CncTextMuted)
                     }
                 } else {
                     LazyColumn(modifier = Modifier.padding(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -162,7 +170,7 @@ fun AlarmEventLogView(
                                         .padding(horizontal = 4.dp, vertical = 1.dp)
                                 ) {
                                     Text(
-                                        text = log.severity.displayName,
+                                        text = stringResource(log.severity.displayNameRes),
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Black,
                                         color = badgeColor,

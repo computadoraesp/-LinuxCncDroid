@@ -60,6 +60,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.AxisCoord
 import com.example.model.GCodeSegment
 import com.example.ui.theme.AxisXColor
@@ -75,6 +77,7 @@ import com.example.ui.theme.CncTextMuted
 import com.example.ui.theme.CncTextPrimary
 import com.example.ui.theme.CncTextSecondary
 import com.example.ui.theme.CncWarningAmber
+import java.util.Locale
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
@@ -160,9 +163,9 @@ fun ToolpathVisualizer3D(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(imageVector = Icons.Default.ViewInAr, contentDescription = "3D View", tint = CncCyberCyan, modifier = Modifier.size(18.dp))
+                    Icon(imageVector = Icons.Default.ViewInAr, contentDescription = stringResource(R.string.tp_header), tint = CncCyberCyan, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("3D REAL-TIME TOOLPATH & TOOLHEAD", fontWeight = FontWeight.Black, fontSize = 11.5.sp, color = CncTextPrimary)
+                    Text(stringResource(R.string.tp_header), fontWeight = FontWeight.Black, fontSize = 11.5.sp, color = CncTextPrimary)
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "[$fileName]",
@@ -173,7 +176,7 @@ fun ToolpathVisualizer3D(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "DIM: X${(boundingBox.first.second - boundingBox.first.first).toInt()} Y${(boundingBox.second.second - boundingBox.second.first).toInt()} Z${(boundingBox.third.second - boundingBox.third.first).toInt()}",
+                        text = stringResource(R.string.tp_dim_info, (boundingBox.first.second - boundingBox.first.first).toInt(), (boundingBox.second.second - boundingBox.second.first).toInt(), (boundingBox.third.second - boundingBox.third.first).toInt()),
                         fontSize = 9.sp,
                         color = CncTextSecondary,
                         fontFamily = FontFamily.Monospace
@@ -194,9 +197,9 @@ fun ToolpathVisualizer3D(
                         ),
                         modifier = Modifier.height(28.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.Shield, contentDescription = "Scan & Load", modifier = Modifier.size(13.dp))
+                        Icon(imageVector = Icons.Default.Shield, contentDescription = stringResource(R.string.toolpath_load_scan), modifier = Modifier.size(13.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("LOAD / SCAN", fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.toolpath_load_scan), fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     }
 
                     // Perspective Buttons
@@ -208,9 +211,9 @@ fun ToolpathVisualizer3D(
                         horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         listOf(
-                            ViewPerspective.TOP_XY to "TOP",
-                            ViewPerspective.ISO_3D to "ISO 3D",
-                            ViewPerspective.FRONT_XZ to "FRONT"
+                            ViewPerspective.TOP_XY to stringResource(R.string.view_top),
+                            ViewPerspective.ISO_3D to stringResource(R.string.view_iso),
+                            ViewPerspective.FRONT_XZ to stringResource(R.string.view_front)
                         ).forEach { (view, label) ->
                             val isSelected = perspective == view
                             Box(
@@ -484,7 +487,7 @@ fun ToolpathVisualizer3D(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = String.format(java.util.Locale.US, "%03d", seg.lineNumber),
+                                    text = String.format(Locale.US, "%03d", seg.lineNumber),
                                     fontSize = 9.sp,
                                     fontFamily = FontFamily.Monospace,
                                     color = if (isCurrent) CncActiveGreen else CncTextMuted,
@@ -519,10 +522,11 @@ fun ToolpathVisualizer3D(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(imageVector = Icons.Default.Timer, contentDescription = "Timer", tint = CncCyberCyan, modifier = Modifier.size(14.dp))
+                            Icon(imageVector = Icons.Default.Timer, contentDescription = stringResource(R.string.toolpath_run_time, ""), tint = CncCyberCyan, modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "RUN: ${String.format(java.util.Locale.US, "%02d:%02d", elapsedSeconds / 60, elapsedSeconds % 60)}",
+                                text = stringResource(R.string.toolpath_run_time, String.format(
+                                    Locale.US, "%02d:%02d", elapsedSeconds / 60, elapsedSeconds % 60)),
                                 fontSize = 10.5.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold,
@@ -530,7 +534,8 @@ fun ToolpathVisualizer3D(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "REM: ${String.format(java.util.Locale.US, "%02d:%02d", remainingSeconds / 60, remainingSeconds % 60)}",
+                                text = stringResource(R.string.toolpath_rem_time, String.format(
+                                    Locale.US, "%02d:%02d", remainingSeconds / 60, remainingSeconds % 60)),
                                 fontSize = 10.5.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold,
@@ -540,7 +545,7 @@ fun ToolpathVisualizer3D(
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "BLOCK ${activeLineIndex + 1}/${gcodeList.size} (${(progressPct * 100).toInt()}%)",
+                                text = stringResource(R.string.tp_block_info, activeLineIndex + 1, gcodeList.size, (progressPct * 100).toInt()),
                                 fontSize = 10.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Black,
@@ -548,7 +553,7 @@ fun ToolpathVisualizer3D(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Vc: ${surfaceSpeedMMin.toInt()} m/min",
+                                text = stringResource(R.string.tp_vc_info, surfaceSpeedMMin.toInt()),
                                 fontSize = 9.5.sp,
                                 fontFamily = FontFamily.Monospace,
                                 color = CncTextSecondary

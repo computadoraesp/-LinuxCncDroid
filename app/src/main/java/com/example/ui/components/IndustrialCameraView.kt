@@ -1,6 +1,7 @@
 package com.example.ui.components
 
 import android.Manifest
+import androidx.annotation.StringRes
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
@@ -79,6 +80,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.AxisCoord
 import com.example.model.MachineStateEnum
 import com.example.model.UnitSystem
@@ -99,12 +102,12 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executors
 
-enum class ReticleType(val label: String) {
-    CROSSHAIR("CRUCIFORME (0.01mm)"),
-    CONCENTRIC_CIRCLES("CÍRCULOS CONCÉNTRICOS"),
-    METROLOGY_GRID("CUADRÍCULA METROLÓGICA"),
-    CORNER_FINDER("BUSCADOR DE ESQUINA (EDGE)"),
-    NONE("SIN RETÍCULA")
+enum class ReticleType(@get:StringRes val labelRes: Int) {
+    CROSSHAIR(R.string.reticle_crosshair),
+    CONCENTRIC_CIRCLES(R.string.reticle_concentric),
+    METROLOGY_GRID(R.string.reticle_grid),
+    CORNER_FINDER(R.string.reticle_corner),
+    NONE(R.string.reticle_none)
 }
 
 @Composable
@@ -198,7 +201,7 @@ fun IndustrialCameraView(
                         modifier = Modifier.size(20.dp),
                     )
                     Text(
-                        text = "SISTEMA DE VISIÓN ÓPTICA INDUSTRIAL & CENTRADO (CNC CAM)",
+                        text = stringResource(R.string.camera_header),
                         color = CncTextPrimary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
@@ -212,7 +215,7 @@ fun IndustrialCameraView(
                             isFlashOn = !isFlashOn
                             cameraControl?.enableTorch(isFlashOn)
                         },
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.size(30.dp),
                     ) {
                         Icon(
                             imageVector = if (isFlashOn) Icons.Default.FlashOn else Icons.Default.FlashOff,
@@ -244,13 +247,13 @@ fun IndustrialCameraView(
                     // Telemetry toggle
                     IconButton(
                         onClick = { showTelemetryOverlay = !showTelemetryOverlay },
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.size(30.dp),
                     ) {
                         Icon(
                             imageVector = if (showTelemetryOverlay) Icons.Default.Layers else Icons.Default.LayersClear,
                             contentDescription = "Telemetry",
                             tint = if (showTelemetryOverlay) CncCyberCyan else CncTextSecondary,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(16.dp),
                         )
                     }
 
@@ -280,7 +283,7 @@ fun IndustrialCameraView(
                             }
                         },
                         enabled = machineState != MachineStateEnum.RUNNING,
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.size(30.dp),
                     ) {
                         Icon(
                             imageVector = Icons.Default.PhotoCamera,
@@ -315,13 +318,13 @@ fun IndustrialCameraView(
                             modifier = Modifier.size(48.dp)
                         )
                         Text(
-                            text = "ACCESO A CÁMARA INDUSTRIAL REQUERIDO",
+                            text = stringResource(R.string.camera_permission_required),
                             color = CncTextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
                         )
                         Text(
-                            text = "Se utiliza la cámara para inspección óptica de filo, centrado de cero de pieza (Optical WCS Alignment), verificación de ranuras y calibración visual de ejes.",
+                            text = stringResource(R.string.camera_permission_text),
                             color = CncTextSecondary,
                             fontSize = 11.sp,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -333,7 +336,7 @@ fun IndustrialCameraView(
                         ) {
                             Icon(imageVector = Icons.Default.Security, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("CONCEDER PERMISO DE CÁMARA", fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text(stringResource(R.string.camera_grant_permission_btn), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                     }
                 }
@@ -580,7 +583,7 @@ fun IndustrialCameraView(
                                 .padding(horizontal = 8.dp, vertical = 6.dp)
                         ) {
                             Text(
-                                text = "OPTICAL ALIGNMENT TELEMETRY",
+                                text = stringResource(R.string.camera_telemetry_header),
                                 color = CncCyberCyan,
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
@@ -588,7 +591,7 @@ fun IndustrialCameraView(
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "WCS: $currentWcs | ZOOM: ${String.format(Locale.US, "%.1fx", zoomRatio)} | SCALE: ${reticleScaleMm.toInt()}mm",
+                                text = stringResource(R.string.camera_telemetry_info, currentWcs, zoomRatio, reticleScaleMm.toInt()),
                                 color = CncTextPrimary,
                                 fontSize = 8.5.sp,
                                 fontFamily = FontFamily.Monospace
@@ -629,9 +632,9 @@ fun IndustrialCameraView(
                                 shape = RoundedCornerShape(4.dp),
                                 modifier = Modifier.height(28.dp)
                             ) {
-                                Icon(imageVector = Icons.Default.CenterFocusStrong, contentDescription = null, modifier = Modifier.size(12.dp))
+                                Icon(imageVector = Icons.Default.CenterFocusStrong, contentDescription = stringResource(R.string.camera_recentre_btn), modifier = Modifier.size(12.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("RE-CENTRAR RETÍCULA", fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.camera_recentre_btn), fontSize = 8.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -675,7 +678,7 @@ fun IndustrialCameraView(
                                     .padding(horizontal = 8.dp, vertical = 5.dp)
                             ) {
                                 Text(
-                                    text = rType.label,
+                                    text = stringResource(rType.labelRes),
                                     color = if (isSel) CncBackground else CncTextSecondary,
                                     fontSize = 8.5.sp,
                                     fontWeight = FontWeight.Bold
@@ -732,15 +735,20 @@ fun IndustrialCameraView(
                     val microLabelNeg = if (unitSystem == UnitSystem.IMPERIAL) "-0.002\"" else "-0.05"
                     val microLabelPos = if (unitSystem == UnitSystem.IMPERIAL) "+0.002\"" else "+0.05"
 
+                    val isEnabled = (machineState != MachineStateEnum.RUNNING) &&
+                            (machineState != MachineStateEnum.ESTOP) &&
+                            (machineState != MachineStateEnum.ERROR)
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text("MICRO-ALINEACIÓN ÓPTICA:", color = CncTextSecondary, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.camera_micro_alignment_label), color = CncTextSecondary, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
 
                         // X Axis Micro Steps
                         Button(
                             onClick = { onJogAxis("X", -microStepMm) },
+                            enabled = isEnabled,
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
@@ -751,6 +759,7 @@ fun IndustrialCameraView(
 
                         Button(
                             onClick = { onJogAxis("X", microStepMm) },
+                            enabled = isEnabled,
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
@@ -762,6 +771,7 @@ fun IndustrialCameraView(
                         // Y Axis Micro Steps
                         Button(
                             onClick = { onJogAxis("Y", -microStepMm) },
+                            enabled = isEnabled,
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
@@ -772,6 +782,7 @@ fun IndustrialCameraView(
 
                         Button(
                             onClick = { onJogAxis("Y", microStepMm) },
+                            enabled = isEnabled,
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
@@ -785,24 +796,26 @@ fun IndustrialCameraView(
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         OutlinedButton(
                             onClick = { onZeroAxis("X") },
+                            enabled = isEnabled,
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = CncCyberCyan),
                             border = androidx.compose.foundation.BorderStroke(1.dp, CncCyberCyan),
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                             modifier = Modifier.height(26.dp)
                         ) {
-                            Text("CERO X", fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.camera_zero_x), fontSize = 8.sp, fontWeight = FontWeight.Bold)
                         }
 
                         OutlinedButton(
                             onClick = { onZeroAxis("Y") },
+                            enabled = isEnabled,
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = CncCyberCyan),
                             border = androidx.compose.foundation.BorderStroke(1.dp, CncCyberCyan),
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                             modifier = Modifier.height(26.dp)
                         ) {
-                            Text("CERO Y", fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.camera_zero_y), fontSize = 8.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

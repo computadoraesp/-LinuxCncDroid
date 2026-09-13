@@ -74,6 +74,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.AxisCalibrationPoint
 import com.example.model.AxisCalibrationSession
 import com.example.ui.theme.CncActiveGreen
@@ -173,14 +175,14 @@ fun AxisCalibrationDialog(
                         }
                         Column {
                             Text(
-                                text = "METROLOGICAL AXIS CALIBRATION (ISO 230-2)",
+                                text = stringResource(R.string.calib_header),
                                 color = CncCyberCyan,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace
                             )
                             Text(
-                                text = "Screw Pitch Error Mapping & Expanded Uncertainty Evaluation",
+                                text = stringResource(R.string.calib_subtitle),
                                 color = CncTextSecondary,
                                 fontSize = 9.sp
                             )
@@ -195,7 +197,7 @@ fun AxisCalibrationDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(R.string.common_close),
                             tint = CncTextPrimary,
                             modifier = Modifier.size(16.dp)
                         )
@@ -229,7 +231,7 @@ fun AxisCalibrationDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "1. CALIBRATION PARAMETERS & INSTRUMENT UNCERTAINTY",
+                                    text = stringResource(R.string.calib_section1_header),
                                     color = CncActiveGreen,
                                     fontSize = 10.5.sp,
                                     fontWeight = FontWeight.Bold,
@@ -248,12 +250,12 @@ fun AxisCalibrationDialog(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.PlayArrow,
-                                        contentDescription = "Init",
+                                        contentDescription = stringResource(R.string.common_init),
                                         tint = Color.Black,
                                         modifier = Modifier.size(14.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("INIT SESSION", color = Color.Black, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.calib_init_btn), color = Color.Black, fontSize = 9.5.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
 
@@ -263,7 +265,7 @@ fun AxisCalibrationDialog(
                             ) {
                                 // Axis Selector
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text("AXIS", color = CncTextSecondary, fontSize = 9.sp)
+                                    Text(stringResource(R.string.calib_axis_label), color = CncTextSecondary, fontSize = 9.sp)
                                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                         listOf("X", "Y", "Z", "A").forEach { axis ->
                                             val isSel = selectedAxis == axis
@@ -290,7 +292,7 @@ fun AxisCalibrationDialog(
 
                                 // Total Travel
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text("TOTAL TRAVEL (mm)", color = CncTextSecondary, fontSize = 9.sp)
+                                    Text(stringResource(R.string.calib_travel_label), color = CncTextSecondary, fontSize = 9.sp)
                                     OutlinedTextField(
                                         value = totalTravelText,
                                         onValueChange = { totalTravelText = it },
@@ -312,7 +314,7 @@ fun AxisCalibrationDialog(
 
                                 // Instrument Uncertainty
                                 Column(modifier = Modifier.weight(1.2f)) {
-                                    Text("INST. UNCERTAINTY ±(mm)", color = CncTextSecondary, fontSize = 9.sp)
+                                    Text(stringResource(R.string.calib_uncertainty_label), color = CncTextSecondary, fontSize = 9.sp)
                                     OutlinedTextField(
                                         value = instrumentUncertaintyText,
                                         onValueChange = { instrumentUncertaintyText = it },
@@ -339,26 +341,58 @@ fun AxisCalibrationDialog(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Presets:", color = CncTextMuted, fontSize = 8.5.sp)
-                                listOf(
-                                    "Dial Ind (±0.003)" to "0.003",
-                                    "Glass Scale (±0.001)" to "0.001",
-                                    "Micrometer (±0.002)" to "0.002",
-                                    "Laser (±0.0005)" to "0.0005"
-                                ).forEach { (label, uVal) ->
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(CncSurface)
-                                            .border(0.5.dp, CncCardBorder, RoundedCornerShape(4.dp))
-                                            .clickable {
-                                                instrumentName = label
-                                                instrumentUncertaintyText = uVal
-                                            }
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                                    ) {
-                                        Text(label, color = CncTextSecondary, fontSize = 8.sp)
-                                    }
+                                Text(stringResource(R.string.calib_presets_label), color = CncTextMuted, fontSize = 8.5.sp)
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(CncSurface)
+                                        .border(0.5.dp, CncCardBorder, RoundedCornerShape(4.dp))
+                                        .clickable {
+                                            instrumentName = context.getString(R.string.calib_preset_dial)
+                                            instrumentUncertaintyText = "0.003"
+                                        }
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(stringResource(R.string.calib_preset_dial), color = CncTextSecondary, fontSize = 8.sp)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(CncSurface)
+                                        .border(0.5.dp, CncCardBorder, RoundedCornerShape(4.dp))
+                                        .clickable {
+                                            instrumentName = context.getString(R.string.calib_preset_glass)
+                                            instrumentUncertaintyText = "0.001"
+                                        }
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(stringResource(R.string.calib_preset_glass), color = CncTextSecondary, fontSize = 8.sp)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(CncSurface)
+                                        .border(0.5.dp, CncCardBorder, RoundedCornerShape(4.dp))
+                                        .clickable {
+                                            instrumentName = context.getString(R.string.calib_preset_micrometer)
+                                            instrumentUncertaintyText = "0.002"
+                                        }
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(stringResource(R.string.calib_preset_micrometer), color = CncTextSecondary, fontSize = 8.sp)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(CncSurface)
+                                        .border(0.5.dp, CncCardBorder, RoundedCornerShape(4.dp))
+                                        .clickable {
+                                            instrumentName = context.getString(R.string.calib_preset_laser)
+                                            instrumentUncertaintyText = "0.0005"
+                                        }
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(stringResource(R.string.calib_preset_laser), color = CncTextSecondary, fontSize = 8.sp)
                                 }
                             }
                         }
@@ -376,7 +410,7 @@ fun AxisCalibrationDialog(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = "2. STEP-BY-STEP CALIBRATION WIZARD (EVERY 10% TRAVEL)",
+                                text = stringResource(R.string.calib_section2_header),
                                 color = CncActiveGreen,
                                 fontSize = 10.5.sp,
                                 fontWeight = FontWeight.Bold,
@@ -464,7 +498,7 @@ fun AxisCalibrationDialog(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Text(
-                                                text = "POINT ${activePt.stepIndex + 1}/${pointsList.size} : SECTOR ${activePt.percentOfTravel.toInt()}% (${activePt.nominalPositionMm} mm)",
+                                                text = stringResource(R.string.calib_point_info, activePt.stepIndex + 1, pointsList.size, activePt.percentOfTravel.toInt(), activePt.nominalPositionMm),
                                                 color = CncCyberCyan,
                                                 fontSize = 10.sp,
                                                 fontWeight = FontWeight.Bold
@@ -478,28 +512,25 @@ fun AxisCalibrationDialog(
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.GpsFixed,
-                                                    contentDescription = "Move",
+                                                    contentDescription = stringResource(R.string.common_execute),
                                                     tint = CncCyberCyan,
                                                     modifier = Modifier.size(12.dp)
                                                 )
                                                 Spacer(modifier = Modifier.width(4.dp))
-                                                Text("DRIVE AXIS TO ${activePt.nominalPositionMm}mm", color = CncCyberCyan, fontSize = 8.5.sp)
+                                                Text(stringResource(R.string.calib_drive_axis_btn, activePt.nominalPositionMm.toString()), color = CncCyberCyan, fontSize = 8.5.sp)
                                             }
                                         }
 
                                         // Step instruction items
                                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text("• Paso 1: ", color = CncCyberCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                                Text("Posicione el eje en la cota nominal ${activePt.nominalPositionMm} mm.", color = CncTextPrimary, fontSize = 9.sp)
+                                                Text(stringResource(R.string.calib_step1, activePt.nominalPositionMm.toString()), color = CncTextPrimary, fontSize = 9.sp)
                                             }
                                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text("• Paso 2: ", color = CncCyberCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                                Text("Realice la lectura física en el instrumento patrón (reloj/micrómetro).", color = CncTextPrimary, fontSize = 9.sp)
+                                                Text(stringResource(R.string.calib_step2), color = CncTextPrimary, fontSize = 9.sp)
                                             }
                                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text("• Paso 3: ", color = CncCyberCyan, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                                Text("Introduzca el valor medido real observado.", color = CncTextPrimary, fontSize = 9.sp)
+                                                Text(stringResource(R.string.calib_step3), color = CncTextPrimary, fontSize = 9.sp)
                                             }
                                         }
 
@@ -511,7 +542,7 @@ fun AxisCalibrationDialog(
                                             OutlinedTextField(
                                                 value = inputMeasuredText,
                                                 onValueChange = { inputMeasuredText = it },
-                                                label = { Text("VALOR MEDIDO REAL (mm)", fontSize = 8.5.sp) },
+                                                label = { Text(stringResource(R.string.calib_measured_val_label), fontSize = 8.5.sp) },
                                                 singleLine = true,
                                                 placeholder = { Text(activePt.nominalPositionMm.toString(), fontSize = 9.sp) },
                                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -546,12 +577,12 @@ fun AxisCalibrationDialog(
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Check,
-                                                    contentDescription = "Save",
+                                                    contentDescription = stringResource(R.string.common_save),
                                                     tint = Color.Black,
                                                     modifier = Modifier.size(16.dp)
                                                 )
                                                 Spacer(modifier = Modifier.width(4.dp))
-                                                Text("GUARDAR Y SIGUIENTE", color = Color.Black, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                                Text(stringResource(R.string.calib_save_next_btn), color = Color.Black, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                                             }
                                         }
                                     }
@@ -576,7 +607,7 @@ fun AxisCalibrationDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "3. METROLOGY ERROR CURVE & UNCERTAINTY BANDS",
+                                    text = stringResource(R.string.calib_section3_header),
                                     color = CncActiveGreen,
                                     fontSize = 10.5.sp,
                                     fontWeight = FontWeight.Bold,
@@ -593,12 +624,12 @@ fun AxisCalibrationDialog(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.FileDownload,
-                                        contentDescription = "Export",
+                                        contentDescription = stringResource(R.string.common_execute),
                                         tint = Color.Black,
                                         modifier = Modifier.size(13.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("EXPORT comp.tbl", color = Color.Black, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.calib_export_btn), color = Color.Black, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
 
@@ -608,19 +639,19 @@ fun AxisCalibrationDialog(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 MetricBox(
-                                    label = "MAX ERROR (E_max)",
+                                    label = stringResource(R.string.calib_max_error),
                                     value = String.format(Locale.US, "%+.4f mm", activeSession.maxErrorMm),
                                     color = if (activeSession.maxErrorMm > 0.02) CncEstopRed else CncActiveGreen,
                                     modifier = Modifier.weight(1f)
                                 )
                                 MetricBox(
-                                    label = "EXPANDED UNCERTAINTY U (k=2)",
+                                    label = stringResource(R.string.calib_uncertainty_band),
                                     value = String.format(Locale.US, "±%.4f mm", activeSession.expandedUncertaintyMm),
                                     color = CncCyberCyan,
                                     modifier = Modifier.weight(1.2f)
                                 )
                                 MetricBox(
-                                    label = "MEAN SECTOR BIAS",
+                                    label = stringResource(R.string.calib_mean_bias),
                                     value = String.format(Locale.US, "%+.4f mm", activeSession.meanErrorMm),
                                     color = CncWarningAmber,
                                     modifier = Modifier.weight(1f)
@@ -654,13 +685,13 @@ fun AxisCalibrationDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(imageVector = Icons.Default.Description, contentDescription = null, tint = CncCyberCyan)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("LinuxCNC Screw Comp Table (comp.tbl)", color = CncCyberCyan, fontSize = 13.sp)
+                    Text(stringResource(R.string.calib_export_title), color = CncCyberCyan, fontSize = 13.sp)
                 }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Esta tabla de compensación mapea los errores de cada 10% del eje directamente en el HAL de LinuxCNC (módulo linear_comp) para compensación en tiempo real:",
+                        text = stringResource(R.string.calib_export_text),
                         color = CncTextSecondary,
                         fontSize = 9.5.sp
                     )
@@ -688,19 +719,19 @@ fun AxisCalibrationDialog(
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip = ClipData.newPlainText("comp.tbl", generatedCompText)
                         clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, "comp.tbl copiado al portapapeles", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.calib_toast_copied), Toast.LENGTH_SHORT).show()
                         showCompTableExportDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = CncCyberCyan)
                 ) {
                     Icon(imageVector = Icons.Default.ContentCopy, contentDescription = null, tint = Color.Black, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("COPIAR AL PORTAPAPELES", color = Color.Black, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.calib_copy_clipboard), color = Color.Black, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCompTableExportDialog = false }) {
-                    Text("CERRAR", color = CncTextSecondary, fontSize = 9.sp)
+                    Text(stringResource(R.string.common_close), color = CncTextSecondary, fontSize = 9.sp)
                 }
             },
             containerColor = CncSurface

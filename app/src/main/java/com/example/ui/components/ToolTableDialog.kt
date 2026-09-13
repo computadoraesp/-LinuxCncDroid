@@ -57,6 +57,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.CncToolItem
 import com.example.model.ToolType
 import com.example.ui.theme.CncCardBg
@@ -112,20 +114,20 @@ fun ToolTableDialog(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.Construction,
-                            contentDescription = "Tool Table",
+                            contentDescription = stringResource(R.string.tt_header),
                             tint = CncCyberCyan,
                             modifier = Modifier.size(24.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = "TOOL TABLE & POCKET MANAGER (tool.tbl)",
+                                text = stringResource(R.string.tt_header),
                                 fontWeight = FontWeight.Black,
                                 fontSize = 14.sp,
                                 color = CncTextPrimary,
                             )
                             Text(
-                                text = "Mounted: T${activeTool.id} • ${activeTool.description} (G43 H${activeTool.id})",
+                                text = stringResource(R.string.tt_mounted_info, activeTool.id, activeTool.description),
                                 fontSize = 10.sp,
                                 fontFamily = FontFamily.Monospace,
                                 color = CncWarningAmber,
@@ -140,9 +142,9 @@ fun ToolTableDialog(
                             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                             colors = ButtonDefaults.filledTonalButtonColors(containerColor = CncSurfaceVariant),
                         ) {
-                            Icon(imageVector = Icons.Default.Add, contentDescription = "Add Tool", modifier = Modifier.size(14.dp))
+                            Icon(imageVector = Icons.Default.Add, contentDescription = stringResource(R.string.tool_new), modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("NEW TOOL", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncCyberCyan)
+                            Text(stringResource(R.string.tool_new), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = CncCyberCyan)
                         }
 
                         IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
@@ -161,7 +163,7 @@ fun ToolTableDialog(
                     FilterChip(
                         selected = selectedFilter == null,
                         onClick = { selectedFilter = null },
-                        label = { Text("ALL (${tools.size})", fontSize = 9.sp) },
+                        label = { Text(stringResource(R.string.tt_all_filter, tools.size), fontSize = 9.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = CncCyberCyan,
                             selectedLabelColor = Color(0xFF00363D)
@@ -174,7 +176,7 @@ fun ToolTableDialog(
                             FilterChip(
                                 selected = selectedFilter == type,
                                 onClick = { selectedFilter = if (selectedFilter == type) null else type },
-                                label = { Text("${type.displayName} ($count)", fontSize = 9.sp) },
+                                label = { Text(stringResource(type.displayNameRes) + " ($count)", fontSize = 9.sp) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = CncCyberCyan,
                                     selectedLabelColor = Color(0xFF00363D)
@@ -303,7 +305,7 @@ fun ToolCardItem(
                                     shape = RoundedCornerShape(4.dp)
                                 ) {
                                     Text(
-                                        text = "SPINDLE ACTIVE (M6)",
+                                        text = stringResource(R.string.tt_spindle_active),
                                         fontSize = 8.sp,
                                         fontWeight = FontWeight.Black,
                                         color = CncRunningGreen,
@@ -314,7 +316,7 @@ fun ToolCardItem(
                         }
 
                         Text(
-                            text = "Pocket #${tool.pocket} • ${tool.toolType.displayName} • ${tool.flutes} Flutes • Max ${tool.maxRpm.toInt()} RPM",
+                            text = "Pocket #${tool.pocket} • ${stringResource(tool.toolType.displayNameRes)} • ${tool.flutes} Flutes • Max ${tool.maxRpm.toInt()} RPM",
                             fontSize = 9.5.sp,
                             color = CncTextSecondary,
                         )
@@ -348,9 +350,9 @@ fun ToolCardItem(
                             colors = ButtonDefaults.filledTonalButtonColors(containerColor = CncSurfaceVariant),
                             modifier = Modifier.height(28.dp)
                         ) {
-                            Icon(imageVector = Icons.Default.SwapHoriz, contentDescription = "Mount", modifier = Modifier.size(13.dp))
+                            Icon(imageVector = Icons.Default.SwapHoriz, contentDescription = stringResource(R.string.tool_mount), modifier = Modifier.size(13.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("MOUNT", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = CncCyberCyan)
+                            Text(stringResource(R.string.tool_mount), fontSize = 9.sp, fontWeight = FontWeight.Bold, color = CncCyberCyan)
                         }
                     }
 
@@ -374,7 +376,7 @@ fun ToolCardItem(
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(6.dp)) {
-                        Text("DIAMETER (D)", fontSize = 8.sp, color = CncTextSecondary)
+                        Text(stringResource(R.string.tool_diameter), fontSize = 8.sp, color = CncTextSecondary)
                         Text("Ø${String.format(java.util.Locale.US, "%.3f", tool.diameter)} mm", fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = CncTextPrimary)
                     }
                 }
@@ -386,7 +388,7 @@ fun ToolCardItem(
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(6.dp)) {
-                        Text("LENGTH OFFSET (H)", fontSize = 8.sp, color = CncTextSecondary)
+                        Text(stringResource(R.string.tool_length_offset), fontSize = 8.sp, color = CncTextSecondary)
                         Text("${String.format(java.util.Locale.US, "%.3f", tool.lengthOffset)} mm", fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = CncWarningAmber)
                     }
                 }
@@ -405,10 +407,10 @@ fun ToolCardItem(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text("TOUCH-OFF (G43.1)", fontSize = 8.sp, color = CncCyberCyan, fontWeight = FontWeight.Bold)
-                            Text("SET CURRENT Z", fontSize = 9.sp, fontWeight = FontWeight.Black, color = CncTextPrimary)
+                            Text(stringResource(R.string.tool_touch_off), fontSize = 8.sp, color = CncCyberCyan, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.tool_set_current_z), fontSize = 9.sp, fontWeight = FontWeight.Black, color = CncTextPrimary)
                         }
-                        Icon(imageVector = Icons.Default.VerticalAlignBottom, contentDescription = "Touch Off", tint = CncCyberCyan, modifier = Modifier.size(14.dp))
+                        Icon(imageVector = Icons.Default.VerticalAlignBottom, contentDescription = stringResource(R.string.tool_touch_off), tint = CncCyberCyan, modifier = Modifier.size(14.dp))
                     }
                 }
             }
@@ -422,7 +424,7 @@ fun ToolCardItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Tool Life: ${String.format(java.util.Locale.US, "%.1f", tool.lifeMinutesCurrent)} / ${tool.lifeMinutesMax.toInt()} min (${(lifePct * 100).toInt()}%)",
+                    text = stringResource(R.string.tool_life, tool.lifeMinutesCurrent, tool.lifeMinutesMax.toInt(), (lifePct * 100).toInt()),
                     fontSize = 8.5.sp,
                     fontFamily = FontFamily.Monospace,
                     color = CncTextSecondary
@@ -466,7 +468,7 @@ fun EditToolDetailsDialog(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = if (isNew) "ADD NEW TOOL (tool.tbl)" else "EDIT TOOL T${tool.id}",
+                    text = if (isNew) stringResource(R.string.tt_new_title) else stringResource(R.string.tt_edit_title, tool.id),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Black,
                     color = CncTextPrimary
@@ -481,14 +483,14 @@ fun EditToolDetailsDialog(
                     OutlinedTextField(
                         value = toolNumberStr,
                         onValueChange = { toolNumberStr = it },
-                        label = { Text("Tool (T#)", fontSize = 10.sp) },
+                        label = { Text(stringResource(R.string.tt_tool_num_label), fontSize = 10.sp) },
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
                     OutlinedTextField(
                         value = pocketStr,
                         onValueChange = { pocketStr = it },
-                        label = { Text("Pocket (P#)", fontSize = 10.sp) },
+                        label = { Text(stringResource(R.string.tt_pocket_num_label), fontSize = 10.sp) },
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
@@ -499,7 +501,7 @@ fun EditToolDetailsDialog(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Description", fontSize = 10.sp) },
+                    label = { Text(stringResource(R.string.tt_description_label), fontSize = 10.sp) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -513,14 +515,14 @@ fun EditToolDetailsDialog(
                     OutlinedTextField(
                         value = diameterStr,
                         onValueChange = { diameterStr = it },
-                        label = { Text("Diameter (mm)", fontSize = 10.sp) },
+                        label = { Text(stringResource(R.string.tt_diameter_label), fontSize = 10.sp) },
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
                     OutlinedTextField(
                         value = lengthOffsetStr,
                         onValueChange = { lengthOffsetStr = it },
-                        label = { Text("Length Offset H", fontSize = 10.sp) },
+                        label = { Text(stringResource(R.string.tt_length_h_label), fontSize = 10.sp) },
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
@@ -535,14 +537,14 @@ fun EditToolDetailsDialog(
                     OutlinedTextField(
                         value = flutesStr,
                         onValueChange = { flutesStr = it },
-                        label = { Text("Flutes", fontSize = 10.sp) },
+                        label = { Text(stringResource(R.string.tt_flutes_label), fontSize = 10.sp) },
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
                     OutlinedTextField(
                         value = maxRpmStr,
                         onValueChange = { maxRpmStr = it },
-                        label = { Text("Max RPM", fontSize = 10.sp) },
+                        label = { Text(stringResource(R.string.tt_max_rpm_label), fontSize = 10.sp) },
                         modifier = Modifier.weight(1f),
                         singleLine = true
                     )
@@ -556,7 +558,7 @@ fun EditToolDetailsDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("CANCEL", color = CncTextSecondary, fontSize = 11.sp)
+                        Text(stringResource(R.string.common_cancel), color = CncTextSecondary, fontSize = 11.sp)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -583,7 +585,7 @@ fun EditToolDetailsDialog(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = CncCyberCyan)
                     ) {
-                        Text("SAVE TOOL", color = Color(0xFF00363D), fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        Text(stringResource(R.string.tt_save_btn), color = Color(0xFF00363D), fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                 }
             }

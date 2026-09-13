@@ -53,6 +53,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.AxisCoord
 import com.example.model.MpgMultiplier
 import com.example.model.UnitSystem
@@ -87,6 +89,7 @@ fun VirtualMpgWheel(
     onZeroSelectedAxis: (String) -> Unit,
     modifier: Modifier = Modifier,
     unitSystem: UnitSystem = UnitSystem.METRIC,
+    isEnabled: Boolean = true,
 ) {
     var rotationAngleDeg by remember { mutableFloatStateOf(0f) }
     var accumulatedAngleDelta by remember { mutableFloatStateOf(0f) }
@@ -120,7 +123,7 @@ fun VirtualMpgWheel(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "VIRTUAL MPG HANDWHEEL (VOLANTE)",
+                        text = stringResource(R.string.mpg_header),
                         fontWeight = FontWeight.Black,
                         fontSize = 11.sp,
                         letterSpacing = 0.5.sp,
@@ -133,7 +136,7 @@ fun VirtualMpgWheel(
                     shape = RoundedCornerShape(4.dp)
                 ) {
                     Text(
-                        text = "100 DETENTS / 360°",
+                        text = stringResource(R.string.mpg_detents),
                         fontSize = 8.5.sp,
                         fontFamily = FontFamily.Monospace,
                         color = CncTextSecondary,
@@ -161,7 +164,7 @@ fun VirtualMpgWheel(
 
                     Surface(
                         onClick = { if (isAvailable) onSelectAxis(axisName) },
-                        enabled = isAvailable,
+                        enabled = isAvailable && isEnabled,
                         color = if (isSelected) axisColor else CncSurfaceVariant,
                         shape = RoundedCornerShape(6.dp),
                         modifier = Modifier
@@ -191,6 +194,7 @@ fun VirtualMpgWheel(
                     val isSelected = selectedMultiplier == mult
                     Surface(
                         onClick = { onSelectMultiplier(mult) },
+                        enabled = isEnabled,
                         color = if (isSelected) CncCyberCyan else CncSurfaceVariant,
                         shape = RoundedCornerShape(6.dp),
                         modifier = Modifier
@@ -240,7 +244,8 @@ fun VirtualMpgWheel(
                             )
                         )
                         .border(3.dp, Brush.sweepGradient(listOf(Color(0xFF4B5563), Color(0xFF1F2937), Color(0xFF6B7280), Color(0xFF1F2937))), CircleShape)
-                        .pointerInput(selectedAxis, selectedMultiplier) {
+                        .pointerInput(selectedAxis, selectedMultiplier, isEnabled) {
+                            if (!isEnabled) return@pointerInput
                             detectDragGestures { change, dragAmount ->
                                 change.consume()
                                 val center = Offset(size.width / 2f, size.height / 2f)
@@ -425,7 +430,7 @@ fun VirtualMpgWheel(
 
                         Column(modifier = Modifier.padding(8.dp)) {
                             Text(
-                                text = "$selectedAxis WORK POSITION",
+                                text = stringResource(R.string.mpg_axis_select, selectedAxis),
                                 fontSize = 8.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = CncTextSecondary
@@ -449,6 +454,7 @@ fun VirtualMpgWheel(
                     // Zero Axis Button
                     Button(
                         onClick = { onZeroSelectedAxis(selectedAxis) },
+                        enabled = isEnabled,
                         colors = ButtonDefaults.buttonColors(containerColor = CncSurfaceVariant),
                         shape = RoundedCornerShape(6.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
@@ -456,9 +462,9 @@ fun VirtualMpgWheel(
                             .fillMaxWidth()
                             .height(34.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.Adjust, contentDescription = "Zero Axis", tint = CncCyberCyan, modifier = Modifier.size(14.dp))
+                        Icon(imageVector = Icons.Default.Adjust, contentDescription = stringResource(R.string.common_zero), tint = CncCyberCyan, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("ZERO $selectedAxis (G92)", fontSize = 9.5.sp, fontWeight = FontWeight.Bold, color = CncCyberCyan)
+                        Text(stringResource(R.string.common_zero) + " $selectedAxis (G92)", fontSize = 9.5.sp, fontWeight = FontWeight.Bold, color = CncCyberCyan)
                     }
 
                     // Rapid Stepping Direction Buttons
@@ -468,6 +474,7 @@ fun VirtualMpgWheel(
                     ) {
                         FilledTonalButton(
                             onClick = { onMpgStep(selectedAxis, -1, selectedMultiplier) },
+                            enabled = isEnabled,
                             shape = RoundedCornerShape(6.dp),
                             contentPadding = PaddingValues(0.dp),
                             colors = ButtonDefaults.filledTonalButtonColors(containerColor = CncSurfaceVariant),
@@ -475,11 +482,12 @@ fun VirtualMpgWheel(
                                 .weight(1f)
                                 .height(32.dp)
                         ) {
-                            Text("− STEP", fontSize = 10.sp, fontWeight = FontWeight.Black, color = CncAxisRed)
+                            Text(stringResource(R.string.mpg_step_neg), fontSize = 10.sp, fontWeight = FontWeight.Black, color = CncAxisRed)
                         }
 
                         FilledTonalButton(
                             onClick = { onMpgStep(selectedAxis, 1, selectedMultiplier) },
+                            enabled = isEnabled,
                             shape = RoundedCornerShape(6.dp),
                             contentPadding = PaddingValues(0.dp),
                             colors = ButtonDefaults.filledTonalButtonColors(containerColor = CncSurfaceVariant),
@@ -487,7 +495,7 @@ fun VirtualMpgWheel(
                                 .weight(1f)
                                 .height(32.dp)
                         ) {
-                            Text("+ STEP", fontSize = 10.sp, fontWeight = FontWeight.Black, color = CncAxisGreen)
+                            Text(stringResource(R.string.mpg_step_pos), fontSize = 10.sp, fontWeight = FontWeight.Black, color = CncAxisGreen)
                         }
                     }
                 }

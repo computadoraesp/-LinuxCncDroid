@@ -20,6 +20,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.CoolantInfo
 import com.example.model.FeedInfo
 import com.example.model.MachineStateEnum
@@ -70,9 +72,9 @@ fun SpindleFeedPanel(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f).height(44.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "Cycle Start", modifier = Modifier.size(20.dp))
+                    Icon(imageVector = Icons.Default.PlayArrow, contentDescription = stringResource(R.string.btn_cycle_start), modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = if (isRunning) "RUNNING" else "CYCLE START", fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    Text(text = if (isRunning) stringResource(R.string.state_running_disp) else stringResource(R.string.btn_cycle_start), fontWeight = FontWeight.Black, fontSize = 11.sp)
                 }
 
                 // FEEDHOLD / PAUSE
@@ -86,9 +88,9 @@ fun SpindleFeedPanel(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f).height(44.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Pause, contentDescription = "Feedhold", modifier = Modifier.size(20.dp))
+                    Icon(imageVector = Icons.Default.Pause, contentDescription = stringResource(R.string.btn_feed_hold), modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "FEEDHOLD", fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    Text(text = stringResource(R.string.btn_feed_hold), fontWeight = FontWeight.Black, fontSize = 11.sp)
                 }
 
                 // STOP / ABORT
@@ -101,9 +103,9 @@ fun SpindleFeedPanel(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.weight(1f).height(44.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Stop, contentDescription = "Cycle Stop", modifier = Modifier.size(20.dp))
+                    Icon(imageVector = Icons.Default.Stop, contentDescription = stringResource(R.string.btn_cycle_stop), modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "ABORT", fontWeight = FontWeight.Black, fontSize = 11.sp)
+                    Text(text = stringResource(R.string.btn_cycle_stop), fontWeight = FontWeight.Black, fontSize = 11.sp)
                 }
             }
 
@@ -117,9 +119,9 @@ fun SpindleFeedPanel(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.RotateRight, contentDescription = "Spindle", tint = CncWarningAmber, modifier = Modifier.size(18.dp))
+                        Icon(imageVector = Icons.AutoMirrored.Filled.RotateRight, contentDescription = stringResource(R.string.spindle_motor_header), tint = CncWarningAmber, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("SPINDLE MOTOR", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = CncTextPrimary)
+                        Text(stringResource(R.string.spindle_motor_header), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = CncTextPrimary)
                     }
 
                     // Spindle Toggle Button
@@ -134,7 +136,7 @@ fun SpindleFeedPanel(
                         border = if (spindle.isEnabled) BorderStroke(2.dp, CncActiveGreenGlow) else null,
                         modifier = Modifier.height(30.dp)
                     ) {
-                        Text(if (spindle.isEnabled) "SPINDLE ON" else "SPINDLE OFF", fontSize = 10.sp, fontWeight = FontWeight.Black)
+                        Text(if (spindle.isEnabled) stringResource(R.string.spindle_on) else stringResource(R.string.spindle_off), fontSize = 10.sp, fontWeight = FontWeight.Black)
                     }
                 }
 
@@ -154,7 +156,7 @@ fun SpindleFeedPanel(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text("ACTUAL RPM", fontSize = 9.sp, color = CncTextMuted, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.spindle_actual_rpm), fontSize = 9.sp, color = CncTextMuted, fontWeight = FontWeight.Bold)
                         Text(
                             text = String.format(Locale.US, "%05.0f", spindle.actualRpm),
                             fontSize = 20.sp,
@@ -165,8 +167,8 @@ fun SpindleFeedPanel(
                     }
 
                     Column(horizontalAlignment = Alignment.End) {
-                        Text("SET: ${spindle.commandedRpm.toInt()} RPM", fontSize = 10.sp, color = CncTextSecondary, fontFamily = FontFamily.Monospace)
-                        Text("OVERRIDE: ${spindle.overridePct}%", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncCyberCyan, fontFamily = FontFamily.Monospace)
+                        Text(stringResource(R.string.spindle_set_rpm, spindle.commandedRpm.toInt()), fontSize = 10.sp, color = CncTextSecondary, fontFamily = FontFamily.Monospace)
+                        Text(stringResource(R.string.spindle_override_label, spindle.overridePct), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = CncCyberCyan, fontFamily = FontFamily.Monospace)
                     }
                 }
 
@@ -213,9 +215,9 @@ fun SpindleFeedPanel(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("FEEDRATE OVERRIDE", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = CncTextPrimary)
+                    Text(stringResource(R.string.feed_override), fontWeight = FontWeight.Bold, fontSize = 12.sp, color = CncTextPrimary)
                     Text(
-                        "${feed.feedOverridePct}% (${unitSystem.formatSpeed(effectiveFeed)})",
+                        stringResource(R.string.spindle_feed_info, feed.feedOverridePct, unitSystem.formatSpeed(effectiveFeed)),
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
@@ -247,9 +249,9 @@ fun SpindleFeedPanel(
                         ),
                         modifier = Modifier.weight(1f).height(34.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.WaterDrop, contentDescription = "Mist", modifier = Modifier.size(14.dp))
+                        Icon(imageVector = Icons.Default.WaterDrop, contentDescription = stringResource(R.string.coolant_mist), modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(if (coolant.mist) "MIST ON (M7)" else "MIST OFF", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(if (coolant.mist) stringResource(R.string.coolant_mist) else stringResource(R.string.coolant_mist_off), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
 
                     FilledTonalButton(
@@ -261,9 +263,9 @@ fun SpindleFeedPanel(
                         ),
                         modifier = Modifier.weight(1f).height(34.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.Waves, contentDescription = "Flood", modifier = Modifier.size(14.dp))
+                        Icon(imageVector = Icons.Default.Waves, contentDescription = stringResource(R.string.coolant_flood), modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(if (coolant.flood) "FLOOD ON (M8)" else "FLOOD OFF", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Text(if (coolant.flood) stringResource(R.string.coolant_flood) else stringResource(R.string.coolant_flood_off), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

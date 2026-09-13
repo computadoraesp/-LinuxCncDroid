@@ -19,7 +19,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import com.example.model.AxisCoord
+import com.example.model.MachineStateEnum
 import com.example.model.UnitSystem
 import com.example.ui.theme.*
 import java.util.Locale
@@ -31,6 +34,7 @@ enum class DroDisplayMode {
 @Composable
 fun DroPanel(
     modifier: Modifier = Modifier,
+    machineState: MachineStateEnum = MachineStateEnum.IDLE,
     axes: Map<String, AxisCoord>,
     currentCoordSystem: String,
     hasServoTorque: Boolean,
@@ -41,6 +45,8 @@ fun DroPanel(
     onHomeAll: () -> Unit,
 ) {
     var displayMode by remember { mutableStateOf(DroDisplayMode.WORK) }
+
+    val isEnabled = machineState != MachineStateEnum.RUNNING && machineState != MachineStateEnum.ESTOP && machineState != MachineStateEnum.ERROR
 
     Card(
         colors = CardDefaults.cardColors(containerColor = CncCardBg),
@@ -64,7 +70,7 @@ fun DroPanel(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "DIGITAL READOUT (DRO)",
+                        text = stringResource(R.string.dro_title),
                         fontWeight = FontWeight.Black,
                         fontSize = 12.sp,
                         letterSpacing = 1.sp,
@@ -81,9 +87,9 @@ fun DroPanel(
                     horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     listOf(
-                        DroDisplayMode.WORK to "WORK ($currentCoordSystem)",
-                        DroDisplayMode.MACHINE to "MACHINE (G53)",
-                        DroDisplayMode.DTG to "DTG",
+                        DroDisplayMode.WORK to stringResource(R.string.dro_work_pos, currentCoordSystem),
+                        DroDisplayMode.MACHINE to stringResource(R.string.dro_mach_pos),
+                        DroDisplayMode.DTG to stringResource(R.string.dro_dtg),
                     ).forEach { (mode, label) ->
                         val isSelected = displayMode == mode
                         Box(
@@ -114,6 +120,7 @@ fun DroPanel(
                         displayMode = displayMode,
                         hasServoTorque = hasServoTorque,
                         unitSystem = unitSystem,
+                        enabled = isEnabled,
                         onZero = { onZeroAxis(axis.name) },
                     ) { onHomeAxis(axis.name) }
                 }
@@ -128,6 +135,7 @@ fun DroPanel(
             ) {
                 OutlinedButton(
                     onClick = onZeroAll,
+                    enabled = isEnabled,
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = CncSurfaceVariant,
@@ -135,13 +143,14 @@ fun DroPanel(
                     ),
                     modifier = Modifier.weight(1f).height(38.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Adjust, contentDescription = "Zero All", modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.Default.Adjust, contentDescription = stringResource(R.string.dro_zero_all), modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("ZERO ALL AXES", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.dro_zero_all), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
 
                 OutlinedButton(
                     onClick = onHomeAll,
+                    enabled = isEnabled,
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = CncSurfaceVariant,
@@ -149,9 +158,9 @@ fun DroPanel(
                     ),
                     modifier = Modifier.weight(1f).height(38.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Home, contentDescription = "Home All", modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.Default.Home, contentDescription = stringResource(R.string.dro_home_all), modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("HOME ALL AXES", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.dro_home_all), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -164,6 +173,7 @@ fun DroAxisRow(
     displayMode: DroDisplayMode,
     hasServoTorque: Boolean,
     unitSystem: UnitSystem = UnitSystem.METRIC,
+    enabled: Boolean = true,
     onZero: () -> Unit,
     onHome: () -> Unit,
 ) {
@@ -266,28 +276,30 @@ fun DroAxisRow(
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     FilledTonalButton(
                         onClick = onZero,
+                        enabled = enabled,
                         shape = RoundedCornerShape(6.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                         colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = CncSurfaceVariant,
-                            contentColor = CncCyberCyan
+                            containerColor = if (enabled) CncSurfaceVariant else CncSurfaceVariant.copy(alpha = 0.5f),
+                            contentColor = if (enabled) CncCyberCyan else CncTextMuted
                         ),
                         modifier = Modifier.height(32.dp)
                     ) {
-                        Text("ZERO", fontSize = 10.sp, fontWeight = FontWeight.Black)
+                        Text(stringResource(R.string.common_zero), fontSize = 10.sp, fontWeight = FontWeight.Black)
                     }
 
                     IconButton(
                         onClick = onHome,
+                        enabled = enabled,
                         modifier = Modifier
                             .size(32.dp)
                             .clip(RoundedCornerShape(6.dp))
-                            .background(CncSurfaceVariant)
+                            .background(if (enabled) CncSurfaceVariant else CncSurfaceVariant.copy(alpha = 0.5f))
                     ) {
                         Icon(
                             imageVector = Icons.Default.Home,
                             contentDescription = "Home ${axis.name}",
-                            tint = if (axis.isHomed) CncActiveGreen else CncTextMuted,
+                            tint = if (enabled && axis.isHomed) CncActiveGreen else if (enabled) CncTextMuted else CncTextMuted.copy(alpha = 0.5f),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -304,7 +316,7 @@ fun DroAxisRow(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "TORQUE: ${String.format(Locale.US, "%.1f", axis.loadTorquePct)}%",
+                                text = stringResource(R.string.dro_torque, String.format(Locale.US, "%.1f", axis.loadTorquePct)),
                                 fontSize = 10.sp,
                                 fontFamily = FontFamily.Monospace,
                                 color = if (axis.loadTorquePct > 80) CncEstopRed else if (axis.loadTorquePct > 50) CncWarningAmber else CncTextSecondary,
@@ -312,7 +324,7 @@ fun DroAxisRow(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "DRV: ${String.format(Locale.US, "%.1f", axis.driveTempC)}°C",
+                                text = stringResource(R.string.dro_drive_temp, String.format(Locale.US, "%.1f", axis.driveTempC)),
                                 fontSize = 10.sp,
                                 fontFamily = FontFamily.Monospace,
                                 color = CncTextSecondary

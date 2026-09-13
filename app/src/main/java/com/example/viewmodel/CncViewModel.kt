@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.room.Room
+import com.example.R
 import com.example.data.local.CncAppDatabase
 import com.example.data.local.MachineProfileEntity
 import com.example.data.local.MdiMacroEntity
@@ -159,20 +160,21 @@ class CncViewModel(application: Application, private val savedStateHandle: Saved
 
     private fun seedInitialData() {
         viewModelScope.launch(exceptionHandler) {
+            val context = getApplication<Application>()
             // Seed sample profiles if empty
             val initialProfiles = listOf(
-                MachineProfileEntity(name = "Workshop VMC-850 (EtherCAT + Delta)", hostIp = "192.168.1.100", architecture = "ETHERCAT_DELTA", isDefault = true),
-                MachineProfileEntity(name = "Prototype Router (Mesa 7i96S FPGA)", hostIp = "10.42.0.1", architecture = "MESA_FPGA"),
-                MachineProfileEntity(name = "Mini Mill (Parallel Port Legacy)", hostIp = "192.168.1.150", architecture = "PARPORT_LEGACY"),
+                MachineProfileEntity(name = context.getString(R.string.profile_workshop_vmc), hostIp = "192.168.1.100", architecture = "ETHERCAT_DELTA", isDefault = true),
+                MachineProfileEntity(name = context.getString(R.string.profile_prototype_router), hostIp = "10.42.0.1", architecture = "MESA_FPGA"),
+                MachineProfileEntity(name = context.getString(R.string.profile_mini_mill), hostIp = "192.168.1.150", architecture = "PARPORT_LEGACY"),
             )
             initialProfiles.forEach { db.profileDao().insertProfile(it) }
 
             val initialMacros = listOf(
-                MdiMacroEntity("m1", "Zero All (G54)", "G10 L20 P1 X0 Y0 Z0", "Set current location as G54 Work Zero", "SETUP"),
-                MdiMacroEntity("m2", "Park Position", "G0 G53 Z0\nG0 G53 X0 Y300", "Retract Z and move table forward", "MOTION"),
-                MdiMacroEntity("m3", "Spindle Warmup", "M3 S3000\nG4 P5\nM3 S8000\nG4 P5\nM3 S15000", "3-Stage spindle bearing warmup cycle", "SPINDLE"),
-                MdiMacroEntity("m4", "Laser Crosshair", "M64 P0", "Toggle optical alignment laser crosshair", "TOOLING"),
-                MdiMacroEntity("m5", "Tool Length Touch", "G38.2 Z-50 F100\nG91 G0 Z2\nG90", "Execute toolsetter probe touch routine", "PROBING"),
+                MdiMacroEntity("m1", context.getString(R.string.macro_zero_all_label), "G10 L20 P1 X0 Y0 Z0", context.getString(R.string.macro_zero_all_desc), "SETUP"),
+                MdiMacroEntity("m2", context.getString(R.string.macro_park_label), "G0 G53 Z0\nG0 G53 X0 Y300", context.getString(R.string.macro_park_desc), "MOTION"),
+                MdiMacroEntity("m3", context.getString(R.string.macro_warmup_label), "M3 S3000\nG4 P5\nM3 S8000\nG4 P5\nM3 S15000", context.getString(R.string.macro_warmup_desc), "SPINDLE"),
+                MdiMacroEntity("m4", context.getString(R.string.macro_laser_label), "M64 P0", context.getString(R.string.macro_laser_desc), "TOOLING"),
+                MdiMacroEntity("m5", context.getString(R.string.macro_probe_z_label), "G38.2 Z-50 F100\nG91 G0 Z2\nG90", context.getString(R.string.macro_probe_z_desc), "PROBING"),
             )
             db.macroDao().insertMacros(initialMacros)
         }
@@ -182,7 +184,7 @@ class CncViewModel(application: Application, private val savedStateHandle: Saved
     fun setUserRole(role: UserRole) {
         _userRole.value = role
         feedbackManager.triggerActionClick()
-        engine.logEvent(LogSeverity.INFO, "AUTH", "Active security level switched to ${role.displayName}")
+        engine.logEvent(LogSeverity.INFO, "AUTH", "Active security level switched to ${role.name}")
     }
 
     // Unit System switching (G21 MM <-> G20 INCH)
@@ -290,7 +292,7 @@ class CncViewModel(application: Application, private val savedStateHandle: Saved
             feedbackManager.triggerSuccessHaptic()
             engine.loadGCodeContent(fileName, content)
             val fp = if (result.sha256Fingerprint.length >= 8) result.sha256Fingerprint.substring(0, 8) else result.sha256Fingerprint
-            engine.logEvent(LogSeverity.INFO, "SECURITY", "G-Code verification PASSED [${result.threatLevel.displayName}]. SHA-256: $fp")
+            engine.logEvent(LogSeverity.INFO, "SECURITY", "G-Code verification PASSED [${result.threatLevel.name}]. SHA-256: $fp")
         } else {
             feedbackManager.triggerEstopHaptic()
             feedbackManager.playErrorAlarm()

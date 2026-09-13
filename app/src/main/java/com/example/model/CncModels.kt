@@ -4,38 +4,51 @@ import androidx.annotation.StringRes
 import androidx.annotation.ArrayRes
 import java.util.Locale
 
-enum class MachineStateEnum(val displayName: String) {
-    ESTOP("ESTOP ACTIVE"),
-    OFF("MACHINE OFF"),
-    ON("MACHINE READY"),
-    IDLE("IDLE"),
-    RUNNING("CYCLE RUNNING"),
-    PAUSED("FEED HOLD / PAUSED"),
-    HOMING("HOMING AXES"),
-    ERROR("SYSTEM ERROR"),
+import com.example.R
+
+enum class MachineStateEnum(@get:StringRes val displayNameRes: Int) {
+    ESTOP(R.string.state_estop_disp),
+    OFF(R.string.state_off_disp),
+    ON(R.string.state_on_disp),
+    IDLE(R.string.state_idle_disp),
+    RUNNING(R.string.state_running_disp),
+    PAUSED(R.string.state_paused_disp),
+    HOMING(R.string.state_homing_disp),
+    ERROR(R.string.state_error_disp),
 }
 
-enum class TaskMode(val displayName: String) {
-    MANUAL("MANUAL"),
-    MDI("MDI CONSOLE"),
-    AUTO("AUTO PROGRAM")
+enum class TaskMode(@get:StringRes val displayNameRes: Int) {
+    MANUAL(R.string.mode_manual_disp),
+    MDI(R.string.mode_mdi_disp),
+    AUTO(R.string.mode_auto_disp)
 }
 
-enum class CncNavigationTab {
-    CONTROL, TOOLPATH, CAMERA, PROBING, ETHERCAT, MDI, LOGS, CONFIG
+enum class CncNavigationTab(@get:StringRes val titleRes: Int) {
+    CONTROL(R.string.tab_control),
+    TOOLPATH(R.string.tab_toolpath),
+    CAMERA(R.string.tab_camera),
+    PROBING(R.string.tab_probing),
+    ETHERCAT(R.string.tab_ethercat),
+    MDI(R.string.tab_mdi),
+    LOGS(R.string.tab_logs),
+    CONFIG(R.string.tab_config)
 }
 
-enum class HardwareArchitecture(val displayName: String, val level: Int, val description: String) {
-    ETHERCAT_DELTA("EtherCAT + Delta B3/A3 Servos", 3, "High-speed 100Mbps bus, real-time torque/temperature telemetry, CiA 402 drives"),
-    MESA_FPGA("Mesa 7i96S / 7i76E FPGA", 2, "Hardware Step/Dir generation, high-speed differential encoders, isolated I/O"),
-    PARPORT_LEGACY("Parallel Port (Legacy Step/Dir)", 1, "Software step generation, standard LinuxCNC HAL motion kernel"),
-    STEP_DIR_CLOSED_LOOP("Closed-Loop Stepper Hybrid", 2, "Encoder step loss detection, fast positioning with step/dir abstraction")
+enum class HardwareArchitecture(
+    @get:StringRes val displayNameRes: Int,
+    val level: Int,
+    @get:StringRes val descriptionRes: Int,
+) {
+    ETHERCAT_DELTA(R.string.arch_ethercat_name, 3, R.string.arch_ethercat_desc),
+    MESA_FPGA(R.string.arch_mesa_name, 2, R.string.arch_mesa_desc),
+    PARPORT_LEGACY(R.string.arch_parport_name, 1, R.string.arch_parport_desc),
+    STEP_DIR_CLOSED_LOOP(R.string.arch_closed_loop_name, 2, R.string.arch_closed_loop_desc)
 }
 
-enum class UserRole(val displayName: String) {
-    OPERATOR("Operator (Control & Jog)"),
-    VIEWER("Viewer (Read-Only DRO)"),
-    ADMIN("Administrator (Full Tuning & MDI)")
+enum class UserRole(@get:StringRes val displayNameRes: Int) {
+    OPERATOR(R.string.role_operator_disp),
+    VIEWER(R.string.role_viewer_disp),
+    ADMIN(R.string.role_admin_disp)
 }
 
 data class AxisCoord(
@@ -89,15 +102,15 @@ data class ToolInfo(
     val atcSlot: Int = 1,
 )
 
-enum class ToolType(val displayName: String, val iconName: String) {
-    ENDMILL("Flat Endmill", "ic_endmill"),
-    BALLNOSE("Ball Nose", "ic_ballnose"),
-    FACE_MILL("Face Mill", "ic_facemill"),
-    DRILL("Twist Drill", "ic_drill"),
-    CHAMFER("Chamfer Mill", "ic_chamfer"),
-    TAP("Thread Tap", "ic_tap"),
-    TOUCH_PROBE("3D Touch Probe", "ic_probe"),
-    FLY_CUTTER("Fly Cutter", "ic_flycutter")
+enum class ToolType(@get:StringRes val displayNameRes: Int, val iconName: String) {
+    ENDMILL(R.string.tool_type_endmill_disp, "ic_endmill"),
+    BALLNOSE(R.string.tool_type_ballnose_disp, "ic_ballnose"),
+    FACE_MILL(R.string.tool_type_facemill_disp, "ic_facemill"),
+    DRILL(R.string.tool_type_drill_disp, "ic_drill"),
+    CHAMFER(R.string.tool_type_chamfer_disp, "ic_chamfer"),
+    TAP(R.string.tool_type_tap_disp, "ic_tap"),
+    TOUCH_PROBE(R.string.tool_type_probe_disp, "ic_probe"),
+    FLY_CUTTER(R.string.tool_type_flycutter_disp, "ic_flycutter")
 }
 
 data class CncToolItem(
@@ -180,9 +193,9 @@ enum class MpgMultiplier(val stepMm: Double, val metricLabel: String, val imperi
     }
 }
 
-enum class JogControlStyle(val displayName: String) {
-    BUTTON_PAD("KEYPAD"),
-    VIRTUAL_MPG("MPG WHEEL")
+enum class JogControlStyle(@get:StringRes val displayNameRes: Int) {
+    BUTTON_PAD(R.string.jog_style_pad_disp),
+    VIRTUAL_MPG(R.string.jog_style_mpg_disp)
 }
 
 data class EtherCatSlaveInfo(
@@ -234,12 +247,12 @@ data class GCodeSegment(
 )
 
 
-enum class LogSeverity(val displayName: String) {
-    INFO("INFO"),
-    WARNING("WARN"),
-    ERROR("ERROR"),
-    CRITICAL("CRITICAL"),
-    SECURITY("SECURITY")
+enum class LogSeverity(@get:StringRes val displayNameRes: Int) {
+    INFO(R.string.log_info_disp),
+    WARNING(R.string.log_warn_disp),
+    ERROR(R.string.log_error_disp),
+    CRITICAL(R.string.log_crit_disp),
+    SECURITY(R.string.log_security_disp)
 }
 
 data class CncEventLog(
@@ -250,10 +263,10 @@ data class CncEventLog(
     val message: String = "",
 )
 
-enum class ThreatLevel(val displayName: String) {
-    CLEAN("SECURE / VERIFIED"),
-    SUSPICIOUS("SECURITY WARNING"),
-    MALWARE_BLOCKED("THREAT BLOCKED")
+enum class ThreatLevel(@get:StringRes val displayNameRes: Int) {
+    CLEAN(R.string.threat_clean_disp),
+    SUSPICIOUS(R.string.threat_suspicious_disp),
+    MALWARE_BLOCKED(R.string.threat_blocked_disp)
 }
 
 data class SecurityThreat(
@@ -282,11 +295,11 @@ data class SecurityScanResult(
 
 data class MaterialPreset(
     val id: String,
-    val name: String,
-    val category: String,
+    @get:StringRes val nameRes: Int,
+    @get:StringRes val categoryRes: Int,
     val surfaceSpeedMMin: Double, // Vc (m/min)
     val feedPerToothMm: Double,   // Fz (mm/tooth for 6mm standard)
-    val powerFactor: Double,       // specific cutting force factor
+    val powerFactor: Double,       // specific cutting force factor,
 )
 
 data class SpeedFeedCalculation(

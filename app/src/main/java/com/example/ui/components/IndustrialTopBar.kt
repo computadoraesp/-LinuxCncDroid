@@ -55,6 +55,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import com.example.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -151,13 +153,13 @@ fun IndustrialTopBar(
                 ) {
                     Icon(
                         imageVector = if (isEstop) Icons.Default.Warning else Icons.Default.Block,
-                        contentDescription = "ESTOP Button",
+                        contentDescription = stringResource(R.string.topbar_estop),
                         tint = Color.White,
                         modifier = Modifier.size(15.dp),
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(
-                        text = if (isEstop) "E-STOP" else "E-STOP",
+                        text = stringResource(R.string.topbar_estop),
                         fontWeight = FontWeight.Black,
                         fontSize = 11.sp,
                         letterSpacing = 0.5.sp,
@@ -184,7 +186,7 @@ fun IndustrialTopBar(
                     ) {
                         Icon(
                             imageVector = Icons.Default.PowerSettingsNew,
-                            contentDescription = "Machine Power",
+                            contentDescription = stringResource(if (isPowerOn) R.string.topbar_power_off else R.string.topbar_power_on),
                             tint = if (isPowerOn) CncActiveGreen else CncTextMuted,
                             modifier = Modifier.size(18.dp),
                         )
@@ -216,7 +218,7 @@ fun IndustrialTopBar(
                         )
                         Spacer(modifier = Modifier.width(3.dp))
                         Text(
-                            text = machineState.displayName,
+                            text = stringResource(machineState.displayNameRes),
                             color = stateColor,
                             fontWeight = FontWeight.Bold,
                             fontSize = 10.sp
@@ -298,7 +300,7 @@ fun IndustrialTopBar(
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        text = "$gCoord Work Coordinate",
+                                        text = stringResource(R.string.topbar_wcs_label, gCoord),
                                         color = if (gCoord == currentCoordSystem) CncCyberCyan else CncTextPrimary,
                                         fontWeight = if (gCoord == currentCoordSystem) FontWeight.Bold else FontWeight.Normal
                                     )
@@ -347,7 +349,7 @@ fun IndustrialTopBar(
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        text = role.displayName,
+                                        text = stringResource(role.displayNameRes),
                                         color = if (role == userRole) CncActiveGreen else CncTextPrimary
                                     )
                                 },
@@ -370,7 +372,7 @@ fun IndustrialTopBar(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        if (isSimulated) "SIM: ${architecture.name}" else "REAL: ${architecture.name}",
+                        if (isSimulated) stringResource(R.string.topbar_sim_mode, stringResource(architecture.displayNameRes)) else stringResource(R.string.topbar_real_mode, stringResource(architecture.displayNameRes)),
                         fontSize = 7.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (isSimulated) CncWarningAmber else CncActiveGreen,
@@ -396,7 +398,7 @@ fun IndustrialTopBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Shield,
-                        contentDescription = "Cybersecurity Scanner",
+                        contentDescription = stringResource(R.string.topbar_cyber_scanner_desc),
                         tint = CncCyberCyan,
                         modifier = Modifier.size(17.dp)
                     )
@@ -413,7 +415,7 @@ fun IndustrialTopBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Calculate,
-                        contentDescription = "Speeds and Feeds",
+                        contentDescription = stringResource(R.string.topbar_speeds_feeds_desc),
                         tint = CncWarningAmber,
                         modifier = Modifier.size(17.dp)
                     )
@@ -430,7 +432,7 @@ fun IndustrialTopBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Construction,
-                        contentDescription = "Tool Table Manager",
+                        contentDescription = stringResource(R.string.topbar_tool_table_desc),
                         tint = CncCyberCyan,
                         modifier = Modifier.size(17.dp)
                     )
@@ -447,7 +449,7 @@ fun IndustrialTopBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Straighten,
-                        contentDescription = "Axis Metrology Calibration",
+                        contentDescription = stringResource(R.string.topbar_axis_metrology_desc),
                         tint = CncActiveGreen,
                         modifier = Modifier.size(17.dp)
                     )
@@ -464,7 +466,7 @@ fun IndustrialTopBar(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                        contentDescription = "CNC Manual & SOPs",
+                        contentDescription = stringResource(R.string.topbar_manual_desc),
                         tint = CncCyberCyan,
                         modifier = Modifier.size(17.dp)
                     )
@@ -493,7 +495,7 @@ fun IndustrialTopBar(
                     ) {
                         Icon(
                             imageVector = Icons.Default.NotificationsActive,
-                            contentDescription = "Event Logs",
+                            contentDescription = stringResource(R.string.topbar_event_logs_desc),
                             tint = if (errorCount > 0) CncEstopRed else CncTextPrimary,
                             modifier = Modifier.size(17.dp)
                         )
