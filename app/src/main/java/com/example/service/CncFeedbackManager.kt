@@ -147,7 +147,52 @@ class CncFeedbackManager(context: Context) {
     fun playCycleCompleteSound() {
         scope.launch {
             try {
-                toneGenerator?.startTone(ToneGenerator.TONE_PROP_ACK, 250)
+                // Three ascending beeps — unmistakably "done"
+                toneGenerator?.startTone(ToneGenerator.TONE_PROP_ACK, 180)
+                delay(220.milliseconds)
+                toneGenerator?.startTone(ToneGenerator.TONE_PROP_ACK, 180)
+                delay(220.milliseconds)
+                toneGenerator?.startTone(ToneGenerator.TONE_PROP_ACK, 350)
+            } catch (_: Exception) {}
+        }
+    }
+
+    /**
+     * Distinctive low-battery alert: two firm pulses separated by a short gap.
+     * Deliberately different from the ESTOP waveform so the operator can identify it
+     * without looking at the screen.
+     */
+    fun playLowBatteryAlert() {
+        scope.launch {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val timings    = longArrayOf(0, 120, 100, 120)
+                    val amplitudes = intArrayOf(0, 180, 0, 180)
+                    vibrator?.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator?.vibrate(longArrayOf(0, 120, 100, 120), -1)
+                }
+                toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP2, 250)
+            } catch (_: Exception) {}
+        }
+    }
+
+    /**
+     * Stronger success pattern for cycle completion haptic —
+     * three pulses so it is felt in a pocket.
+     */
+    fun playCycleCompleteHaptic() {
+        scope.launch {
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val timings    = longArrayOf(0, 80, 60, 80, 60, 200)
+                    val amplitudes = intArrayOf(0, 160, 0, 160, 0, 255)
+                    vibrator?.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator?.vibrate(longArrayOf(0, 80, 60, 80, 60, 200), -1)
+                }
             } catch (_: Exception) {}
         }
     }
