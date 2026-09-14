@@ -211,6 +211,19 @@ class LinuxCncEngine {
     private val _networkLatencyMs = MutableStateFlow(2)
     val networkLatencyMs: StateFlow<Int> = _networkLatencyMs.asStateFlow()
 
+    private val _connectionTelemetry = MutableStateFlow(
+        ConnectionTelemetry(
+            isConnected = true,
+            isWeakSignal = false,
+            isReconnecting = false,
+            reconnectAttempt = 0,
+            secondsUntilReconnect = 0,
+            latencyMs = 2,
+            lastDisconnectReason = null
+        )
+    )
+    val connectionTelemetry: StateFlow<ConnectionTelemetry> = _connectionTelemetry.asStateFlow()
+
     private val _activeJogAxis = MutableStateFlow<String?>(null)
     private var jogDirection = 0
     private var jogSpeed = 1000.0
@@ -221,7 +234,8 @@ class LinuxCncEngine {
     private var isConnectedToRealServer = false
 
     private var reconnectJob: Job? = null
-    private var currentBackoffMs = 1000L
+    private var reconnectAttemptCounter = 0
+    private var currentBackoffMs = 2000L
     private val maxBackoffMs = 30000L
 
     init {
@@ -515,6 +529,16 @@ class LinuxCncEngine {
         sendRemoteCommand("ZERO_AXIS", mapOf("axis" to axis, "coord" to _currentCoordSystem.value))
     }
 
+    fun setAxisWorkPosition(axis: String, position: Double) {
+        val currentMap = _axes.value.toMutableMap()
+        val axisObj = currentMap[axis]
+        if (axisObj != null) {
+            currentMap[axis] = axisObj.copy(workPos = position)
+            _axes.value = currentMap
+        }
+        sendRemoteCommand("SET_AXIS_POS", mapOf("axis" to axis, "pos" to position, "coord" to _currentCoordSystem.value))
+    }
+
     fun zeroAllAxes() {
         val currentMap = _axes.value.toMutableMap()
         currentMap.keys.forEach { key ->
@@ -755,7 +779,17 @@ class LinuxCncEngine {
                         isConnectedToRealServer = true
                         _isSimulatedMode.value = false
                         _capabilities.value = _capabilities.value.copy(isConnected = true, pingMs = 5)
-                        currentBackoffMs = 1000L // Reset backoff on success
+                        currentBackoffMs = 2000L // Reset backoff on success
+                        reconnectAttemptCounter = 0
+                        _connectionTelemetry.value = ConnectionTelemetry(
+                            isConnected = true,
+                            isWeakSignal = false,
+                            isReconnecting = false,
+                            reconnectAttempt = 0,
+                            secondsUntilReconnect = 0,
+                            latencyMs = 5,
+                            lastDisconnectReason = null,
+                        )
                         logEvent(LogSeverity.INFO, "NETWORK", "Connected to LinuxCNC Host")
                     }
 
@@ -777,18 +811,123 @@ class LinuxCncEngine {
         }
     }
 
-    private fun handleDisconnect(reason: String) {
+    fun handleDisconnect(reason: String) {
         isConnectedToRealServer = false
         _isSimulatedMode.value = true
         _capabilities.value = _capabilities.value.copy(isConnected = false)
-        logEvent(LogSeverity.WARNING, "NETWORK", "$reason. Reconnecting in ${currentBackoffMs / 1000}s...")
-        
+        reconnectAttemptCounter++
+        val waitSeconds = (currentBackoffMs / 1000L).coerceIn(2L, 30L).toInt()
+
+        _connectionTelemetry.value = _connectionTelemetry.value.copy(
+            isConnected = false,
+            isReconnecting = true,
+            reconnectAttempt = reconnectAttemptCounter,
+            secondsUntilReconnect = waitSeconds,
+            lastDisconnectReason = reason,
+        )
+
+        logEvent(LogSeverity.WARNING, "NETWORK", "$reason. Reconexión automática en ${waitSeconds}s (Intento #$reconnectAttemptCounter)...")
+
         reconnectJob?.cancel()
         reconnectJob = scope.launch {
-            delay(currentBackoffMs.milliseconds)
+            for (sec in waitSeconds downTo 1) {
+                _connectionTelemetry.value = _connectionTelemetry.value.copy(
+                    secondsUntilReconnect = sec,
+                )
+                delay(1000.milliseconds)
+            }
+            _connectionTelemetry.value = _connectionTelemetry.value.copy(secondsUntilReconnect = 0)
             currentBackoffMs = (currentBackoffMs * 2).coerceAtMost(maxBackoffMs)
             internalConnect()
         }
+    }
+
+    fun reconnectNow() {
+        reconnectJob?.cancel()
+        _connectionTelemetry.value = _connectionTelemetry.value.copy(
+            secondsUntilReconnect = 0,
+            isReconnecting = true,
+        )
+        logEvent(LogSeverity.INFO, "NETWORK", "Reconexión manual iniciada por el operador...")
+        currentBackoffMs = 2000L
+        internalConnect()
+    }
+
+    fun setWeakSignalSimulation(isWeak: Boolean) {
+        val latency = if (isWeak) 380 else 2
+        _networkLatencyMs.value = latency
+        _connectionTelemetry.value = _connectionTelemetry.value.copy(
+            isWeakSignal = isWeak,
+            latencyMs = latency,
+        )
+        if (isWeak) {
+            logEvent(
+                LogSeverity.WARNING,
+                "NETWORK",
+                "Alarma de red: Señal débil detectada. Latencia elevada ($latency ms). Riesgo de pérdida de sincronismo.",
+            )
+        } else {
+            logEvent(
+                LogSeverity.INFO,
+                "NETWORK",
+                "Señal de red normalizada (Latencia: $latency ms).",
+            )
+        }
+    }
+
+    fun simulateConnectionLoss() {
+        handleDisconnect("Pérdida de señal de red simulada por el operador")
+    }
+
+    fun setSimulatedMode(enabled: Boolean) {
+        _isSimulatedMode.value = enabled
+        if (enabled) {
+            logEvent(LogSeverity.INFO, "SYSTEM", "Modo Simulación Virtual ACTIVADO (Cinemática y emulación HAL/NML)")
+        } else {
+            logEvent(LogSeverity.WARNING, "SYSTEM", "Modo Simulación DESACTIVADO: Operando con máquina física LinuxCNC")
+            if (!isConnectedToRealServer) {
+                internalConnect()
+            }
+        }
+    }
+
+    fun simulateProbeTouch() {
+        scope.launch {
+            val curX = _axes.value["X"]?.workPos ?: 0.0
+            val curY = _axes.value["Y"]?.workPos ?: 0.0
+            val curZ = _axes.value["Z"]?.workPos ?: 0.0
+            _probe.value = _probe.value.copy(
+                isTripped = true,
+                lastContactX = curX,
+                lastContactY = curY,
+                lastContactZ = curZ
+            )
+            logEvent(
+                LogSeverity.INFO,
+                "PROBE",
+                "Disparo de palpador 3D simulado en X:${String.format(Locale.US, "%.3f", curX)} Y:${String.format(Locale.US, "%.3f", curY)} Z:${String.format(Locale.US, "%.3f", curZ)}"
+            )
+            delay(1200.milliseconds)
+            _probe.value = _probe.value.copy(isTripped = false)
+        }
+    }
+
+    fun restoreConnectionSimulation() {
+        reconnectJob?.cancel()
+        reconnectAttemptCounter = 0
+        currentBackoffMs = 2000L
+        _isSimulatedMode.value = true
+        _networkLatencyMs.value = 2
+        _connectionTelemetry.value = ConnectionTelemetry(
+            isConnected = true,
+            isWeakSignal = false,
+            isReconnecting = false,
+            reconnectAttempt = 0,
+            secondsUntilReconnect = 0,
+            latencyMs = 2,
+            lastDisconnectReason = null,
+        )
+        logEvent(LogSeverity.INFO, "NETWORK", "Enlace de red restaurado con éxito.")
     }
 
     private fun parseIncomingTelemetry(jsonText: String) {

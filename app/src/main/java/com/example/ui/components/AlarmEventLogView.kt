@@ -31,8 +31,7 @@ import java.util.*
 fun AlarmEventLogView(
     logs: List<CncEventLog>,
     onClearLogs: () -> Unit,
-    onSimulateAlarm: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val filterOptions = listOf(
         stringResource(R.string.logs_filter_all),
@@ -71,32 +70,19 @@ fun AlarmEventLogView(
                     Text(stringResource(R.string.logs_title), fontWeight = FontWeight.Black, fontSize = 12.sp, color = CncTextPrimary)
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    FilledTonalButton(
-                        onClick = onSimulateAlarm,
-                        shape = RoundedCornerShape(6.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = CncEstopRed.copy(alpha = 0.2f),
-                            contentColor = CncEstopRed
-                        ),
-                        modifier = Modifier.height(28.dp)
-                    ) {
-                        Text(stringResource(R.string.logs_simulate_alarm), fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    }
-
-                    FilledTonalButton(
-                        onClick = onClearLogs,
-                        shape = RoundedCornerShape(6.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                        colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = CncSurfaceVariant,
-                            contentColor = CncTextSecondary
-                        ),
-                        modifier = Modifier.height(28.dp)
-                    ) {
-                        Text(stringResource(R.string.logs_clear), fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    }
+                FilledTonalButton(
+                    onClick = onClearLogs,
+                    shape = RoundedCornerShape(6.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = CncSurfaceVariant,
+                        contentColor = CncTextSecondary
+                    ),
+                    modifier = Modifier.height(28.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(stringResource(R.string.logs_clear), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
             }
 

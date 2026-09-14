@@ -56,8 +56,29 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.example.R
 import com.example.data.local.MachineProfileEntity
+import androidx.compose.material.icons.filled.BatteryAlert
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.Power
+import androidx.compose.material.icons.filled.ScreenLockPortrait
+import androidx.compose.material.icons.filled.StayCurrentPortrait
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material.icons.filled.WifiOff
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.ElectricBolt
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import com.example.model.BatterySafetyState
 import com.example.model.CapabilitiesManifest
+import com.example.model.ConnectionTelemetry
 import com.example.model.HardwareArchitecture
+import com.example.model.ScreenTimeoutPolicy
+import com.example.model.SimulatedFaultType
 import com.example.ui.theme.CncActiveGreen
 import com.example.ui.theme.CncCardBg
 import com.example.ui.theme.CncCardBorder
@@ -67,6 +88,7 @@ import com.example.ui.theme.CncSurface
 import com.example.ui.theme.CncSurfaceVariant
 import com.example.ui.theme.CncTextPrimary
 import com.example.ui.theme.CncTextSecondary
+import com.example.ui.theme.CncWarningAmber
 
 @Composable
 fun MachineConfigView(
@@ -80,6 +102,21 @@ fun MachineConfigView(
     onWipeAllData: () -> Unit = {},
     onOpenMetrologyCalibration: () -> Unit = {},
     onOpenManual: () -> Unit = {},
+    screenTimeoutPolicy: ScreenTimeoutPolicy = ScreenTimeoutPolicy.ALWAYS_ON,
+    onSelectScreenTimeoutPolicy: (ScreenTimeoutPolicy) -> Unit = {},
+    batterySafetyState: BatterySafetyState = BatterySafetyState(),
+    // Centralized Simulation Panel Parameters
+    isSimulatedMode: Boolean = true,
+    onToggleSimulatedMode: (Boolean) -> Unit = {},
+    connectionTelemetry: ConnectionTelemetry = ConnectionTelemetry(),
+    onSimulateWeakSignal: (Boolean) -> Unit = {},
+    onSimulateDisconnect: () -> Unit = {},
+    onRestoreConnection: () -> Unit = {},
+    onSimulateBattery: (Int, Boolean) -> Unit = { _, _ -> },
+    onRestoreBattery: () -> Unit = {},
+    onSimulateCharging: (Boolean) -> Unit = {},
+    onInjectFault: (SimulatedFaultType) -> Unit = {},
+    onSimulateProbeTouch: () -> Unit = {},
 ) {
     var hostIpText by remember { mutableStateOf(capabilities.hostIp) }
     var portText by remember { mutableStateOf(capabilities.port.toString()) }
@@ -331,6 +368,533 @@ fun MachineConfigView(
                                 }
                                 Icon(imageVector = Icons.Default.PlayCircleOutline, contentDescription = null, tint = CncCyberCyan)
                             }
+                        }
+                    }
+                }
+            }
+
+            // Section 4: Display Sleep & Battery Fail-Safe Management
+            Text(
+                stringResource(R.string.config_safety_power_header),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = CncCyberCyan,
+            )
+
+            // Screen Sleep / Wake Lock Selector
+            Text(
+                stringResource(R.string.config_screen_timeout_label),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Medium,
+                color = CncTextSecondary,
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                ScreenTimeoutPolicy.entries.forEach { policy ->
+                    val isSelected = screenTimeoutPolicy == policy
+                    Surface(
+                        color = if (isSelected) CncSurfaceVariant else CncSurface,
+                        shape = RoundedCornerShape(8.dp),
+                        border = CardDefaults.outlinedCardBorder().copy(
+                            brush = androidx.compose.ui.graphics.SolidColor(if (isSelected) CncActiveGreen else CncCardBorder)
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelectScreenTimeoutPolicy(policy) }
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                Icon(
+                                    imageVector = when (policy) {
+                                        ScreenTimeoutPolicy.ALWAYS_ON -> Icons.Default.ScreenLockPortrait
+                                        ScreenTimeoutPolicy.MACHINE_ACTIVE -> Icons.Default.Power
+                                        ScreenTimeoutPolicy.SYSTEM_TIMEOUT -> Icons.Default.StayCurrentPortrait
+                                    },
+                                    contentDescription = null,
+                                    tint = if (isSelected) CncActiveGreen else CncTextSecondary,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        stringResource(policy.displayNameRes),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        color = CncTextPrimary
+                                    )
+                                    Text(
+                                        stringResource(policy.descriptionRes),
+                                        fontSize = 10.sp,
+                                        color = CncTextSecondary
+                                    )
+                                }
+                            }
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = "Active",
+                                    tint = CncActiveGreen,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Battery Health & Safety Status Card
+            Surface(
+                color = CncSurface,
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, CncCardBorder),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Icon(
+                                imageVector = when {
+                                    batterySafetyState.isCharging -> Icons.Default.BatteryChargingFull
+                                    batterySafetyState.isCriticalBattery || batterySafetyState.isLowBattery -> Icons.Default.BatteryAlert
+                                    else -> Icons.Default.BatteryFull
+                                },
+                                contentDescription = null,
+                                tint = when {
+                                    batterySafetyState.isCriticalBattery -> CncEstopRed
+                                    batterySafetyState.isLowBattery -> CncWarningAmber
+                                    batterySafetyState.isCharging -> CncActiveGreen
+                                    else -> CncCyberCyan
+                                },
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = stringResource(R.string.config_battery_health_label),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp,
+                                color = CncTextPrimary
+                            )
+                        }
+
+                        Text(
+                            text = "${batterySafetyState.levelPct}% ${if (batterySafetyState.isCharging) "(CARGANDO)" else ""}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            fontFamily = FontFamily.Monospace,
+                            color = if (batterySafetyState.isLowBattery) CncWarningAmber else CncActiveGreen
+                        )
+                    }
+                }
+            }
+
+            // -------------------------------------------------------------
+            // SECTION 6: CENTRO DE CONTROL DE SIMULACIONES Y PRUEBAS
+            // -------------------------------------------------------------
+            Spacer(modifier = Modifier.height(6.dp))
+            Surface(
+                color = CncSurface,
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.5.dp, if (isSimulatedMode) CncActiveGreen.copy(alpha = 0.5f) else CncCardBorder),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Header of Simulation Hub
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Surface(
+                                color = if (isSimulatedMode) CncActiveGreen.copy(alpha = 0.2f) else CncSurfaceVariant,
+                                shape = CircleShape,
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.Science,
+                                        contentDescription = null,
+                                        tint = if (isSimulatedMode) CncActiveGreen else CncTextSecondary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                            Column {
+                                Text(
+                                    text = stringResource(R.string.config_simulations_hub_header),
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 12.sp,
+                                    color = CncTextPrimary
+                                )
+                                Text(
+                                    text = stringResource(R.string.config_simulations_hub_desc),
+                                    fontSize = 10.sp,
+                                    color = CncTextSecondary
+                                )
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(color = CncCardBorder, thickness = 1.dp)
+
+                    // 1. MASTER CONTROLLER SIMULATION SWITCH
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(CncCardBg, RoundedCornerShape(8.dp))
+                            .border(1.dp, CncCardBorder, RoundedCornerShape(8.dp))
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.config_sim_master_label),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp,
+                                    color = CncTextPrimary
+                                )
+                                Text(
+                                    text = stringResource(R.string.config_sim_master_desc),
+                                    fontSize = 9.sp,
+                                    color = CncTextSecondary
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Switch(
+                                checked = isSimulatedMode,
+                                onCheckedChange = onToggleSimulatedMode,
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = CncActiveGreen,
+                                    checkedTrackColor = CncActiveGreen.copy(alpha = 0.3f),
+                                    uncheckedThumbColor = CncTextSecondary,
+                                    uncheckedTrackColor = CncSurfaceVariant
+                                )
+                            )
+                        }
+
+                        Surface(
+                            color = if (isSimulatedMode) CncActiveGreen.copy(alpha = 0.15f) else CncCyberCyan.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(if (isSimulatedMode) CncActiveGreen else CncCyberCyan, CircleShape)
+                                )
+                                Text(
+                                    text = if (isSimulatedMode) stringResource(R.string.config_sim_badge_active) else stringResource(R.string.config_sim_badge_real),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 9.sp,
+                                    color = if (isSimulatedMode) CncActiveGreen else CncCyberCyan
+                                )
+                            }
+                        }
+                    }
+
+                    // 2. OPERATOR TABLET BATTERY SIMULATION
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(CncCardBg, RoundedCornerShape(8.dp))
+                            .border(1.dp, CncCardBorder, RoundedCornerShape(8.dp))
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.config_sim_battery_section),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp,
+                                    color = CncTextPrimary
+                                )
+                                Text(
+                                    text = stringResource(R.string.config_sim_battery_desc),
+                                    fontSize = 9.sp,
+                                    color = CncTextSecondary
+                                )
+                            }
+                            if (batterySafetyState.isSimulated) {
+                                Surface(
+                                    color = CncWarningAmber.copy(alpha = 0.2f),
+                                    shape = RoundedCornerShape(4.dp)
+                                ) {
+                                    Text(
+                                        text = "SIMULADO",
+                                        fontWeight = FontWeight.Black,
+                                        fontSize = 8.sp,
+                                        color = CncWarningAmber,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Battery Level Presets
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            val levels = listOf(
+                                Triple(8, stringResource(R.string.config_sim_battery_crit), CncEstopRed),
+                                Triple(15, stringResource(R.string.config_sim_battery_low), CncWarningAmber),
+                                Triple(50, stringResource(R.string.config_sim_battery_med), CncCyberCyan),
+                                Triple(100, stringResource(R.string.config_sim_battery_full), CncActiveGreen),
+                            )
+                            levels.forEach { (pct, label, color) ->
+                                val isCurrent = batterySafetyState.isSimulated && batterySafetyState.levelPct == pct
+                                OutlinedButton(
+                                    onClick = { onSimulateBattery(pct, batterySafetyState.isCharging) },
+                                    shape = RoundedCornerShape(6.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        containerColor = if (isCurrent) color.copy(alpha = 0.2f) else Color.Transparent,
+                                        contentColor = if (isCurrent) color else CncTextSecondary
+                                    ),
+                                    border = BorderStroke(1.dp, if (isCurrent) color else CncCardBorder),
+                                    modifier = Modifier.weight(1f).height(32.dp),
+                                    contentPadding = PaddingValues(horizontal = 2.dp, vertical = 2.dp)
+                                ) {
+                                    Text(label, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+
+                        // Charger Toggle & Restore Hardware Sensor
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedButton(
+                                onClick = { onSimulateCharging(!batterySafetyState.isCharging) },
+                                shape = RoundedCornerShape(6.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = if (batterySafetyState.isCharging) CncActiveGreen.copy(alpha = 0.15f) else Color.Transparent,
+                                    contentColor = if (batterySafetyState.isCharging) CncActiveGreen else CncTextSecondary
+                                ),
+                                border = BorderStroke(1.dp, if (batterySafetyState.isCharging) CncActiveGreen else CncCardBorder),
+                                modifier = Modifier.weight(1f).height(32.dp),
+                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (batterySafetyState.isCharging) Icons.Default.BatteryChargingFull else Icons.Default.Power,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (batterySafetyState.isCharging) "CARGADOR: ON" else "CARGADOR: OFF",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            FilledTonalButton(
+                                onClick = onRestoreBattery,
+                                shape = RoundedCornerShape(6.dp),
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = CncSurfaceVariant,
+                                    contentColor = CncTextPrimary
+                                ),
+                                modifier = Modifier.weight(1f).height(32.dp),
+                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                            ) {
+                                Text(stringResource(R.string.config_sim_battery_restore), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+
+                    // 3. NETWORK & LATENCY SIMULATION
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(CncCardBg, RoundedCornerShape(8.dp))
+                            .border(1.dp, CncCardBorder, RoundedCornerShape(8.dp))
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.config_sim_network_section),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            color = CncTextPrimary
+                        )
+                        Text(
+                            text = stringResource(R.string.config_sim_network_desc),
+                            fontSize = 9.sp,
+                            color = CncTextSecondary
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = { onSimulateWeakSignal(!connectionTelemetry.isWeakSignal) },
+                                shape = RoundedCornerShape(6.dp),
+                                modifier = Modifier.weight(1f).height(34.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = if (connectionTelemetry.isWeakSignal) CncWarningAmber.copy(alpha = 0.15f) else Color.Transparent,
+                                    contentColor = if (connectionTelemetry.isWeakSignal) CncWarningAmber else CncTextSecondary
+                                ),
+                                border = BorderStroke(1.dp, if (connectionTelemetry.isWeakSignal) CncWarningAmber else CncCardBorder),
+                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.Sync, contentDescription = null, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (connectionTelemetry.isWeakSignal) "SEÑAL DÉBIL (380ms)" else "SIMULAR SEÑAL DÉBIL",
+                                    fontSize = 8.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    if (connectionTelemetry.isConnected && !connectionTelemetry.isReconnecting) {
+                                        onSimulateDisconnect()
+                                    } else {
+                                        onRestoreConnection()
+                                    }
+                                },
+                                shape = RoundedCornerShape(6.dp),
+                                modifier = Modifier.weight(1f).height(34.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = if (!connectionTelemetry.isConnected) CncEstopRed.copy(alpha = 0.15f) else Color.Transparent,
+                                    contentColor = if (!connectionTelemetry.isConnected) CncActiveGreen else CncEstopRed
+                                ),
+                                border = BorderStroke(1.dp, if (!connectionTelemetry.isConnected) CncActiveGreen else CncEstopRed.copy(alpha = 0.5f)),
+                                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 2.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (!connectionTelemetry.isConnected) Icons.Default.CheckCircle else Icons.Default.WifiOff,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (!connectionTelemetry.isConnected) stringResource(R.string.config_sim_restore_network_btn) else stringResource(R.string.config_sim_drop_network_btn),
+                                    fontSize = 8.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    // 4. INDUSTRIAL FAULT & ALARM INJECTION
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(CncCardBg, RoundedCornerShape(8.dp))
+                            .border(1.dp, CncCardBorder, RoundedCornerShape(8.dp))
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Icon(imageVector = Icons.Default.Warning, contentDescription = null, tint = CncWarningAmber, modifier = Modifier.size(16.dp))
+                            Text(
+                                text = stringResource(R.string.config_sim_faults_section),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp,
+                                color = CncTextPrimary
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.config_sim_faults_desc),
+                            fontSize = 9.sp,
+                            color = CncTextSecondary
+                        )
+
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            SimulatedFaultType.entries.forEach { fault ->
+                                OutlinedButton(
+                                    onClick = { onInjectFault(fault) },
+                                    shape = RoundedCornerShape(6.dp),
+                                    modifier = Modifier.fillMaxWidth().height(32.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        containerColor = CncSurfaceVariant.copy(alpha = 0.5f),
+                                        contentColor = when (fault) {
+                                            SimulatedFaultType.LIMIT_SWITCH_X, SimulatedFaultType.SERVO_OVERTORQUE -> CncEstopRed
+                                            SimulatedFaultType.SPINDLE_THERMAL, SimulatedFaultType.DOOR_INTERLOCK -> CncWarningAmber
+                                            SimulatedFaultType.LOW_COOLANT -> CncCyberCyan
+                                        }
+                                    ),
+                                    border = BorderStroke(1.dp, CncCardBorder),
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(stringResource(fault.displayNameRes), fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                        Text(stringResource(fault.descriptionRes), fontSize = 8.sp, color = CncTextSecondary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 5. METROLOGY & 3D TOUCH PROBE SIMULATION
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(CncCardBg, RoundedCornerShape(8.dp))
+                            .border(1.dp, CncCardBorder, RoundedCornerShape(8.dp))
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.config_sim_probe_section),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            color = CncTextPrimary
+                        )
+                        Text(
+                            text = stringResource(R.string.config_sim_probe_desc),
+                            fontSize = 9.sp,
+                            color = CncTextSecondary
+                        )
+
+                        FilledTonalButton(
+                            onClick = onSimulateProbeTouch,
+                            shape = RoundedCornerShape(6.dp),
+                            modifier = Modifier.fillMaxWidth().height(36.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = CncCyberCyan.copy(alpha = 0.18f),
+                                contentColor = CncCyberCyan
+                            ),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.Straighten, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(stringResource(R.string.config_sim_probe_btn), fontSize = 9.5.sp, fontWeight = FontWeight.Black)
                         }
                     }
                 }

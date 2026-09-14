@@ -425,4 +425,55 @@
     <string-array name="manual_sec7_safety">
         <item>If the master enters INIT or PRE-OP state during machining, the machine will execute an instantaneous safety stop.</item>
     </string-array>
+
+    <!-- In-App Manual Sections 8, 9, 10, 11 (German) -->
+    <string name="manual_sec8_title">8. Stromversorgung, Bildschirm &amp; Netzwerk-Sicherheit</string>
+    <string name="manual_sec8_summary">Sicherheitsrichtlinien für schwache Batterie, schwaches Netzwerk und Bildschirmsperre.</string>
+    <string name="manual_sec8_content" formatted="false">Zur Vermeidung von Kollisionen und Ausfall des Not-Aus (E-STOP):\n\n• BILDSCHIRM AKTIV (WAKE LOCK): Die App erzwingt dauerhaft aktive Anzeige während des Betriebs.\n• BATTERIE-ALARM: Warnung bei &lt;= 20% und kritischer Alarm bei &lt;= 10%.\n• AUTOMATISCHE WIEDERVERBINDUNG: Exponentielles Backoff bei Netzwerkstörungen.</string>
+    <string-array name="manual_sec8_sop">
+        <item>1. Halten Sie das Tablet während des Fräsvorgangs an die Stromversorgung angeschlossen.</item>
+        <item>2. Beachten Sie die Latenz- und Signalpegelanzeigen in der oberen Leiste.</item>
+    </string-array>
+    <string-array name="manual_sec8_safety">
+        <item>Bei kritischem Batteriestand (&lt; 10%) Vorschubstopp (Feed Hold) aktivieren und laden.</item>
+    </string-array>
+
+    <string name="manual_sec9_title">09. Industrielle Optische Kamera &amp; Metrologie</string>
+    <string name="manual_sec9_summary">Berührungslose Werkstückausrichtung, Kantenantastung, Fadenkreuze, Spindelversatz und Filter.</string>
+    <string name="manual_sec9_content" formatted="false">Die Industriekamera ermöglicht berührungslose Werkstückausrichtung und WCS-Nullpunktfestlegung:\n\n• PRÄZISIONS-FADENKREUZE: 0,01-mm-Fadenkreuz, konzentrische Kreise, Metrologie-Raster, 90°-Kantensucher, Bulls-Eye-Ziel und drehbarer Winkelmesser.\n• MAKRO-ZOOM (1X, 2X, 4X, 8X): Schnelle Touch-Tasten für Werkstatthandschuhe.\n• OPTISCHE FILTER: Normal, Hoher Kontrast, Negativ, Kantenverstärkung.\n• KAMERA-SPINDEL-VERSATZ: Automatische Kompensation des Abstands zwischen Linse und Fräser mit \'G54-NULL MIT OFFSET\'.\n• QC-QUALITÄTSSICHERUNG: Fotos mit Zeitstempel, DRO-Koordinaten und WCS.</string>
+    <string-array name="manual_sec9_sop">
+        <item>1. Kamera auf Halterung montieren und LED-Beleuchtung aktivieren.</item>
+        <item>2. Fadenkreuz wählen und Makro-Zoom auf 4X/8X stellen.</item>
+        <item>3. Mit Mikroschritten verfahren und \'G54-NULL MIT OFFSET\' drücken.</item>
+    </string-array>
+    <string-array name="manual_sec9_safety">
+        <item>Spindelmotor MÜSSEN Sie während optischer Prüfung immer stoppen (M5).</item>
+    </string-array>
+
+    <string name="manual_sec10_title">10. Simulations- und Prüfkontrollzentrum</string>
+    <string name="manual_sec10_summary">Einheitliche Umgebung für kinematische Maschinensimulation, Fehlersimulation und Messtasterprüfung.</string>
+    <string name="manual_sec10_content" formatted="false">Das Simulationszentrum in der Registerkarte CONFIG fasst Diagnosewerkzeuge zusammen:\n\n• LINUXCNC-SIMULATOR: Umschaltung zwischen physischer Hardware und lokaler Kinematikemulation.\n• TABLET-BATTERIESIMULATION: Prüfung von Niedrig- (15%) und Kritisch-Warnungen (8%).\n• NETZWERKLATENZ-SIMULATION: Injektion von Verzögerungen (380 ms) zur Prüfung der Wiederverbindung.\n• INDUSTRIELLE FEHLERINJEKTION: Gezieltes Auslösen von EtherCAT-Schleppfehler AL.006, Endschaltern, Spindeltemperatur und Kühlmitteldruck.\n• 3D-TASTER-SIMULATION (G38.2): Tasterantastung ohne Bruchgefahr von Rubinspitzen.</string>
+    <string-array name="manual_sec10_sop">
+        <item>1. Zu Schulungszwecken \'LinuxCNC-Controller-Simulation\' in CONFIG aktivieren.</item>
+        <item>2. Reaktionen durch Fehlereinspeisung prüfen.</item>
+        <item>3. Nach Tests \'ECHTEN HARDWARE-SENSOR WIEDERHERSTELLEN\' drücken.</item>
+    </string-array>
+    <string-array name="manual_sec10_safety">
+        <item>GEFAHR: Vor Spindelstart auf realer Maschine immer oberen Status \'REAL\' prüfen.</item>
+    </string-array>
+
+    <string name="manual_sec11_title">11. 3D-Werkzeugbahn &amp; Dry-Run-Simulator</string>
+    <string name="manual_sec11_summary">Interaktive 3D-G-Code-Vorschau, dynamischer Schneidverlauf, 3D-Rohteil, WCS-Dreibein und Scrubbing-Simulation.</string>
+    <string name="manual_sec11_content" formatted="false">Der 3D-Werkzeugbahn-Visualisierer vereint erstklassige CAM-Grafik mit akkuschonendem Rendering für Mobilgeräte und Tablets:\n\n• DYNAMISCHER SCHNEIDVERLAUF:\n  – Dunkelgrün: Bereits bearbeitete Fräsbahnen.\n  – Neongrün mit Schnittkranz: Aktiver G-Code-Block im Werkstückkontakt.\n  – Industrie-Cyan: Ausstehende lineare Fräsbewegungen (G1).\n  – Elektrisches Magenta: Kreis- und Helix-Interpolationsbögen (G2/G3).\n  – Gestricheltes Bernstein: Eilgang-Positionierungen (G0).\n\n• 3D-ROHTEIL-GITTER &amp; WCS-NULLPUNKT-DREIBEIN:\n  – 3D-Begrenzungsquader: Zeigt Rohmaterialabmessungen (ΔX, ΔY, ΔZ) und Sicherheitsabstände.\n  – WCS-Koordinatenkreuz (0,0,0): RGB-Pfeile (Rot=X, Grün=Y, Blau=Z) markieren Werkstücknullpunkt.\n\n• DRY-RUN-SIMULATOR &amp; TOUCH-SCRUBBING:\n  – Interaktiver Scrub-Schieberegler: Beliebigen Programmpunkt vor dem Motorstart visuell prüfen.\n  – Virtuelle Wiedergabe: Vorschau mit 1X, 2X, 5X oder 10X ohne Maschinenbewegung.\n\n• MOBIL-OPTIMIERTE EBENENFILTER:\n  – Eilgang G0 ausblenden: Zur Entlastung komplexer Programme mit einem Fingertipp.\n  – Fräser-Verfolgung (Follow Tool): Zentriert Ansicht auf die Schneidspitze.\n  – Auto-Fit: Berechnet optimale Skalierung und Zentrierung für jedes Bauteil.\n  – G-Code-Inspektor: Ein- und ausklappbare Code-Ansicht.</string>
+    <string-array name="manual_sec11_sop">
+        <item>1. \'LADEN / SCANNEN\' oder TOOLPATH-Tab öffnen, um G-Code-Hüllkurve zu prüfen.</item>
+        <item>2. Rohteilabmessungen (ΔX, ΔY, ΔZ) mit aufgespanntem Material vergleichen.</item>
+        <item>3. \'AUTO-FIT\' drücken und Perspektive (ISO 3D, TOP, FRONT, SIDE) wählen.</item>
+        <item>4. Scrub-Regler nutzen oder PLAY (2X/5X) drücken, um Kollisionen auszuschließen.</item>
+        <item>5. Sicherheits-Z-Höhe kontrollieren vor dem Drücken von \'ZYKLUS START\'.</item>
+    </string-array>
+    <string-array name="manual_sec11_safety">
+        <item>Vor dem Metallfräsen Eintauchpunkte und Z-Minus-Fahrten in der FRONT- oder SIDE-Ansicht prüfen.</item>
+        <item>WCS (G54-G59) immer vor dem Start mit physischem Taster einmessen.</item>
+    </string-array>
 </resources>

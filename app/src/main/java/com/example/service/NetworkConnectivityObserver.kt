@@ -3,6 +3,8 @@ package com.example.service
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
+import android.net.NetworkCapabilities
+import android.os.Build
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -13,7 +15,7 @@ interface ConnectivityObserver {
     fun observe(): Flow<Status>
 
     enum class Status {
-        Available, Unavailable, Losing, Lost
+        Available, Weak, Unavailable, Losing, Lost
     }
 }
 
@@ -30,6 +32,22 @@ class NetworkConnectivityObserver(
                 override fun onAvailable(network: Network) {
                     super.onAvailable(network)
                     launch { send(ConnectivityObserver.Status.Available) }
+                }
+
+                override fun onCapabilitiesChanged(
+                    network: Network,
+                    networkCapabilities: NetworkCapabilities,
+                ) {
+                    super.onCapabilitiesChanged(network, networkCapabilities)
+                    val signalStrength = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        networkCapabilities.signalStrength
+                    } else {
+                        0
+                    }
+                    val isWeakSignal = signalStrength != 0 && signalStrength <= -80
+                    if (isWeakSignal) {
+                        launch { send(ConnectivityObserver.Status.Weak) }
+                    }
                 }
 
                 override fun onLosing(network: Network, maxMsToLive: Int) {

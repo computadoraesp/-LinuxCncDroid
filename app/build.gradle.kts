@@ -17,8 +17,8 @@ android {
     applicationId = "com.aistudio.linuxcncdroid.vjxrkm"
     minSdk = 24
     targetSdk = 35
-    versionCode = 3
-    versionName = "3.0"
+    versionCode = 4
+    versionName = "3.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -79,6 +79,8 @@ googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.W
 dependencies {
   implementation(platform(libs.androidx.compose.bom))
   implementation(platform(libs.firebase.bom))
+  implementation(libs.androidx.appcompat)
+  implementation(libs.androidx.fragment.ktx)
   // implementation(libs.accompanist.permissions)
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.camera.camera2)

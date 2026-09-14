@@ -10,6 +10,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,11 +26,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -114,6 +118,8 @@ fun AxisCalibrationDialog(
     var inputMeasuredText by remember { mutableStateOf("") }
     var showCompTableExportDialog by remember { mutableStateOf(value = false) }
     var generatedCompText by remember { mutableStateOf("") }
+    val stepListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     val activeSession = session ?: remember {
         AxisCalibrationSession(
@@ -417,67 +423,102 @@ fun AxisCalibrationDialog(
                                 fontFamily = FontFamily.Monospace
                             )
 
-                            // Step selector row
+                            // Step selector row with carousel controls
                             val pointsList = activeSession.points
-                            LazyRow(
+                            Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                items(pointsList) { pt ->
-                                    val isCurrent = pt.stepIndex == currentStepIndex
-                                    val isDone = pt.measuredPositionMm != null
-                                    val err = pt.errorMm
-
-                                    val bg = when {
-                                        isCurrent -> CncCyberCyan
-                                        isDone -> CncActiveGreen.copy(alpha = 0.2f)
-                                        else -> CncSurface
+                                CarouselNavButton(
+                                    direction = "<",
+                                    enabled = stepListState.canScrollBackward,
+                                    height = 42.dp,
+                                    width = 22.dp,
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            stepListState.animateScrollBy(-180f)
+                                        }
                                     }
+                                )
 
-                                    val borderColor = when {
-                                        isCurrent -> CncCyberCyan
-                                        isDone -> CncActiveGreen
-                                        else -> CncCardBorder
-                                    }
+                                Spacer(modifier = Modifier.width(4.dp))
 
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(bg)
-                                            .border(1.dp, borderColor, RoundedCornerShape(6.dp))
-                                            .clickable {
-                                                currentStepIndex = pt.stepIndex
-                                                inputMeasuredText = pt.measuredPositionMm?.let { String.format(Locale.US, "%.4f", it) } ?: ""
-                                            }
-                                            .padding(horizontal = 8.dp, vertical = 6.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Text(
-                                                text = "${pt.percentOfTravel.toInt()}%",
-                                                color = if (isCurrent) Color.Black else CncTextPrimary,
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(
-                                                text = "${pt.nominalPositionMm.toInt()}mm",
-                                                color = if (isCurrent) Color.Black else CncTextSecondary,
-                                                fontSize = 8.sp
-                                            )
-                                            if (err != null) {
-                                                val errFormatted = String.format(Locale.US, "%+.3f", err)
+                                LazyRow(
+                                    state = stepListState,
+                                    modifier = Modifier.weight(1f),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    items(pointsList) { pt ->
+                                        val isCurrent = pt.stepIndex == currentStepIndex
+                                        val isDone = pt.measuredPositionMm != null
+                                        val err = pt.errorMm
+
+                                        val bg = when {
+                                            isCurrent -> CncCyberCyan
+                                            isDone -> CncActiveGreen.copy(alpha = 0.2f)
+                                            else -> CncSurface
+                                        }
+
+                                        val borderColor = when {
+                                            isCurrent -> CncCyberCyan
+                                            isDone -> CncActiveGreen
+                                            else -> CncCardBorder
+                                        }
+
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(bg)
+                                                .border(1.dp, borderColor, RoundedCornerShape(6.dp))
+                                                .clickable {
+                                                    currentStepIndex = pt.stepIndex
+                                                    inputMeasuredText = pt.measuredPositionMm?.let { String.format(Locale.US, "%.4f", it) } ?: ""
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 6.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                                 Text(
-                                                    text = errFormatted,
-                                                    color = if (isCurrent) Color.Black else if (abs(
-                                                            err
-                                                        ) > 0.01) CncEstopRed else CncActiveGreen,
-                                                    fontSize = 7.5.sp,
-                                                    fontWeight = FontWeight.Black
+                                                    text = "${pt.percentOfTravel.toInt()}%",
+                                                    color = if (isCurrent) Color.Black else CncTextPrimary,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
                                                 )
+                                                Text(
+                                                    text = "${pt.nominalPositionMm.toInt()}mm",
+                                                    color = if (isCurrent) Color.Black else CncTextSecondary,
+                                                    fontSize = 8.sp
+                                                )
+                                                if (err != null) {
+                                                    val errFormatted = String.format(Locale.US, "%+.3f", err)
+                                                    Text(
+                                                        text = errFormatted,
+                                                        color = if (isCurrent) Color.Black else if (abs(
+                                                                err
+                                                            ) > 0.01) CncEstopRed else CncActiveGreen,
+                                                        fontSize = 7.5.sp,
+                                                        fontWeight = FontWeight.Black
+                                                    )
+                                                }
                                             }
                                         }
                                     }
                                 }
+
+                                Spacer(modifier = Modifier.width(4.dp))
+
+                                CarouselNavButton(
+                                    direction = ">",
+                                    enabled = stepListState.canScrollForward,
+                                    height = 42.dp,
+                                    width = 22.dp,
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            stepListState.animateScrollBy(180f)
+                                        }
+                                    }
+                                )
                             }
 
                             // Operator Instruction Box

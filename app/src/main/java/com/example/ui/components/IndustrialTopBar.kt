@@ -1,8 +1,11 @@
 package com.example.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,8 +64,18 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.BatteryAlert
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.BatteryFull
+import androidx.compose.material.icons.filled.ScreenLockPortrait
+import androidx.compose.material.icons.filled.StayCurrentPortrait
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material.icons.filled.WifiOff
+import com.example.model.ConnectionTelemetry
 import com.example.model.HardwareArchitecture
 import com.example.model.MachineStateEnum
+import com.example.model.ScreenTimeoutPolicy
 import com.example.model.UnitSystem
 import com.example.model.UserRole
 import com.example.ui.theme.CncActiveGreen
@@ -76,6 +89,7 @@ import com.example.ui.theme.CncSurfaceVariant
 import com.example.ui.theme.CncTextMuted
 import com.example.ui.theme.CncTextPrimary
 import com.example.ui.theme.CncWarningAmber
+import kotlinx.coroutines.launch
 
 @Composable
 fun IndustrialTopBar(
@@ -100,12 +114,23 @@ fun IndustrialTopBar(
     onOpenLogs: () -> Unit = {},
     onOpenAxisCalibration: () -> Unit = {},
     onOpenManual: () -> Unit = {},
+    batteryLevelPct: Int = 100,
+    isCharging: Boolean = false,
+    isLowBattery: Boolean = false,
+    isCriticalBattery: Boolean = false,
+    keepScreenOn: Boolean = true,
+    screenTimeoutPolicy: ScreenTimeoutPolicy = ScreenTimeoutPolicy.ALWAYS_ON,
+    connectionTelemetry: ConnectionTelemetry = ConnectionTelemetry(),
+    onReconnectClick: () -> Unit = {},
+    onBatteryClick: () -> Unit = {},
+    onScreenPolicyClick: () -> Unit = {},
 ) {
     var coordMenuExpanded by remember { mutableStateOf(value = false) }
     var roleMenuExpanded by remember { mutableStateOf(value = false) }
 
     val coordSystems = listOf("G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3")
     val toolsScrollState = rememberScrollState()
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
 
     Surface(
         color = CncSurface,
@@ -236,15 +261,31 @@ fun IndustrialTopBar(
             )
 
             // =========================================================================
-            // HORIZONTAL CAROUSEL: All other tools scroll smoothly (approx 3 visible at once)
+            // HORIZONTAL CAROUSEL: All other tools scroll smoothly with < and > controls
             // =========================================================================
             Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .horizontalScroll(toolsScrollState),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                CarouselNavButton(
+                    direction = "<",
+                    enabled = toolsScrollState.value > 0,
+                    height = 30.dp,
+                    width = 18.dp,
+                    onClick = {
+                        coroutineScope.launch { toolsScrollState.animateScrollBy(-130f) }
+                    }
+                )
+
+                Spacer(modifier = Modifier.width(3.dp))
+
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .horizontalScroll(toolsScrollState),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
                 // 1. Unit System Toggle Button (G21 MM / G20 INCH)
                 OutlinedButton(
                     onClick = onToggleUnitSystem,
@@ -362,32 +403,150 @@ fun IndustrialTopBar(
                     }
                 }
 
-                // 4. Latency & Arch Badge
-                Column(
+                // 4. Screen Sleep / Wake Lock Status Badge
+                val screenColor = if (keepScreenOn) CncActiveGreen else CncWarningAmber
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = screenColor.copy(alpha = 0.12f),
+                    border = BorderStroke(1.dp, screenColor.copy(alpha = 0.6f)),
                     modifier = Modifier
+                        .height(34.dp)
                         .clip(RoundedCornerShape(6.dp))
-                        .background(CncSurfaceVariant)
-                        .border(1.dp, CncCardBorder, RoundedCornerShape(6.dp))
-                        .padding(horizontal = 6.dp, vertical = 4.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .clickable { onScreenPolicyClick() }
                 ) {
-                    Text(
-                        if (isSimulated) stringResource(R.string.topbar_sim_mode, stringResource(architecture.displayNameRes)) else stringResource(R.string.topbar_real_mode, stringResource(architecture.displayNameRes)),
-                        fontSize = 7.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isSimulated) CncWarningAmber else CncActiveGreen,
-                        maxLines = 1
-                    )
-                    Text(
-                        "${latencyMs}ms",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Monospace,
-                        color = CncActiveGreen
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (keepScreenOn) Icons.Default.ScreenLockPortrait else Icons.Default.StayCurrentPortrait,
+                            contentDescription = stringResource(if (keepScreenOn) R.string.status_screen_always_on else R.string.status_screen_system_timeout),
+                            tint = screenColor,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Text(
+                            text = if (keepScreenOn) "SCREEN ON" else "TIMEOUT",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = screenColor
+                        )
+                    }
                 }
 
-                // 5. Cybersecurity & G-Code Scanner Button
+                // 5. Battery Level & Low/Critical Alarm Badge
+                val batteryColor = when {
+                    isCriticalBattery -> CncEstopRed
+                    isLowBattery -> CncWarningAmber
+                    isCharging -> CncActiveGreen
+                    else -> CncCyberCyan
+                }
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = batteryColor.copy(alpha = 0.12f),
+                    border = BorderStroke(1.dp, batteryColor.copy(alpha = 0.6f)),
+                    modifier = Modifier
+                        .height(34.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable { onBatteryClick() }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = when {
+                                isCharging -> Icons.Default.BatteryChargingFull
+                                isLowBattery || isCriticalBattery -> Icons.Default.BatteryAlert
+                                else -> Icons.Default.BatteryFull
+                            },
+                            contentDescription = "Battery $batteryLevelPct%",
+                            tint = batteryColor,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Text(
+                            text = "$batteryLevelPct%",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            color = batteryColor
+                        )
+                        if (isCharging) {
+                            Text(
+                                text = "CHG",
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Black,
+                                color = CncActiveGreen
+                            )
+                        }
+                    }
+                }
+
+                // 6. Network Telemetry, Weak Signal & Reconnection Badge
+                val isReconnecting = !connectionTelemetry.isConnected || connectionTelemetry.isReconnecting
+                val isWeak = connectionTelemetry.isWeakSignal
+                val netColor = when {
+                    isReconnecting -> CncEstopRed
+                    isWeak -> CncWarningAmber
+                    else -> CncActiveGreen
+                }
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = netColor.copy(alpha = 0.14f),
+                    border = BorderStroke(1.dp, netColor.copy(alpha = 0.7f)),
+                    modifier = Modifier
+                        .height(34.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable {
+                            if (isReconnecting) onReconnectClick()
+                        }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = when {
+                                isReconnecting -> Icons.Default.WifiOff
+                                isWeak -> Icons.Default.Sync
+                                else -> Icons.Default.Wifi
+                            },
+                            contentDescription = "Network telemetry",
+                            tint = netColor,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        if (isReconnecting) {
+                            Text(
+                                text = if (connectionTelemetry.secondsUntilReconnect > 0)
+                                    "RETRY ${connectionTelemetry.secondsUntilReconnect}s"
+                                else "RECONNECT",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Black,
+                                color = CncEstopRed
+                            )
+                        } else {
+                            Text(
+                                text = "${if (isWeak) connectionTelemetry.latencyMs else latencyMs}ms",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                color = netColor
+                            )
+                            if (isWeak) {
+                                Text(
+                                    text = "WEAK",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = CncWarningAmber
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 7. Cybersecurity & G-Code Scanner Button
                 IconButton(
                     onClick = onOpenCyberScanner,
                     modifier = Modifier
@@ -502,6 +661,19 @@ fun IndustrialTopBar(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.width(3.dp))
+
+            CarouselNavButton(
+                direction = ">",
+                enabled = toolsScrollState.value < toolsScrollState.maxValue,
+                height = 30.dp,
+                width = 18.dp,
+                onClick = {
+                    coroutineScope.launch { toolsScrollState.animateScrollBy(130f) }
+                }
+            )
+        }
         }
     }
 }

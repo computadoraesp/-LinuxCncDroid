@@ -424,4 +424,55 @@
     <string-array name="manual_sec7_safety">
         <item>If the master enters INIT or PRE-OP state during machining, the machine will execute an instantaneous safety stop.</item>
     </string-array>
+
+    <!-- In-App Manual Sections 8, 9, 10, 11 (Japanese) -->
+    <string name="manual_sec8_title">8. 電源・画面スリープおよび通信ネットワーク安全保護</string>
+    <string name="manual_sec8_summary">低バッテリーアラート、切断防止、画面常時オンによる緊急停止アクセス保護ポリシー。</string>
+    <string name="manual_sec8_content" formatted="false">ワーク衝突や緊急停止（E-STOP）操作の喪失を防ぐための安全保護ポリシー：\n\n• 画面常時点灯（WAKE LOCK）：加工中はタブレット画面のスリープを防止します。\n• バッテリーアラーム：残量20%以下で警告、10%以下で重大アラームを発動。\n• 指数バックオフ自動再接続：産業用LANの瞬断時にも即座に復帰します。</string>
+    <string-array name="manual_sec8_sop">
+        <item>1. 加工中はタブレットを常時USB-C給電に接続してください。</item>
+        <item>2. 上部バーのPing遅延とジッター表示を監視してください。</item>
+    </string-array>
+    <string-array name="manual_sec8_safety">
+        <item>重大バッテリー低下（&lt; 10%）時はFeed Hold（一時停止）を押し充電してください。</item>
+    </string-array>
+
+    <string name="manual_sec9_title">09. 産業用光学カメラ＆非接触測定システム</string>
+    <string name="manual_sec9_summary">非接触ワーク芯出し、エッジ検出、レチクル照準、スピンドルオフセット自動補正。</string>
+    <string name="manual_sec9_content" formatted="false">産業用カメラを用いた非接触位置決めとWCS原点設定：\n\n• 高精度レチクル：0.01mm極細十字線、同心円、測定グリッド、90°エッジ検出器、ブルズアイターゲット、回転プロトラクター。\n• マクロズーム（1X, 2X, 4X, 8X）：作業用手袋対応のワンタッチ切替ボタン。\n• 光学フィルター：標準、ハイコントラスト、ネガ反転、輪郭強調。\n• レンズ・スピンドル間オフセット補正：「オフセット付きG54ゼロ点設定」で瞬時に原点登録。\n• QC品質検査記録：座標DROおよびWCSを透かし合成した写真保存。</string>
+    <string-array name="manual_sec9_sop">
+        <item>1. カメラを冶具に固定し、補助LED照明を点灯します。</item>
+        <item>2. レチクルを選択し、マクロズームを4Xまたは8Xに設定します。</item>
+        <item>3. ジョグ微動（±0.05mm）で合わせ、「オフセット付きG54ゼロ点設定」を押します。</item>
+    </string-array>
+    <string-array name="manual_sec9_safety">
+        <item>光学検査中はスピンドルモーターを必ず完全停止（M5）させてください。</item>
+    </string-array>
+
+    <string name="manual_sec10_title">10. 総合シミュレーション＆診断テストセンター</string>
+    <string name="manual_sec10_summary">機械キネマティクス模擬、産業用アラーム障害注入、バッテリーおよびタッチプローブ試験環境。</string>
+    <string name="manual_sec10_content" formatted="false">CONFIGタブ内のシミュレーションセンターに全診断・教育ツールを集約：\n\n• LINUXCNCシミュレーター：実機ハードウェアとローカル模擬エンジンを切替。\n• タブレットバッテリー模擬：15%および8%低下時の動作検証。\n• ネットワーク遅延・遮断シミュレーション：380msの遅延を注入し自動復旧を検証。\n• 産業用障害注入テスト：EtherCAT追従誤差AL.006、リミットスイッチ、スピンドル過熱、切削油圧力を安全に発動。\n• 3Dタッチプローブ模擬（G38.2）：ルビープローブを破損させることなく芯出しを検証。</string>
+    <string-array name="manual_sec10_sop">
+        <item>1. オペレーター訓練時はCONFIGタブで「LinuxCNCシミュレーション」を有効にします。</item>
+        <item>2. 障害注入パネルからアラームを発動させ緊急時対応を訓練します。</item>
+        <item>3. テスト終了後は「実機センサー復帰」を押しシミュレーションを解除してください。</item>
+    </string-array>
+    <string-array name="manual_sec10_safety">
+        <item>危険：実機でスピンドルを回転させる前に、上部表示が「REAL」であることを確認してください。</item>
+    </string-array>
+
+    <string name="manual_sec11_title">11. 3Dツールパス可視化＆ドライランシミュレーター</string>
+    <string name="manual_sec11_summary">対話型3D G-Codeプレビュー、動的切削履歴、3Dワーク外形、WCS座標軸およびスクラブ模擬機能。</string>
+    <string name="manual_sec11_content" formatted="false">3Dツールパス可視化エンジンは、高度なCAMグラフィックスと低消費電力レンダリングを両立：\n\n• 動的クロマティック切削履歴：\n  – フォレストグリーン：切削完了済みの軌道パス。\n  – ネオングリーン（切削ハロー付き）：現在切削中のアクティブG-Codeブロック。\n  – インダストリアルシアン：未加工の直線切削パス（G1）。\n  – エレクトリックマゼンタ：円弧・ヘリカル補間パス（G2/G3）。\n  – 破線アンバー：早送り位置決め移動（G0）。\n\n• 3Dワーク外形ワイヤーフレーム＆WCS座標三軸：\n  – 3Dバウンディングボックス：ワーク寸法（ΔX, ΔY, ΔZ）と安全余裕を即座に把握。\n  – WCS原点トライアッド（0,0,0）：RGB矢印（赤=X、緑=Y、青=Z）でワーク原点を明示。\n\n• タッチスクラビング対応ドライランシミュレーター：\n  – 検査スライダー：実機モーターを作動させる前にタッチドラッグで任意ブロックを検証。\n  – 仮想再生（1X, 2X, 5X, 10X）：機械を動かさずにツールパスを高速シミュレーション。\n\n• モバイル最適化レイヤーフィルター：\n  – 早送り（G0）非表示：長大なG-Codeプログラムもワンタッチで軽快に表示。\n  – 工具追従（Follow Tool）：カメラを刃先位置に自動センタリング。\n  – オートフィット（Auto-Fit）：画面サイズに合わせて自動で最適なズームと視点を計算。\n  – G-Codeインスペクター：画面を広く使える折りたたみ式コードビュー。</string>
+    <string-array name="manual_sec11_sop">
+        <item>1. 「読み込み/検証」またはTOOLPATHタブでG-Codeファイルを検証します。</item>
+        <item>2. ワーク外形寸法（ΔX, ΔY, ΔZ）と実機テーブル上の素材寸法を照合します。</item>
+        <item>3. 「オートフィット」を押し、視点（ISO 3D、平面、正面、側面）を切り替えます。</item>
+        <item>4. スクラバスライダーまたは再生ボタンで干渉や衝突がないか確認します。</item>
+        <item>5. Z軸退避安全高さを確認した上で実機の「サイクルスタート」を押します。</item>
+    </string-array>
+    <string-array name="manual_sec11_safety">
+        <item>加工開始前に、正面または側面ビューでZ軸マイナス切り込み点を確認してください。</item>
+        <item>3D座標原点を過信せず、必ずタッチプローブ等で実測してWCS（G54）を設定してください。</item>
+    </string-array>
 </resources>

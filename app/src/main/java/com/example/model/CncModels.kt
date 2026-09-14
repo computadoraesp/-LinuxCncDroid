@@ -51,6 +51,44 @@ enum class UserRole(@get:StringRes val displayNameRes: Int) {
     ADMIN(R.string.role_admin_disp)
 }
 
+enum class ScreenTimeoutPolicy(
+    @get:StringRes val displayNameRes: Int,
+    @get:StringRes val descriptionRes: Int,
+) {
+    ALWAYS_ON(R.string.screen_policy_always_on, R.string.screen_policy_always_on_desc),
+    MACHINE_ACTIVE(R.string.screen_policy_machine_active, R.string.screen_policy_machine_active_desc),
+    SYSTEM_TIMEOUT(R.string.screen_policy_system_timeout, R.string.screen_policy_system_timeout_desc)
+}
+
+enum class SimulatedFaultType(
+    @get:StringRes val displayNameRes: Int,
+    @get:StringRes val descriptionRes: Int,
+) {
+    SERVO_OVERTORQUE(R.string.fault_servo_name, R.string.fault_servo_desc),
+    LIMIT_SWITCH_X(R.string.fault_limit_name, R.string.fault_limit_desc),
+    SPINDLE_THERMAL(R.string.fault_thermal_name, R.string.fault_thermal_desc),
+    DOOR_INTERLOCK(R.string.fault_interlock_name, R.string.fault_interlock_desc),
+    LOW_COOLANT(R.string.fault_coolant_name, R.string.fault_coolant_desc),
+}
+
+data class ConnectionTelemetry(
+    val isConnected: Boolean = true,
+    val isWeakSignal: Boolean = false,
+    val isReconnecting: Boolean = false,
+    val reconnectAttempt: Int = 0,
+    val secondsUntilReconnect: Int = 0,
+    val latencyMs: Int = 2,
+    val lastDisconnectReason: String? = null,
+)
+
+data class BatterySafetyState(
+    val levelPct: Int = 100,
+    val isCharging: Boolean = false,
+    val isLowBattery: Boolean = false,
+    val isCriticalBattery: Boolean = false,
+    val isSimulated: Boolean = false,
+)
+
 data class AxisCoord(
     val name: String,
     val machinePos: Double = 0.0,

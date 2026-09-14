@@ -97,7 +97,27 @@
     <string name="reticle_concentric">CÍRCULOS CONCÉNTRICOS</string>
     <string name="reticle_grid">CUADRÍCULA METROLÓGICA</string>
     <string name="reticle_corner">BUSCADOR DE ESQUINA (EDGE)</string>
+    <string name="reticle_protractor">TRANSPORTADOR ANGULAR</string>
+    <string name="reticle_bullseye">DIANA BULLS-EYE</string>
     <string name="reticle_none">SIN RETÍCULA</string>
+
+    <string name="camera_optical_filters">FILTROS ÓPTICOS</string>
+    <string name="camera_filter_normal">COLOR</string>
+    <string name="camera_filter_contrast">ALTO CONTRASTE</string>
+    <string name="camera_filter_invert">NEGATIVO</string>
+    <string name="camera_filter_edge">BORDES</string>
+    <string name="camera_spindle_offset">OFFSET CÁMARA-HUSILLO</string>
+    <string name="camera_spindle_offset_title">Compensación de Offset Cámara a Husillo</string>
+    <string name="camera_spindle_offset_desc">Desplazamiento físico del eje óptico respecto al centro del husillo principal (mm).</string>
+    <string name="camera_zero_with_offset">FIJAR CERO G54 CON OFFSET</string>
+    <string name="camera_zero_offset_applied">Cero fijado con offset: X=%1$.2f, Y=%2$.2f</string>
+    <string name="camera_angle_label">Ángulo: %1$.1f°</string>
+    <string name="camera_reset_angle">0°</string>
+    <string name="camera_zoom_preset_1x">1X</string>
+    <string name="camera_zoom_preset_2x">2X</string>
+    <string name="camera_zoom_preset_4x">4X</string>
+    <string name="camera_zoom_preset_8x">8X</string>
+    <string name="camera_qc_report_title">CONTROL DE CALIDAD ÓPTICO</string>
 
     <!-- Header & Top Bar -->
     <string name="topbar_estop">E-STOP</string>
@@ -183,6 +203,22 @@
     <string name="view_top">SUP</string>
     <string name="view_iso">ISO 3D</string>
     <string name="view_front">FRONT</string>
+    <string name="view_side">LAT</string>
+    <string name="tp_autofit">AUTO-AJUSTE</string>
+    <string name="tp_toggle_rapids">RÁPIDOS G0</string>
+    <string name="tp_toggle_stock">BRUTO 3D</string>
+    <string name="tp_toggle_grid">REJILLA</string>
+    <string name="tp_toggle_follow">SEGUIR FRESA</string>
+    <string name="tp_toggle_code">G-CODE</string>
+    <string name="tp_dry_run">SIMULACIÓN DRY-RUN</string>
+    <string name="tp_sim_play">PLAY</string>
+    <string name="tp_sim_pause">PAUSA</string>
+    <string name="tp_sim_speed">%1$dX</string>
+    <string name="tp_scrub_label">BLOQUE %1$d / %2$d</string>
+    <string name="tp_wcs_origin">ORIGEN WCS (0,0,0)</string>
+    <string name="tp_past_cuts">CORTE</string>
+    <string name="tp_current_tool">ACTIVO</string>
+    <string name="tp_arc_cut">ARCO G2/G3</string>
     <string name="toolpath_load_scan">CARGAR / ESCANEAR</string>
     <string name="toolpath_run_time">TRANS: %s</string>
     <string name="toolpath_rem_time">REST: %s</string>
@@ -423,5 +459,136 @@
     </string-array>
     <string-array name="manual_sec7_safety">
         <item>Si el maestro entra en estado INIT o PRE-OP durante el mecanizado, la máquina ejecutará una parada de seguridad instantánea.</item>
+    </string-array>
+
+    <!-- Fail-Safe Alarms: Batería, Reconexión de red, Apagado de Pantalla -->
+    <string name="screen_policy_always_on">Pantalla Siempre Encendida (HMI Seguro)</string>
+    <string name="screen_policy_always_on_desc">Evita el apagado de pantalla en todo momento (Recomendado para seguridad CNC)</string>
+    <string name="screen_policy_machine_active">Activa Durante Operación</string>
+    <string name="screen_policy_machine_active_desc">Mantiene la pantalla activa cuando la máquina está ENCENDIDA, EN CICLO, HOMING o PAUSA</string>
+    <string name="screen_policy_system_timeout">Apagado por Defecto del Sistema</string>
+    <string name="screen_policy_system_timeout_desc">Sigue el tiempo de espera de pantalla configurado en Android</string>
+
+    <string name="alarm_low_battery_title">ALARMA DE BATERÍA BAJA</string>
+    <string name="alarm_low_battery_msg">Batería al %1$d%% y sin cargador. Conecte el cargador inmediatamente para evitar corte de control con LinuxCNC.</string>
+    <string name="alarm_critical_battery_title">¡ALARMA CRÍTICA DE BATERÍA!</string>
+    <string name="alarm_critical_battery_msg">¡PELIGRO! Batería al %1$d%%. Apagado inminente del dispositivo durante ciclo activo. ¡Pause el ciclo o conecte corriente ya!</string>
+
+    <string name="alarm_weak_signal_title">SEÑAL DE RED DÉBIL</string>
+    <string name="alarm_weak_signal_msg">Latencia elevada (%1$d ms) o señal inestable detectada. Riesgo de pérdida de telemetría o paquetes de control.</string>
+    <string name="alarm_reconnecting_title">DESCONECTADO DE LINUXCNC</string>
+    <string name="alarm_reconnecting_msg">Reconectando automáticamente en %1$d s (Intento #%2$d)...</string>
+    <string name="alarm_reconnect_now_btn">RECONECTAR AHORA</string>
+    <string name="alarm_dismiss_btn">DESCARTAR</string>
+    <string name="alarm_pause_cycle_btn">PAUSAR (FEED HOLD)</string>
+
+    <string name="status_screen_always_on">PANTALLA SIEMPRE ACTIVA</string>
+    <string name="status_screen_system_timeout">APAGADO DE PANTALLA HABILITADO</string>
+    <string name="status_screen_timeout_warning">AVISO: La pantalla puede apagarse durante el ciclo de mecanizado</string>
+
+    <string name="config_safety_power_header">SEGURIDAD DE PANTALLA, BATERÍA Y RED</string>
+    <string name="config_screen_timeout_label">Gestión de Apagado de Pantalla (Wake Lock)</string>
+    <string name="config_battery_health_label">Estado de Batería y Alimentación</string>
+    <string name="config_battery_sim_btn">SIMULAR BATERÍA BAJA (15%)</string>
+    <string name="config_battery_restore_btn">RESTAURAR SENSOR REAL</string>
+    <string name="config_weak_signal_sim_btn">SIMULAR SEÑAL DÉBIL (350ms)</string>
+    <string name="config_disconnect_sim_btn">SIMULAR CORTE Y RECONEXIÓN</string>
+
+    <string name="manual_sec8_title">8. Alarmas de Batería, Red y Pantalla Siempre Encendida</string>
+    <string name="manual_sec8_summary">Políticas de seguridad para batería baja, reconexión por señal débil y prevención de pantalla apagada.</string>
+    <string name="manual_sec8_content" formatted="false">Para prevenir colisiones y pérdida de acceso inmediato a la Parada de Emergencia (E-STOP):\n\n• PANTALLA ACTIVA (WAKE LOCK): La aplicación activa FLAG_KEEP_SCREEN_ON para que la pantalla permanezca siempre iluminada e interactiva.\n• ALARMA DE BATERÍA BAJA: Advertencia al &lt;= 20% y alarma crítica al &lt;= 10% con aviso acústico y háptico.\n• RECONEXIÓN AUTOMÁTICA: Si la latencia supera 200 ms o se pierde la red, el sistema inicia reconexión con reintentos automáticos y botón de reconexión inmediata.</string>
+    <string-array name="manual_sec8_sop">
+        <item>Mantenga siempre la tablet conectada a un cargador USB-C industrial certificado al operar ciclos largos de mecanizado.</item>
+        <item>Asegúrese de que \'Pantalla Siempre Encendida\' esté activado en AJUSTES para acceso instantáneo a E-STOP y Feed Hold.</item>
+        <item>Si aparece el aviso de \'SEÑAL DÉBIL\', acerque el router Wi-Fi o utilice un adaptador Ethernet por cable.</item>
+    </string-array>
+    <string-array name="manual_sec8_safety">
+        <item>Nunca permita que la tablet del operador se descargue por completo con el husillo CNC en giro.</item>
+    </string-array>
+
+    <string name="config_simulations_hub_header">CENTRO DE CONTROL DE SIMULACIONES Y PRUEBAS</string>
+    <string name="config_simulations_hub_desc">Panel centralizado para emulación de máquina, telemetría de red, batería, palpador e inyección de fallas.</string>
+    <string name="config_sim_master_label">Simulación del Controlador LinuxCNC</string>
+    <string name="config_sim_master_desc">Al estar activada, la app calcula cinemática, DRO y movimientos en el tablet sin máquina física conectada.</string>
+    <string name="config_sim_badge_active">SIMULACIÓN VIRTUAL ACTIVA</string>
+    <string name="config_sim_badge_real">MODO HARDWARE REAL</string>
+    
+    <string name="config_sim_battery_section">Simulación de Batería de Operador</string>
+    <string name="config_sim_battery_desc">Valide umbrales y alarmas de seguridad sin descargar la batería real del tablet.</string>
+    <string name="config_sim_battery_toggle">Forzar Simulación de Batería</string>
+    <string name="config_sim_battery_charging_toggle">Simular Cargador USB-C Conectado</string>
+    <string name="config_sim_battery_restore">RESTAURAR SENSOR REAL DEL TABLET</string>
+    <string name="config_sim_battery_crit">8% (CRÍTICA)</string>
+    <string name="config_sim_battery_low">15% (BAJA)</string>
+    <string name="config_sim_battery_med">50% (MEDIA)</string>
+    <string name="config_sim_battery_full">100% (PLENA)</string>
+
+    <string name="config_sim_network_section">Simulación de Red y Latencia</string>
+    <string name="config_sim_network_desc">Inyecte degradación o cortes para verificar la reconexión con backoff exponencial.</string>
+    <string name="config_sim_weak_signal_toggle">Simular Señal Débil (380 ms)</string>
+    <string name="config_sim_drop_network_btn">SIMULAR CORTE Y RECONEXIÓN</string>
+    <string name="config_sim_restore_network_btn">RESTAURAR RED ÓPTIMA (2 ms)</string>
+
+    <string name="config_sim_faults_section">Inyección de Alarmas y Fallas Industriales</string>
+    <string name="config_sim_faults_desc">Inyecte alarmas para comprobar la reacción del operador y los registros del sistema.</string>
+    <string name="fault_servo_name">Sobrepar Servo AL.006</string>
+    <string name="fault_servo_desc">Dispara alarma en driver servo EtherCAT Eje Z</string>
+    <string name="fault_limit_name">Final de Carrera Eje X+</string>
+    <string name="fault_limit_desc">Simula accionamiento de switch hardware de fin de carrera</string>
+    <string name="fault_thermal_name">Fallo Térmico Husillo VFD</string>
+    <string name="fault_thermal_desc">Simula temperatura de bobinado de husillo > 85°C</string>
+    <string name="fault_interlock_name">Enclavamiento Puerta Cabina</string>
+    <string name="fault_interlock_desc">Simula apertura de cabina durante ciclo de trabajo</string>
+    <string name="fault_coolant_name">Presión Baja Refrigerante</string>
+    <string name="fault_coolant_desc">Simula caída de presión en bomba de refrigeración</string>
+
+    <string name="config_sim_probe_section">Simulación de Metrología y Palpador 3D</string>
+    <string name="config_sim_probe_desc">Simule contacto con arista de pieza sin riesgo de rotura de palpador.</string>
+    <string name="config_sim_probe_btn">DISPARAR CONTACTO PALPADOR (G38.2)</string>
+
+    <!-- In-App Manual Sections 9 & 10 (Spanish) -->
+    <string name="manual_sec9_title">09. CÁMARA ÓPTICA INDUSTRIAL Y METROLOGÍA</string>
+    <string name="manual_sec9_summary">Alineación óptica de piezas, búsqueda de aristas, retículas graduadas, compensación de offset y filtros.</string>
+    <string name="manual_sec9_content" formatted="false">La cámara industrial permite alinear piezas y definir orígenes de trabajo (WCS) sin contacto físico:\n\n• RETÍCULAS DE ALTA PRECISIÓN: Incluye cruz graduada (0.01 mm), círculos concéntricos, cuadrícula de metrología, buscador de esquinas 90°, diana Bulls-Eye y transportador angular giratorio para verificar el paralelismo de mordazas con ajuste fino de ángulo (±0.1°, ±1°, ±10°). Navegación rápida de retículas mediante botones laterales de carrusel &lt; y &gt;.\n• PRESETS DE ZOOM MACRO (1X, 2X, 4X, 8X): Botones de magnificación táctil directa para operar con guantes de taller sin recurrir al pellizco en pantalla.\n• FILTROS ÓPTICOS INDUSTRIALES: Elimina reflejos molestos causados por refrigerante y superficies metálicas brillantes mediante Color, Alto Contraste B/N, Inversión Negativa o Realce de Bordes.\n• COMPENSACIÓN DE OFFSET CÁMARA-HUSILLO: Permite configurar la distancia física exacta entre la cámara y la fresa (X_off, Y_off) y aplicar \'FIJAR CERO G54 CON OFFSET\' para calcular automáticamente el origen de mecanizado sin operaciones manuales.\n• FOTOGRAFÍAS DE CONTROL DE CALIDAD (QC): Registro de capturas con fecha, hora, posición DRO y sistema WCS activo para auditoría.</string>
+    <string-array name="manual_sec9_sop">
+        <item>1. Monte la cámara en el soporte calibrado y encienda la luz LED auxiliar si la iluminación del recinto es tenue.</item>
+        <item>2. Seleccione la retícula \'CROSSHAIR\' o \'CORNER FINDER\' y ajuste el zoom macro a 4X u 8X.</item>
+        <item>3. Si el metal produce destellos, active el filtro \'ALTO CONTRASTE\' o \'NEGATIVO\'.</item>
+        <item>4. Utilice los micro-pasos jog (±0.05 mm) hasta alinear la arista con la retícula central.</item>
+        <item>5. Pulse \'FIJAR CERO G54 CON OFFSET\' para transferir el origen de pieza corregido al controlador CNC.</item>
+    </string-array>
+    <string-array name="manual_sec9_safety">
+        <item>ADVERTENCIA: El husillo principal DEBE permanecer completamente detenido (M5) durante la inspección y alineación visual.</item>
+        <item>Asegúrese de elevar el eje Z antes de mover la máquina para evitar colisiones entre el cuerpo de la cámara y las bridas o mordazas.</item>
+    </string-array>
+
+    <string name="manual_sec10_title">10. CENTRO DE CONTROL DE SIMULACIÓN Y PRUEBAS</string>
+    <string name="manual_sec10_summary">Entorno unificado para simulación de máquina, pruebas de alarma, batería, red y sonda de palpado.</string>
+    <string name="manual_sec10_content" formatted="false">El Centro de Control de Simulaciones, ubicado en la pestaña CONFIG (Sección 6), consolida todas las herramientas de diagnóstico y formación:\n\n• SIMULADOR MAESTRO LINUXCNC: Conmuta entre la máquina física real y el motor de emulación cinemática local.\n• SIMULACIÓN DE BATERÍA DE TABLET: Comprueba las respuestas ante batería baja (15%) o crítica (8%) y estado de carga USB-C sin descargar el equipo físico.\n• SIMULACIÓN DE LATENCIA Y DESCONEXIÓN: Inyecta latencia industrial (380 ms) y cortes de comunicación para evaluar el algoritmo de reconexión exponencial y el freno preventivo.\n• INYECCIÓN DE FALLOS INDUSTRIALES: Disparo controlado de alarmas reales (Sobrepar de servo EtherCAT AL.006, Final de carrera X+, Sobretemperatura del cabezal, Interlock de puerta y Presión de refrigerante) para capacitar a los operarios en procedimientos de emergencia.\n• SIMULACIÓN DE SONDA 3D (G38.2): Simula el contacto del palpador cinemático para probar ciclos de puesta a cero sin riesgo de rotura de palpadores de rubí.</string>
+    <string-array name="manual_sec10_sop">
+        <item>1. Para sesiones de capacitación, active \'LinuxCNC Controller Simulation\' en la pestaña CONFIG.</item>
+        <item>2. Pruebe las respuestas del operario inyectando alarmas desde \'Inyección de Fallos Industriales\'.</item>
+        <item>3. Verifique que el botón de parada de emergencia (E-STOP) responde adecuadamente ante cualquier fallo inyectado.</item>
+        <item>4. Al finalizar las pruebas, pulse \'RESTORE REAL HARDWARE SENSOR\' y desactive la simulación antes de iniciar el mecanizado real.</item>
+    </string-array>
+    <string-array name="manual_sec10_safety">
+        <item>PELIGRO: Verifique siempre el indicador superior \'REAL\' antes de accionar el husillo o ejecutar programas G-Code en una máquina conectada.</item>
+        <item>Las inyecciones de fallo son para capacitación y validación; nunca altere los interruptores de límite físicos del taller durante el mecanizado.</item>
+    </string-array>
+
+    <!-- In-App Manual Section 11 (Spanish) -->
+    <string name="manual_sec11_title">11. VISUALIZADOR DE TOOLPATH 3D Y SIMULADOR DRY-RUN</string>
+    <string name="manual_sec11_summary">Previsualización G-Code interactiva, historial cromático de corte, bloque bruto 3D, trípode WCS y simulación por scrubbing.</string>
+    <string name="manual_sec11_content" formatted="false">El visualizador de trayectorias 3D combina gráficos CAM de alta gama con un renderizado ligero optimizado para la batería de tablets y smartphones:\n\n• HISTORIAL CROMÁTICO DINÁMICO DE CORTE:\n  – Verde Bosque Atenuado: Trayectorias y pasadas ya ejecutadas y desalojadas por la fresa.\n  – Verde Neón con Halo de Corte: Bloque de G-Code activo en contacto directo con la pieza.\n  – Cian Industrial: Pasadas de corte lineal pendientes (G1).\n  – Violeta / Magenta Eléctrico: Arcos de interpolación circular y helicoidal (G2/G3).\n  – Ámbar Punteado: Movimientos de posicionamiento rápido en vacío (G0).\n\n• BRUTO DE MATERIAL EN 3D Y TRÍPODE DATUM WCS:\n  – Prisma Bounding Box 3D: Contorno que calcula y muestra las dimensiones totales del bruto de mecanizado (ΔX, ΔY, ΔZ) y márgenes de seguridad.\n  – Tríada WCS (0,0,0): Flechas tridimensionales RGB (Rojo=X, Verde=Y, Azul=Z) marcando el origen de pieza activo.\n\n• SIMULADOR VIRTUAL Y SCRUBBING TÁCTIL (DRY-RUN):\n  – Barra Deslizante de Inspección: Arrastre el cursor táctil para explorar visualmente cualquier línea del programa antes de energizar los motores físicos.\n  – Reproducción Virtual: Simule la trayectoria a velocidades 1X, 2X, 5X o 10X sin movimiento de máquina.\n\n• FILTROS DE CAPAS PARA MÁXIMO RENDIMIENTO MÓVIL:\n  – Ocultar Rápidos (G0): Botón de un toque para apagar líneas de posicionamiento y agilizar el refresco.\n  – Seguimiento de Fresa (Follow Tool): Centra dinámicamente la cámara en la punta de corte.\n  – Auto-Ajuste (Auto-Fit): Encuadre automático que calcula el zoom y centrado ideal para cualquier pieza.\n  – Visor G-Code Desplegable: Panel lateral expandible u ocultable para maximizar el área de pantalla.</string>
+    <string-array name="manual_sec11_sop">
+        <item>1. Pulse \'CARGAR / ESCANEAR\' o cambie a la pestaña TRAYECTORIA para cargar y validar el archivo G-Code.</item>
+        <item>2. Verifique las cotas del bruto (ΔX, ΔY, ΔZ) contra las dimensiones reales de la pieza montada en mesa.</item>
+        <item>3. Pulse \'AUTO-AJUSTE\' y alterne las perspectivas según la necesidad (ISO 3D, SUP XY, FRONT XZ o LAT YZ).</item>
+        <item>4. Arrastre la barra de Scrubbing o pulse PLAY (2X/5X) para verificar trayectorias y descartar posibles colisiones.</item>
+        <item>5. Confirme las alturas de plano de seguridad Z antes de pulsar \'INICIAR CICLO\' en la máquina.</item>
+    </string-array>
+    <string-array name="manual_sec11_safety">
+        <item>CRÍTICO: Inspeccione siempre los puntos de penetración vertical y el recorrido en Z negativo en vista FRONT o LAT antes de mecanizar.</item>
+        <item>Asegúrese de palpar y fijar el origen WCS (G54-G59) con instrumento físico antes de confiar en la alineación visual del datum 3D.</item>
     </string-array>
 </resources>

@@ -97,7 +97,27 @@
     <string name="reticle_concentric">CONCENTRIC CIRCLES</string>
     <string name="reticle_grid">METROLOGICAL GRID</string>
     <string name="reticle_corner">CORNER FINDER (EDGE)</string>
+    <string name="reticle_protractor">PROTRACTOR (ANGULAR)</string>
+    <string name="reticle_bullseye">BULLS-EYE (TARGET)</string>
     <string name="reticle_none">NO RETICLE</string>
+
+    <string name="camera_optical_filters">OPTICAL FILTERS</string>
+    <string name="camera_filter_normal">COLOR</string>
+    <string name="camera_filter_contrast">HIGH CONTRAST</string>
+    <string name="camera_filter_invert">NEGATIVE</string>
+    <string name="camera_filter_edge">EDGES</string>
+    <string name="camera_spindle_offset">CAMERA-SPINDLE OFFSET</string>
+    <string name="camera_spindle_offset_title">Camera to Spindle Offset Compensation</string>
+    <string name="camera_spindle_offset_desc">Physical offset of optical axis relative to main spindle center (mm).</string>
+    <string name="camera_zero_with_offset">SET G54 ZERO WITH OFFSET</string>
+    <string name="camera_zero_offset_applied">Zero set with offset: X=%1$.2f, Y=%2$.2f</string>
+    <string name="camera_angle_label">Angle: %1$.1f°</string>
+    <string name="camera_reset_angle">0°</string>
+    <string name="camera_zoom_preset_1x">1X</string>
+    <string name="camera_zoom_preset_2x">2X</string>
+    <string name="camera_zoom_preset_4x">4X</string>
+    <string name="camera_zoom_preset_8x">8X</string>
+    <string name="camera_qc_report_title">OPTICAL QUALITY CONTROL</string>
 
     <!-- Header & Top Bar -->
     <string name="topbar_estop">E-STOP</string>
@@ -183,6 +203,22 @@
     <string name="view_top">TOP</string>
     <string name="view_iso">ISO 3D</string>
     <string name="view_front">FRONT</string>
+    <string name="view_side">SIDE</string>
+    <string name="tp_autofit">AUTO-FIT</string>
+    <string name="tp_toggle_rapids">G0 RAPIDS</string>
+    <string name="tp_toggle_stock">STOCK 3D</string>
+    <string name="tp_toggle_grid">GRID</string>
+    <string name="tp_toggle_follow">FOLLOW TOOL</string>
+    <string name="tp_toggle_code">G-CODE</string>
+    <string name="tp_dry_run">DRY-RUN SIMULATION</string>
+    <string name="tp_sim_play">PLAY</string>
+    <string name="tp_sim_pause">PAUSE</string>
+    <string name="tp_sim_speed">%1$dX</string>
+    <string name="tp_scrub_label">BLOCK %1$d / %2$d</string>
+    <string name="tp_wcs_origin">WCS (0,0,0)</string>
+    <string name="tp_past_cuts">CUT</string>
+    <string name="tp_current_tool">ACTIVE</string>
+    <string name="tp_arc_cut">ARC G2/G3</string>
     <string name="toolpath_load_scan">LOAD / SCAN</string>
     <string name="toolpath_run_time">RUN:</string>
     <string name="toolpath_rem_time">REM: %s</string>
@@ -421,5 +457,136 @@
     </string-array>
     <string-array name="manual_sec7_safety">
         <item>If the master enters INIT or PRE-OP state during machining, the machine will execute an instantaneous safety stop.</item>
+    </string-array>
+
+    <!-- Fail-Safe Alarms: Battery, Network Reconnect, Screen Timeout -->
+    <string name="screen_policy_always_on">Always On (Safe HMI)</string>
+    <string name="screen_policy_always_on_desc">Prevents screen sleep at all times while app is in foreground (Recommended for CNC safety)</string>
+    <string name="screen_policy_machine_active">On During Machine Activity</string>
+    <string name="screen_policy_machine_active_desc">Keeps screen on when machine is ON, RUNNING, HOMING, or PAUSED</string>
+    <string name="screen_policy_system_timeout">System Display Timeout</string>
+    <string name="screen_policy_system_timeout_desc">Screen follows Android display sleep settings</string>
+
+    <string name="alarm_low_battery_title">LOW BATTERY ALARM</string>
+    <string name="alarm_low_battery_msg">Battery at %1$d%% and not charging. Connect charger immediately to avoid communication cut with LinuxCNC.</string>
+    <string name="alarm_critical_battery_title">CRITICAL BATTERY ALARM</string>
+    <string name="alarm_critical_battery_msg">EMERGENCY: Battery at %1$d%%! Imminent tablet power off during active machining cycle. Pause cycle or connect power now!</string>
+
+    <string name="alarm_weak_signal_title">WEAK NETWORK SIGNAL</string>
+    <string name="alarm_weak_signal_msg">High latency (%1$d ms) or poor signal detected. Risk of telemetry jitter or lost frames.</string>
+    <string name="alarm_reconnecting_title">DISCONNECTED FROM LINUXCNC</string>
+    <string name="alarm_reconnecting_msg">Auto-reconnecting in %1$d s (Attempt #%2$d)...</string>
+    <string name="alarm_reconnect_now_btn">RECONNECT NOW</string>
+    <string name="alarm_dismiss_btn">DISMISS</string>
+    <string name="alarm_pause_cycle_btn">FEED HOLD (PAUSE)</string>
+
+    <string name="status_screen_always_on">SCREEN WAKE LOCK ACTIVE</string>
+    <string name="status_screen_system_timeout">SCREEN TIMEOUT ENABLED</string>
+    <string name="status_screen_timeout_warning">WARNING: Screen timeout may trigger while machine is running!</string>
+
+    <string name="config_safety_power_header">SAFETY, BATTERY &amp; SCREEN TIMEOUT</string>
+    <string name="config_screen_timeout_label">Screen Sleep Management (Wake Lock)</string>
+    <string name="config_battery_health_label">Device Battery &amp; Power State</string>
+    <string name="config_battery_sim_btn">SIMULATE LOW BATTERY (15%)</string>
+    <string name="config_battery_restore_btn">RESTORE SENSOR</string>
+    <string name="config_weak_signal_sim_btn">SIMULATE WEAK SIGNAL (350ms)</string>
+    <string name="config_disconnect_sim_btn">SIMULATE DROP &amp; RECONNECT</string>
+
+    <string name="manual_sec8_title">8. Power, Screen &amp; Network Fail-Safe Alarms</string>
+    <string name="manual_sec8_summary">Safety policies for low battery, weak network signal, and screen sleep prevention.</string>
+    <string name="manual_sec8_content" formatted="false">To prevent catastrophic tool crashes and loss of E-STOP responsiveness:\n\n• SCREEN SLEEP (WAKE LOCK): The app enforces FLAG_KEEP_SCREEN_ON so the screen remains illuminated and touch-ready at all times during machine operation.\n• LOW BATTERY ALARM: Warning at &lt;= 20% and critical alarm at &lt;= 10%. If battery is critical during a cycle, an emergency alert sounds.\n• WEAK SIGNAL &amp; AUTO-RECONNECT: When network latency exceeds 200 ms or connection drops, exponential backoff automatically reconnects without manual restart.</string>
+    <string-array name="manual_sec8_sop">
+        <item>Always keep the tablet plugged into a certified industrial USB-C charger when operating long G-Code cycles.</item>
+        <item>Ensure \'Screen Always On\' is enabled in CONFIG tab to keep E-STOP and Feed Hold instantly accessible.</item>
+        <item>If the \'WEAK SIGNAL\' banner appears, check Wi-Fi router signal strength or use an Ethernet adapter.</item>
+    </string-array>
+    <string-array name="manual_sec8_safety">
+        <item>Never allow the operator tablet to discharge completely while the CNC spindle is running.</item>
+    </string-array>
+
+    <string name="config_simulations_hub_header">SIMULATION &amp; TEST CONTROL CENTER</string>
+    <string name="config_simulations_hub_desc">Centralized controls for machine emulation, telemetry simulation, battery testing, touch probe and fault injection.</string>
+    <string name="config_sim_master_label">LinuxCNC Controller Simulation</string>
+    <string name="config_sim_master_desc">When enabled, the app calculates kinematics, DRO and movements on-device without a physical machine.</string>
+    <string name="config_sim_badge_active">SIMULATION MODE ACTIVE</string>
+    <string name="config_sim_badge_real">PHYSICAL MACHINE MODE</string>
+    
+    <string name="config_sim_battery_section">Operator Tablet Battery Simulation</string>
+    <string name="config_sim_battery_desc">Test battery thresholds and alarms without discharging your tablet.</string>
+    <string name="config_sim_battery_toggle">Override Battery State</string>
+    <string name="config_sim_battery_charging_toggle">Simulate USB-C Charger Connected</string>
+    <string name="config_sim_battery_restore">RESTORE REAL HARDWARE SENSOR</string>
+    <string name="config_sim_battery_crit">8% (CRITICAL)</string>
+    <string name="config_sim_battery_low">15% (LOW)</string>
+    <string name="config_sim_battery_med">50% (NORMAL)</string>
+    <string name="config_sim_battery_full">100% (FULL)</string>
+
+    <string name="config_sim_network_section">Network &amp; Latency Simulation</string>
+    <string name="config_sim_network_desc">Simulate link degradation or drops to test fail-safe disconnect and exponential reconnect.</string>
+    <string name="config_sim_weak_signal_toggle">Simulate Weak Signal (380 ms)</string>
+    <string name="config_sim_drop_network_btn">SIMULATE DROP &amp; RECONNECT</string>
+    <string name="config_sim_restore_network_btn">RESTORE OPTIMAL LINK (2 ms)</string>
+
+    <string name="config_sim_faults_section">Industrial Fault &amp; Alarm Injection</string>
+    <string name="config_sim_faults_desc">Inject simulated alarms into the event logger to verify operator safety procedures.</string>
+    <string name="fault_servo_name">Servo Over-Torque AL.006</string>
+    <string name="fault_servo_desc">Trips EtherCAT Axis Z servo driver alarm</string>
+    <string name="fault_limit_name">Hardware Limit Switch X+</string>
+    <string name="fault_limit_desc">Simulates physical axis over-travel switch trip</string>
+    <string name="fault_thermal_name">VFD Spindle Thermal Trip</string>
+    <string name="fault_thermal_desc">Simulates spindle stator temperature exceeding 85°C</string>
+    <string name="fault_interlock_name">Enclosure Door Interlock</string>
+    <string name="fault_interlock_desc">Simulates safety door open during active cycle</string>
+    <string name="fault_coolant_name">Low Coolant Pressure</string>
+    <string name="fault_coolant_desc">Simulates flood pump pressure loss (0.4 bar)</string>
+
+    <string name="config_sim_probe_section">Metrology &amp; 3D Touch Probe Simulation</string>
+    <string name="config_sim_probe_desc">Simulate workpiece edge/surface touch without risk of probe stylus damage.</string>
+    <string name="config_sim_probe_btn">TRIGGER 3D PROBE TOUCH (G38.2)</string>
+
+    <!-- In-App Manual Sections 9 & 10 (English) -->
+    <string name="manual_sec9_title">09. Industrial Optical Camera &amp; Metrology</string>
+    <string name="manual_sec9_summary">Non-contact workpiece alignment, edge finding, precision reticles, spindle offset compensation, and optical filters.</string>
+    <string name="manual_sec9_content" formatted="false">The industrial camera allows non-contact workpiece alignment and Work Coordinate System (WCS) zero setting:\n\n• HIGH-PRECISION RETICLES: Includes 0.01 mm crosshair, concentric circles, metrology grid, 90° corner finder, Bulls-Eye target, and rotatable angular protractor to check vise/part parallelism with fine step trimming (±0.1°, ±1°, ±10°). Fast reticle navigation with lateral carousel buttons &lt; and &gt;.\n• MACRO ZOOM PRESETS (1X, 2X, 4X, 8X): Direct touch magnification buttons engineered for shop-floor glove operation without screen pinching.\n• INDUSTRIAL OPTICAL FILTERS: Eliminates glare from coolant and reflective polished metals using Normal Color, High Contrast B/W, Negative Inversion, or Edge Highlights.\n• CAMERA-TO-SPINDLE OFFSET COMPENSATION: Stores the calibrated physical offset distance between the lens and the milling cutter (X_off, Y_off) and applies \'SET G54 ZERO WITH OFFSET\' to automatically zero the spindle coordinate without manual math.\n• QUALITY CONTROL (QC) SNAPSHOTS: Records high-resolution inspection captures stamped with timestamp, live DRO coordinates, and active WCS for part traceability.</string>
+    <string-array name="manual_sec9_sop">
+        <item>1. Mount the camera to the calibrated fixture and enable auxiliary LED torch if enclosure lighting is insufficient.</item>
+        <item>2. Select the \'CROSSHAIR\' or \'CORNER FINDER\' reticle and set macro zoom to 4X or 8X.</item>
+        <item>3. If metallic reflections glare, toggle \'HIGH CONTRAST\' or \'NEGATIVE\' optical filter.</item>
+        <item>4. Use micro-jogging steps (±0.05 mm) until the workpiece edge aligns with the center reticle.</item>
+        <item>5. Press \'SET G54 ZERO WITH OFFSET\' to transfer the compensated origin to the LinuxCNC controller.</item>
+    </string-array>
+    <string-array name="manual_sec9_safety">
+        <item>WARNING: The spindle motor MUST remain fully stopped (M5) during visual inspection and optical alignment.</item>
+        <item>Always verify adequate Z-clearance before traversing axes to avoid physical camera collisions with clamps or vises.</item>
+    </string-array>
+
+    <string name="manual_sec10_title">10. Simulation and Testing Control Center</string>
+    <string name="manual_sec10_summary">Unified workbench for kinematic machine simulation, fault injection, battery monitoring, and 3D probe testing.</string>
+    <string name="manual_sec10_content" formatted="false">The Simulation Control Center, located in the CONFIG tab (Section 6), consolidates all diagnostic and training tools:\n\n• LINUXCNC MASTER SIMULATOR: Seamlessly switches between live physical hardware and the local kinematic emulation engine.\n• OPERATOR TABLET BATTERY SIMULATION: Validates low-battery (15%) and critical (8%) threshold alarms and USB-C charging behavior without depleting the physical device.\n• NETWORK LATENCY &amp; DISCONNECT SIMULATION: Injects industrial latency (380 ms) and dropped connection packets to test exponential backoff reconnection and safety feeds.\n• INDUSTRIAL FAULT INJECTION: Controlled triggering of real alarms (EtherCAT servo torque AL.006, X+ limit switch, VFD spindle over-temperature, door interlock, and coolant pressure loss) to train operators on emergency recovery procedures.\n• 3D TOUCH PROBE SIMULATION (G38.2): Emulates kinematic probe stylus contact to verify automated centering routines without risk of damaging ruby probe tips.</string>
+    <string-array name="manual_sec10_sop">
+        <item>1. For training sessions, enable \'LinuxCNC Controller Simulation\' in the CONFIG tab.</item>
+        <item>2. Test operator response by injecting faults from the \'Industrial Fault &amp; Alarm Injection\' panel.</item>
+        <item>3. Verify that Emergency Stop (E-STOP) and Feed Hold respond immediately to injected faults.</item>
+        <item>4. After verification, press \'RESTORE REAL HARDWARE SENSOR\' and turn off simulation before running live cuts.</item>
+    </string-array>
+    <string-array name="manual_sec10_safety">
+        <item>DANGER: Always check the top status bar reads \'REAL\' before commanding spindle rotation or G-Code cycle start on a live machine.</item>
+        <item>Fault injection tools are for training and commissioning; never bypass real workshop limit switches during live cutting.</item>
+    </string-array>
+
+    <!-- In-App Manual Section 11 (English) -->
+    <string name="manual_sec11_title">11. High-Performance 3D Toolpath &amp; Dry-Run Simulator</string>
+    <string name="manual_sec11_summary">Interactive 3D G-Code preview, chromatic machining history, stock wireframe, WCS datum tripod, and scrubbing simulation.</string>
+    <string name="manual_sec11_content" formatted="false">The 3D Toolpath Visualizer unites high-end CAM graphics with battery-optimized rendering for mobile and shop-floor tablets:\n\n• DYNAMIC CHROMATIC MACHINING HISTORY:\n  – Dimmed Forest Green: Machined segments already cleared by the cutter.\n  – Neon Green with Cut Halo: Current active G-Code block and toolhead engagement.\n  – Industrial Cyan: Future linear cutting passes (G1).\n  – Electric Magenta: Circular and helical interpolation arcs (G2/G3).\n  – Dashed Amber: Rapid traverse positioning moves (G0).\n\n• WORKPIECE STOCK 3D WIREFRAME &amp; WCS DATUM TRIPOD:\n  – 3D Bounding Box: Computed envelope showing raw material size (ΔX, ΔY, ΔZ) and clearance margins.\n  – WCS Triad (0,0,0): High-visibility RGB coordinate arrows (Red=X, Green=Y, Blue=Z) indicating active workpiece zero.\n\n• DRY-RUN SIMULATOR &amp; TOUCH SCRUBBING:\n  – Interactive Scrub Bar: Drag the slider to inspect any point in the toolpath before running physical motors.\n  – Virtual Playback: Cycle through tool moves at 1X, 2X, 5X, or 10X speeds without machine motion.\n\n• MOBILE PERFORMANCE LAYER TOGGLES:\n  – G0 Rapids Culling: One-tap toggle to hide rapid lines for complex programs.\n  – Follow Tool Mode: Locks the viewport on the cutter tip during execution.\n  – Auto-Fit: Instantly computes optimal scale and center offset for any part dimensions.\n  – G-Code Inspector Drawer: Expandable code viewer with line tracking.</string>
+    <string-array name="manual_sec11_sop">
+        <item>1. Tap \'LOAD / SCAN\' or switch to TOOLPATH tab to load and verify the G-Code program envelope.</item>
+        <item>2. Check workpiece dimensions (ΔX, ΔY, ΔZ) against raw stock mounted on the machine table.</item>
+        <item>3. Press \'AUTO-FIT\' and select perspective (ISO 3D, TOP XY, FRONT XZ, or SIDE YZ).</item>
+        <item>4. Use the Dry-Run Scrub Slider or press PLAY (2X/5X) to simulate cutting paths and verify zero collisions.</item>
+        <item>5. Verify rapid clearance heights before pressing \'CYCLE START\' on the machine.</item>
+    </string-array>
+    <string-array name="manual_sec11_safety">
+        <item>CRITICAL: Always verify tool plunge points and Z-negative travel in FRONT or SIDE view prior to cutting metal.</item>
+        <item>Ensure Work Coordinate System (WCS G54-G59) is physically probed and zeroed before relying on 3D datum alignment.</item>
     </string-array>
 </resources>

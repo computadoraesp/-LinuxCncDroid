@@ -71,11 +71,36 @@ class CncViewModel(application: Application, private val savedStateHandle: Saved
     private val _isCharging = MutableStateFlow(false)
     val isCharging: StateFlow<Boolean> = _isCharging.asStateFlow()
 
-    /** Whether the screen keep-alive flag should be active.
-     *  True only when the machine is actively running or homing. */
-    val keepScreenOn: StateFlow<Boolean> = engine.machineState
-        .map { it == MachineStateEnum.RUNNING || it == MachineStateEnum.HOMING }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    private val _batterySafety = MutableStateFlow(BatterySafetyState())
+    val batterySafety: StateFlow<BatterySafetyState> = _batterySafety.asStateFlow()
+
+    // Screen Sleep / Wake Lock policy
+    val screenTimeoutPolicy: MutableStateFlow<ScreenTimeoutPolicy> =
+        MutableStateFlow(ScreenTimeoutPolicy.ALWAYS_ON)
+
+    /**
+     * Controls whether the Android window flag FLAG_KEEP_SCREEN_ON is active.
+     * ALWAYS_ON keeps the screen on at all times while the app is foregrounded.
+     * MACHINE_ACTIVE keeps the screen on whenever the machine is ON, RUNNING, HOMING, or PAUSED.
+     * SYSTEM_TIMEOUT allows Android system screen sleep to trigger normally.
+     */
+    val keepScreenOn: StateFlow<Boolean> = combine(
+        engine.machineState,
+        screenTimeoutPolicy,
+    ) { state, policy ->
+        when (policy) {
+            ScreenTimeoutPolicy.ALWAYS_ON -> true
+            ScreenTimeoutPolicy.MACHINE_ACTIVE ->
+                state == MachineStateEnum.RUNNING ||
+                state == MachineStateEnum.HOMING ||
+                state == MachineStateEnum.PAUSED ||
+                state == MachineStateEnum.ON ||
+                state == MachineStateEnum.IDLE
+            ScreenTimeoutPolicy.SYSTEM_TIMEOUT -> false
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    val connectionTelemetry: StateFlow<ConnectionTelemetry> = engine.connectionTelemetry
 
     // Jog style: BUTTON_PAD vs VIRTUAL_MPG
     private val _jogStyle = MutableStateFlow(JogControlStyle.BUTTON_PAD)
@@ -153,29 +178,206 @@ class CncViewModel(application: Application, private val savedStateHandle: Saved
     }
 
     private fun updateBatteryState(intent: Intent) {
+        if (_batterySafety.value.isSimulated) return
         val level  = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
         val scale  = intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100)
         val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
 
         val pct = if (scale > 0) (level * 100 / scale) else 0
-        val wasAbove20 = _batteryLevelPct.value > 20
-        _batteryLevelPct.value = pct
-
-        _isCharging.value = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+        val isChargingNow = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                 status == BatteryManager.BATTERY_STATUS_FULL
 
-        // Fire alert only when crossing the 20 % threshold downward, not on every update
-        if (wasAbove20 && pct <= 20 && !_isCharging.value) {
-            engine.logEvent(LogSeverity.WARNING, "BATTERY", "Low battery: $pct%%. Connect charger.")
+        applyBatteryLevel(pct, isChargingNow, isSimulated = false)
+    }
+
+    fun applyBatteryLevel(pct: Int, isChargingNow: Boolean, isSimulated: Boolean = false) {
+        val prevLow = _batterySafety.value.isLowBattery
+        val prevCritical = _batterySafety.value.isCriticalBattery
+        val isLow = pct <= 20 && !isChargingNow
+        val isCritical = pct <= 10 && !isChargingNow
+
+        _batteryLevelPct.value = pct
+        _isCharging.value = isChargingNow
+        _batterySafety.value = BatterySafetyState(
+            levelPct = pct,
+            isCharging = isChargingNow,
+            isLowBattery = isLow,
+            isCriticalBattery = isCritical,
+            isSimulated = isSimulated,
+        )
+
+        // Critical alarm threshold (<= 10%)
+        if (!prevCritical && isCritical) {
+            val isRunning = engine.machineState.value == MachineStateEnum.RUNNING
+            val message = if (isRunning) {
+                "¡PELIGRO CRÍTICO! Batería al $pct% durante ciclo de mecanizado. Apagado inminente: Pause ciclo o conecte cargador."
+            } else {
+                "¡ALARMA CRÍTICA DE BATERÍA! Nivel al $pct%. Conecte el cargador de inmediato."
+            }
+            engine.logEvent(LogSeverity.CRITICAL, "BATERÍA", message)
+            feedbackManager.playErrorAlarm()
+            feedbackManager.triggerEstopHaptic()
+        } else if (!prevLow && isLow) {
+            // Low battery warning threshold (<= 20%)
+            engine.logEvent(LogSeverity.WARNING, "BATERÍA", "Alarma de batería baja: $pct%. Conecte cargador al dispositivo.")
             feedbackManager.playLowBatteryAlert()
+        }
+    }
+
+    private val _isWeakSignalDismissed = MutableStateFlow(false)
+    val isWeakSignalDismissed: StateFlow<Boolean> = _isWeakSignalDismissed.asStateFlow()
+
+    fun dismissWeakSignalAlert() {
+        feedbackManager.triggerActionClick()
+        _isWeakSignalDismissed.value = true
+    }
+
+    private val _isBatteryAlertDismissed = MutableStateFlow(false)
+    val isBatteryAlertDismissed: StateFlow<Boolean> = _isBatteryAlertDismissed.asStateFlow()
+
+    fun dismissBatteryAlert() {
+        feedbackManager.triggerActionClick()
+        _isBatteryAlertDismissed.value = true
+    }
+
+    fun setEngineSimulatedMode(enabled: Boolean) {
+        feedbackManager.triggerActionClick()
+        engine.setSimulatedMode(enabled)
+    }
+
+    fun simulateBatteryLevel(pct: Int, isCharging: Boolean = false) {
+        applyBatteryLevel(pct, isCharging, isSimulated = true)
+        feedbackManager.triggerActionClick()
+    }
+
+    fun setBatteryChargingSimulation(isCharging: Boolean) {
+        feedbackManager.triggerActionClick()
+        val currentLevel = _batterySafety.value.levelPct
+        applyBatteryLevel(currentLevel, isCharging, isSimulated = true)
+    }
+
+    fun restoreBatterySensor() {
+        _batterySafety.value = _batterySafety.value.copy(isSimulated = false)
+        readBatteryStatus()
+        feedbackManager.triggerActionClick()
+        engine.logEvent(LogSeverity.INFO, "BATERÍA", "Sensor de batería restaurado a lecturas reales del sistema.")
+    }
+
+    fun setScreenTimeoutPolicy(policy: ScreenTimeoutPolicy) {
+        screenTimeoutPolicy.value = policy
+        feedbackManager.triggerActionClick()
+        if (policy == ScreenTimeoutPolicy.SYSTEM_TIMEOUT) {
+            engine.logEvent(
+                LogSeverity.WARNING,
+                "PANTALLA",
+                "Aviso de seguridad: Apagado de pantalla según sistema activado. Se recomienda 'Pantalla Siempre Encendida'.",
+            )
+        } else {
+            engine.logEvent(
+                LogSeverity.INFO,
+                "PANTALLA",
+                "Política de pantalla actualizada a: ${policy.name} (Wake Lock activo).",
+            )
+        }
+    }
+
+    fun retryConnectionNow() {
+        feedbackManager.triggerActionClick()
+        engine.reconnectNow()
+    }
+
+    fun simulateWeakSignal(enable: Boolean) {
+        feedbackManager.triggerActionClick()
+        _isWeakSignalDismissed.value = false
+        engine.setWeakSignalSimulation(enable)
+    }
+
+    fun simulateConnectionLoss() {
+        feedbackManager.triggerActionClick()
+        engine.simulateConnectionLoss()
+    }
+
+    fun restoreConnectionSimulation() {
+        feedbackManager.triggerActionClick()
+        _isWeakSignalDismissed.value = false
+        engine.restoreConnectionSimulation()
+    }
+
+    fun simulateTouchProbe() {
+        feedbackManager.triggerActionClick()
+        feedbackManager.triggerSuccessHaptic()
+        engine.simulateProbeTouch()
+    }
+
+    fun injectSimulatedFault(faultType: SimulatedFaultType) {
+        when (faultType) {
+            SimulatedFaultType.SERVO_OVERTORQUE -> {
+                feedbackManager.triggerWarningHaptic()
+                feedbackManager.playErrorAlarm()
+                engine.logEvent(LogSeverity.ERROR, "ETHERCAT", "ALARMA AL.006: Sobrepar de protección disparado en Servo Eje Z")
+            }
+            SimulatedFaultType.LIMIT_SWITCH_X -> {
+                feedbackManager.triggerEstopHaptic()
+                feedbackManager.playErrorAlarm()
+                engine.logEvent(LogSeverity.CRITICAL, "LIMIT", "FINAL DE CARRERA DISPARADO: Interruptor hardware Eje X+ activado!")
+            }
+            SimulatedFaultType.SPINDLE_THERMAL -> {
+                feedbackManager.triggerWarningHaptic()
+                feedbackManager.playErrorAlarm()
+                engine.logEvent(LogSeverity.ERROR, "SPINDLE", "FALLO TÉRMICO VFD: Temperatura de devanado de husillo > 85°C. Parada preventiva.")
+            }
+            SimulatedFaultType.DOOR_INTERLOCK -> {
+                feedbackManager.triggerWarningHaptic()
+                feedbackManager.playErrorAlarm()
+                engine.logEvent(LogSeverity.WARNING, "SAFETY", "ENCLAVAMIENTO DE SEGURIDAD: Puerta de cabina abierta durante ciclo activo.")
+            }
+            SimulatedFaultType.LOW_COOLANT -> {
+                feedbackManager.triggerWarningHaptic()
+                feedbackManager.playWarningBeep()
+                engine.logEvent(LogSeverity.WARNING, "COOLANT", "NIVEL DE REFRIGERANTE BAJO: Presión de bomba insuficiente (0.4 bar).")
+            }
         }
     }
 
     private fun observeConnectivity() {
         connectivityObserver.observe()
             .onEach { status ->
-                val severity = if (status == ConnectivityObserver.Status.Available) LogSeverity.INFO else LogSeverity.WARNING
-                engine.logEvent(severity, "NETWORK", "Device Connectivity: ${status.name}")
+                when (status) {
+                    ConnectivityObserver.Status.Available -> {
+                        engine.logEvent(LogSeverity.INFO, "NETWORK", "Enlace de red disponible")
+                        if (!engine.connectionTelemetry.value.isConnected) {
+                            engine.reconnectNow()
+                        }
+                    }
+                    ConnectivityObserver.Status.Weak -> {
+                        engine.logEvent(
+                            LogSeverity.WARNING,
+                            "NETWORK",
+                            "Alarma de red: Señal Wi-Fi débil o degradada. Riesgo de caída de telemetría.",
+                        )
+                        feedbackManager.playWarningBeep()
+                        feedbackManager.triggerWarningHaptic()
+                        engine.setWeakSignalSimulation(true)
+                    }
+                    ConnectivityObserver.Status.Losing -> {
+                        engine.logEvent(
+                            LogSeverity.WARNING,
+                            "NETWORK",
+                            "Enlace de red inestable (Losing). Reintentando paquetes...",
+                        )
+                        feedbackManager.playWarningBeep()
+                    }
+                    ConnectivityObserver.Status.Lost, ConnectivityObserver.Status.Unavailable -> {
+                        engine.logEvent(
+                            LogSeverity.ERROR,
+                            "NETWORK",
+                            "Conexión de red perdida. Activando protocolo de reconexión automática...",
+                        )
+                        feedbackManager.playErrorAlarm()
+                        feedbackManager.triggerEstopHaptic()
+                        engine.handleDisconnect("Pérdida de conectividad de red del dispositivo")
+                    }
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -291,6 +493,17 @@ class CncViewModel(application: Application, private val savedStateHandle: Saved
     fun zeroAxis(axis: String) {
         feedbackManager.triggerSuccessHaptic()
         engine.zeroAxis(axis)
+    }
+
+    fun setAxisWorkPosition(axis: String, position: Double) {
+        feedbackManager.triggerSuccessHaptic()
+        engine.setAxisWorkPosition(axis, position)
+    }
+
+    fun setWorkOriginWithCameraOffset(offsetX: Double, offsetY: Double) {
+        feedbackManager.triggerSuccessHaptic()
+        engine.setAxisWorkPosition("X", -offsetX)
+        engine.setAxisWorkPosition("Y", -offsetY)
     }
 
     fun zeroAllAxes() {

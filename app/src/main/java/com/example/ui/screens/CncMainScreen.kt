@@ -3,35 +3,53 @@ package com.example.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import com.example.ui.components.CarouselNavButton
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BatteryAlert
+import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.Hub
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.ScreenLockPortrait
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.StayCurrentPortrait
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.ViewInAr
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -48,8 +66,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.R
 import com.example.model.CncNavigationTab
 import com.example.model.LogSeverity
+import com.example.model.ScreenTimeoutPolicy
 import com.example.ui.components.AlarmEventLogView
 import com.example.ui.components.AppManualDialog
 import com.example.ui.components.AxisCalibrationDialog
@@ -67,6 +87,7 @@ import com.example.ui.components.SpeedsFeedsCalculatorDialog
 import com.example.ui.components.SpindleFeedPanel
 import com.example.ui.components.ToolTableDialog
 import com.example.ui.components.ToolpathVisualizer3D
+import com.example.ui.theme.CncActiveGreen
 import com.example.ui.theme.CncBackground
 import com.example.ui.theme.CncCardBorder
 import com.example.ui.theme.CncCyberCyan
@@ -75,6 +96,7 @@ import com.example.ui.theme.CncSurface
 import com.example.ui.theme.CncSurfaceVariant
 import com.example.ui.theme.CncTextPrimary
 import com.example.ui.theme.CncTextSecondary
+import com.example.ui.theme.CncWarningAmber
 import com.example.viewmodel.CncViewModel
 
 @Composable
@@ -130,6 +152,14 @@ fun CncMainScreen(
     val mpgAxis by viewModel.mpgAxis.collectAsStateWithLifecycle()
     val mpgMultiplier by viewModel.mpgMultiplier.collectAsStateWithLifecycle()
     val activeCalibrationSession by viewModel.activeCalibrationSession.collectAsStateWithLifecycle()
+    val batteryLevelPct by viewModel.batteryLevelPct.collectAsStateWithLifecycle()
+    val isCharging by viewModel.isCharging.collectAsStateWithLifecycle()
+    val batterySafety by viewModel.batterySafety.collectAsStateWithLifecycle()
+    val isWeakSignalDismissed by viewModel.isWeakSignalDismissed.collectAsStateWithLifecycle()
+    val isBatteryAlertDismissed by viewModel.isBatteryAlertDismissed.collectAsStateWithLifecycle()
+    val keepScreenOn by viewModel.keepScreenOn.collectAsStateWithLifecycle()
+    val screenTimeoutPolicy by viewModel.screenTimeoutPolicy.collectAsStateWithLifecycle()
+    val connectionTelemetry by viewModel.connectionTelemetry.collectAsStateWithLifecycle()
 
     val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
     val showCyberScanDialog by viewModel.showCyberScanDialog.collectAsStateWithLifecycle()
@@ -141,6 +171,8 @@ fun CncMainScreen(
     val errorCount = remember(eventLogs) {
         eventLogs.count { (it.severity == LogSeverity.ERROR) || (it.severity == LogSeverity.CRITICAL) }
     }
+    val tabsListState = rememberLazyListState()
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -164,7 +196,18 @@ fun CncMainScreen(
                 onOpenToolTable = { viewModel.setShowToolTableDialog(show = true) },
                 onOpenLogs = { viewModel.setSelectedTab(CncNavigationTab.LOGS) },
                 onOpenAxisCalibration = { viewModel.setShowCalibrationDialog(show = true) },
-            ) { viewModel.setShowManualDialog(show = true) }
+                batteryLevelPct = batteryLevelPct,
+                isCharging = isCharging,
+                isLowBattery = batterySafety.isLowBattery,
+                isCriticalBattery = batterySafety.isCriticalBattery,
+                keepScreenOn = keepScreenOn,
+                screenTimeoutPolicy = screenTimeoutPolicy,
+                connectionTelemetry = connectionTelemetry,
+                onReconnectClick = { viewModel.retryConnectionNow() },
+                onBatteryClick = { viewModel.setSelectedTab(CncNavigationTab.CONFIG) },
+                onScreenPolicyClick = { viewModel.setSelectedTab(CncNavigationTab.CONFIG) },
+                onOpenManual = { viewModel.setShowManualDialog(show = true) },
+            )
         },
         bottomBar = {
             Surface(
@@ -175,41 +218,70 @@ fun CncMainScreen(
                     .fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.navigationBars),
             ) {
-                LazyRow(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                        .padding(horizontal = 6.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    items(CncNavigationTab.entries.toTypedArray()) { tab ->
-                        val isSelected = selectedTab == tab
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = if (isSelected) CncCyberCyan.copy(alpha = 0.18f) else CncSurfaceVariant.copy(alpha = 0.6f),
-                            border = BorderStroke(
-                                width = if (isSelected) 1.5.dp else 1.dp,
-                                color = if (isSelected) CncCyberCyan else CncCardBorder,
-                            ),
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable {
-                                    viewModel.setSelectedTab(tab)
-                                },
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    CarouselNavButton(
+                        direction = "<",
+                        enabled = tabsListState.canScrollBackward,
+                        height = 38.dp,
+                        width = 24.dp,
+                        onClick = {
+                            coroutineScope.launch {
+                                tabsListState.animateScrollBy(-220f)
+                            }
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    LazyRow(
+                        state = tabsListState,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(vertical = 2.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        items(CncNavigationTab.entries.toTypedArray()) { tab ->
+                            val isSelected = selectedTab == tab
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isSelected) CncCyberCyan.copy(alpha = 0.18f) else CncSurfaceVariant.copy(alpha = 0.6f),
+                                border = BorderStroke(
+                                    width = if (isSelected) 1.5.dp else 1.dp,
+                                    color = if (isSelected) CncCyberCyan else CncCardBorder,
+                                ),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        viewModel.setSelectedTab(tab)
+                                    },
                             ) {
-                                if ((tab == CncNavigationTab.LOGS) && (errorCount > 0)) {
-                                    BadgedBox(
-                                        badge = {
-                                            Badge(containerColor = CncEstopRed, contentColor = Color.White) {
-                                                Text(errorCount.toString(), fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                                            }
-                                        },
-                                    ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    if ((tab == CncNavigationTab.LOGS) && (errorCount > 0)) {
+                                        BadgedBox(
+                                            badge = {
+                                                Badge(containerColor = CncEstopRed, contentColor = Color.White) {
+                                                    Text(errorCount.toString(), fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                                }
+                                            },
+                                        ) {
+                                            Icon(
+                                                imageVector = tab.getIcon(),
+                                                contentDescription = stringResource(tab.titleRes),
+                                                tint = if (isSelected) CncCyberCyan else CncTextSecondary,
+                                                modifier = Modifier.size(18.dp),
+                                            )
+                                        }
+                                    } else {
                                         Icon(
                                             imageVector = tab.getIcon(),
                                             contentDescription = stringResource(tab.titleRes),
@@ -217,25 +289,32 @@ fun CncMainScreen(
                                             modifier = Modifier.size(18.dp),
                                         )
                                     }
-                                } else {
-                                    Icon(
-                                        imageVector = tab.getIcon(),
-                                        contentDescription = stringResource(tab.titleRes),
-                                        tint = if (isSelected) CncCyberCyan else CncTextSecondary,
-                                        modifier = Modifier.size(18.dp),
+
+                                    Text(
+                                        text = stringResource(tab.titleRes),
+                                        color = if (isSelected) CncCyberCyan else CncTextPrimary,
+                                        fontSize = 12.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        maxLines = 1,
                                     )
                                 }
-
-                                Text(
-                                    text = stringResource(tab.titleRes),
-                                    color = if (isSelected) CncCyberCyan else CncTextPrimary,
-                                    fontSize = 12.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    maxLines = 1,
-                                )
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    CarouselNavButton(
+                        direction = ">",
+                        enabled = tabsListState.canScrollForward,
+                        height = 38.dp,
+                        width = 24.dp,
+                        onClick = {
+                            coroutineScope.launch {
+                                tabsListState.animateScrollBy(220f)
+                            }
+                        }
+                    )
                 }
             }
         },
@@ -255,6 +334,208 @@ fun CncMainScreen(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
+                // --- CRITICAL / LOW BATTERY WARNING BANNER ---
+                if ((batterySafety.isLowBattery || batterySafety.isCriticalBattery) && !batterySafety.isCharging && !isBatteryAlertDismissed) {
+                    Surface(
+                        color = if (batterySafety.isCriticalBattery) CncEstopRed.copy(alpha = 0.16f) else CncWarningAmber.copy(alpha = 0.16f),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.5.dp, if (batterySafety.isCriticalBattery) CncEstopRed else CncWarningAmber),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.BatteryAlert,
+                                    contentDescription = null,
+                                    tint = if (batterySafety.isCriticalBattery) CncEstopRed else CncWarningAmber,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                                Text(
+                                    text = if (batterySafety.isCriticalBattery)
+                                        stringResource(R.string.alarm_critical_battery_title)
+                                    else
+                                        stringResource(R.string.alarm_low_battery_title),
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 12.sp,
+                                    color = if (batterySafety.isCriticalBattery) CncEstopRed else CncWarningAmber
+                                )
+                            }
+                            Text(
+                                text = if (batterySafety.isCriticalBattery)
+                                    stringResource(R.string.alarm_critical_battery_msg, batterySafety.levelPct)
+                                else
+                                    stringResource(R.string.alarm_low_battery_msg, batterySafety.levelPct),
+                                fontSize = 11.sp,
+                                color = CncTextPrimary
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                if (machineState == com.example.model.MachineStateEnum.RUNNING) {
+                                    Button(
+                                        onClick = { viewModel.feedHold() },
+                                        colors = ButtonDefaults.buttonColors(containerColor = CncEstopRed),
+                                        shape = RoundedCornerShape(6.dp),
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(stringResource(R.string.alarm_pause_cycle_btn), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                                OutlinedButton(
+                                    onClick = { viewModel.dismissBatteryAlert() },
+                                    shape = RoundedCornerShape(6.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(R.string.alarm_dismiss_btn), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // --- RECONNECTION & WEAK SIGNAL BANNER ---
+                if (!connectionTelemetry.isConnected || connectionTelemetry.isReconnecting) {
+                    Surface(
+                        color = CncEstopRed.copy(alpha = 0.16f),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.5.dp, CncEstopRed),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    color = CncEstopRed,
+                                    strokeWidth = 2.dp
+                                )
+                                Text(
+                                    text = stringResource(R.string.alarm_reconnecting_title),
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 12.sp,
+                                    color = CncEstopRed
+                                )
+                            }
+                            Text(
+                                text = "${stringResource(R.string.alarm_reconnecting_msg, connectionTelemetry.secondsUntilReconnect, connectionTelemetry.reconnectAttempt)} • ${connectionTelemetry.lastDisconnectReason ?: "Enlace interrumpido"}",
+                                fontSize = 11.sp,
+                                color = CncTextPrimary
+                            )
+                            Button(
+                                onClick = { viewModel.retryConnectionNow() },
+                                colors = ButtonDefaults.buttonColors(containerColor = CncEstopRed),
+                                shape = RoundedCornerShape(6.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(stringResource(R.string.alarm_reconnect_now_btn), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                } else if (connectionTelemetry.isWeakSignal && !isWeakSignalDismissed) {
+                    Surface(
+                        color = CncWarningAmber.copy(alpha = 0.14f),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, CncWarningAmber),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
+                                Icon(
+                                    imageVector = Icons.Default.Sync,
+                                    contentDescription = null,
+                                    tint = CncWarningAmber,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Column {
+                                    Text(
+                                        stringResource(R.string.alarm_weak_signal_title),
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        color = CncWarningAmber
+                                    )
+                                    Text(
+                                        stringResource(R.string.alarm_weak_signal_msg, connectionTelemetry.latencyMs),
+                                        fontSize = 10.sp,
+                                        color = CncTextSecondary
+                                    )
+                                }
+                            }
+                            OutlinedButton(
+                                onClick = { viewModel.dismissWeakSignalAlert() },
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text(stringResource(R.string.alarm_dismiss_btn), fontSize = 10.sp)
+                            }
+                        }
+                    }
+                }
+
+                // --- SCREEN TIMEOUT WARNING BANNER ---
+                if (screenTimeoutPolicy == ScreenTimeoutPolicy.SYSTEM_TIMEOUT &&
+                    (machineState == com.example.model.MachineStateEnum.RUNNING || machineState == com.example.model.MachineStateEnum.HOMING || machineState == com.example.model.MachineStateEnum.PAUSED)
+                ) {
+                    Surface(
+                        color = CncWarningAmber.copy(alpha = 0.14f),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, CncWarningAmber),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
+                                Icon(
+                                    imageVector = Icons.Default.StayCurrentPortrait,
+                                    contentDescription = null,
+                                    tint = CncWarningAmber,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Column {
+                                    Text(
+                                        "AVISO DE APAGADO DE PANTALLA",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        color = CncWarningAmber
+                                    )
+                                    Text(
+                                        stringResource(R.string.status_screen_timeout_warning),
+                                        fontSize = 10.sp,
+                                        color = CncTextSecondary
+                                    )
+                                }
+                            }
+                            Button(
+                                onClick = { viewModel.setScreenTimeoutPolicy(ScreenTimeoutPolicy.ALWAYS_ON) },
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text("ACTIVAR WAKE-LOCK", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
                 when (selectedTab) {
                     CncNavigationTab.CONTROL -> {
                         // Digital Readout (DRO) Panel
@@ -352,7 +633,9 @@ fun CncMainScreen(
                             currentWcs = currentCoordSystem,
                             unitSystem = unitSystem,
                             onJogAxis = { axis, delta -> viewModel.stepJog(axis, if (delta > 0) 1 else -1) },
-                        ) { viewModel.zeroAxis(it) }
+                            onZeroAxis = { viewModel.zeroAxis(it) },
+                            onZeroWithOffset = { offX, offY -> viewModel.setWorkOriginWithCameraOffset(offX, offY) },
+                        )
                     }
 
                     CncNavigationTab.PROBING -> {
@@ -396,7 +679,6 @@ fun CncMainScreen(
                         AlarmEventLogView(
                             logs = eventLogs,
                             onClearLogs = { viewModel.clearLogs() },
-                            onSimulateAlarm = { viewModel.simulateDiagnosticAlarm() },
                         )
                     }
 
@@ -410,7 +692,22 @@ fun CncMainScreen(
                             onDeleteProfile = { viewModel.deleteProfile(it) },
                             onWipeAllData = { viewModel.wipeAllAppData() },
                             onOpenMetrologyCalibration = { viewModel.setShowCalibrationDialog(show = true) },
-                        ) { viewModel.setShowManualDialog(show = true) }
+                            onOpenManual = { viewModel.setShowManualDialog(show = true) },
+                            screenTimeoutPolicy = screenTimeoutPolicy,
+                            onSelectScreenTimeoutPolicy = { viewModel.setScreenTimeoutPolicy(it) },
+                            batterySafetyState = batterySafety,
+                            isSimulatedMode = isSimulated,
+                            onToggleSimulatedMode = { viewModel.setEngineSimulatedMode(it) },
+                            connectionTelemetry = connectionTelemetry,
+                            onSimulateWeakSignal = { viewModel.simulateWeakSignal(it) },
+                            onSimulateDisconnect = { viewModel.simulateConnectionLoss() },
+                            onRestoreConnection = { viewModel.restoreConnectionSimulation() },
+                            onSimulateBattery = { level, charging -> viewModel.simulateBatteryLevel(level, charging) },
+                            onRestoreBattery = { viewModel.restoreBatterySensor() },
+                            onSimulateCharging = { viewModel.setBatteryChargingSimulation(it) },
+                            onInjectFault = { viewModel.injectSimulatedFault(it) },
+                            onSimulateProbeTouch = { viewModel.simulateTouchProbe() },
+                        )
                     }
                 }
             }

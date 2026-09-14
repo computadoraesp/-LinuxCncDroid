@@ -18,6 +18,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,21 +34,30 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CenterFocusStrong
+import androidx.compose.material.icons.filled.CropRotate
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.FlipCameraAndroid
+import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LayersClear
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.RotateRight
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Straighten
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.VideocamOff
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.ZoomIn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -55,19 +65,25 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -96,18 +112,32 @@ import com.example.ui.theme.CncTextMuted
 import com.example.ui.theme.CncTextPrimary
 import com.example.ui.theme.CncTextSecondary
 import com.example.ui.theme.CncWarningAmber
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executors
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 enum class ReticleType(@get:StringRes val labelRes: Int) {
     CROSSHAIR(R.string.reticle_crosshair),
     CONCENTRIC_CIRCLES(R.string.reticle_concentric),
     METROLOGY_GRID(R.string.reticle_grid),
     CORNER_FINDER(R.string.reticle_corner),
+    ANGULAR_PROTRACTOR(R.string.reticle_protractor),
+    BULLS_EYE(R.string.reticle_bullseye),
     NONE(R.string.reticle_none)
+}
+
+enum class CameraFilterMode(@get:StringRes val labelRes: Int) {
+    NORMAL(R.string.camera_filter_normal),
+    HIGH_CONTRAST(R.string.camera_filter_contrast),
+    INVERTED(R.string.camera_filter_invert),
+    EDGE_HIGHLIGHT(R.string.camera_filter_edge)
 }
 
 @Composable
@@ -119,6 +149,7 @@ fun IndustrialCameraView(
     unitSystem: UnitSystem = UnitSystem.METRIC,
     onJogAxis: (String, Double) -> Unit,
     onZeroAxis: (String) -> Unit,
+    onZeroWithOffset: ((Double, Double) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -160,7 +191,13 @@ fun IndustrialCameraView(
     var reticleOffsetX by remember { mutableFloatStateOf(0f) }
     var reticleOffsetY by remember { mutableFloatStateOf(0f) }
     var showTelemetryOverlay by remember { mutableStateOf(value = true) }
-    var showEdgeDetectionFilter by remember { mutableStateOf(value = false) }
+    var activeFilterMode by remember { mutableStateOf(CameraFilterMode.NORMAL) }
+    var protractorAngleDeg by remember { mutableFloatStateOf(0f) }
+    var cameraSpindleOffsetX by remember { mutableDoubleStateOf(-50.0) }
+    var cameraSpindleOffsetY by remember { mutableDoubleStateOf(0.0) }
+    var showSpindleOffsetDialog by remember { mutableStateOf(value = false) }
+    val reticleListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     var lastCapturedSnapshotMessage by remember { mutableStateOf<String?>(null) }
 
     var cameraControl by remember { mutableStateOf<CameraControl?>(null) }
@@ -208,7 +245,47 @@ fun IndustrialCameraView(
                     )
                 }
 
+                // Macro Zoom Presets and Quick Controls
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    // Macro Zoom Presets
+                    listOf(1.0f, 2.0f, 4.0f, 8.0f).forEach { presetZoom ->
+                        val isCurrent = abs(zoomRatio - presetZoom) < 0.25f
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(if (isCurrent) CncCyberCyan else CncSurfaceVariant)
+                                .border(1.dp, if (isCurrent) CncCyberCyan else CncCardBorder, RoundedCornerShape(4.dp))
+                                .clickable {
+                                    zoomRatio = presetZoom
+                                    cameraControl?.setZoomRatio(presetZoom)
+                                }
+                                .padding(horizontal = 6.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "${presetZoom.toInt()}X",
+                                color = if (isCurrent) Color.Black else CncTextSecondary,
+                                fontSize = 8.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(2.dp))
+
+                    // Camera Spindle Offset Dialog Button
+                    IconButton(
+                        onClick = { showSpindleOffsetDialog = true },
+                        modifier = Modifier.size(30.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Tune,
+                            contentDescription = stringResource(R.string.camera_spindle_offset),
+                            tint = if (cameraSpindleOffsetX != 0.0 || cameraSpindleOffsetY != 0.0) CncWarningAmber else CncTextSecondary,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+
                     // Flash / Torch toggle
                     IconButton(
                         onClick = {
@@ -567,7 +644,130 @@ fun IndustrialCameraView(
                                 )
                             }
 
+                            ReticleType.ANGULAR_PROTRACTOR -> {
+                                val radius = 180f
+                                // Circular dial
+                                drawCircle(
+                                    color = reticleColor.copy(alpha = 0.6f),
+                                    radius = radius,
+                                    center = Offset(centerX, centerY),
+                                    style = Stroke(width = 1.2f)
+                                )
+                                drawCircle(
+                                    color = reticleColor.copy(alpha = 0.3f),
+                                    radius = radius * 0.5f,
+                                    center = Offset(centerX, centerY),
+                                    style = Stroke(width = 0.8f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f), 0f))
+                                )
+
+                                // Angular graduation tick marks around the circle
+                                for (deg in 0 until 360 step 5) {
+                                    val rad = Math.toRadians(deg.toDouble())
+                                    val isMajor = (deg % 30) == 0
+                                    val isMedium = (deg % 10) == 0
+                                    val tickLen = if (isMajor) 16f else if (isMedium) 10f else 5f
+
+                                    val x1 = centerX + (radius - tickLen) * cos(rad).toFloat()
+                                    val y1 = centerY + (radius - tickLen) * sin(rad).toFloat()
+                                    val x2 = centerX + radius * cos(rad).toFloat()
+                                    val y2 = centerY + radius * sin(rad).toFloat()
+
+                                    drawLine(
+                                        color = reticleColor.copy(alpha = if (isMajor) 0.95f else 0.5f),
+                                        start = Offset(x1, y1),
+                                        end = Offset(x2, y2),
+                                        strokeWidth = if (isMajor) 1.5f else 0.8f
+                                    )
+                                }
+
+                                // Active rotatable protractor hairline
+                                val angleRad = Math.toRadians(protractorAngleDeg.toDouble())
+                                val lineLen = size.width.coerceAtLeast(size.height)
+                                val dirX = cos(angleRad).toFloat()
+                                val dirY = sin(angleRad).toFloat()
+
+                                drawLine(
+                                    color = CncWarningAmber,
+                                    start = Offset(centerX - lineLen * dirX, centerY - lineLen * dirY),
+                                    end = Offset(centerX + lineLen * dirX, centerY + lineLen * dirY),
+                                    strokeWidth = 2.0f
+                                )
+
+                                // Perpendicular crosshair
+                                val perpX = -dirY
+                                val perpY = dirX
+                                drawLine(
+                                    color = CncWarningAmber.copy(alpha = 0.65f),
+                                    start = Offset(centerX - radius * 1.2f * perpX, centerY - radius * 1.2f * perpY),
+                                    end = Offset(centerX + radius * 1.2f * perpX, centerY + radius * 1.2f * perpY),
+                                    strokeWidth = 1.0f,
+                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 6f), 0f)
+                                )
+
+                                // Center alignment ring
+                                drawCircle(
+                                    color = CncWarningAmber,
+                                    radius = 6f,
+                                    center = Offset(centerX, centerY),
+                                    style = Stroke(width = 1.5f)
+                                )
+                            }
+
+                            ReticleType.BULLS_EYE -> {
+                                val ringRadii = listOf(15f, 35f, 65f, 105f, 155f, 215f)
+                                ringRadii.forEachIndexed { index, r ->
+                                    val isTargetCore = index < 2
+                                    drawCircle(
+                                        color = if (isTargetCore) Color.Red else reticleColor.copy(alpha = (0.85f - index * 0.1f).coerceAtLeast(0.2f)),
+                                        radius = r,
+                                        center = Offset(centerX, centerY),
+                                        style = Stroke(width = if (isTargetCore) 2.2f else 1.2f)
+                                    )
+                                }
+                                drawCircle(
+                                    color = Color.Red,
+                                    radius = 4f,
+                                    center = Offset(centerX, centerY)
+                                )
+                                val armGap = 20f
+                                val armLength = 280f
+                                drawLine(color = reticleColor, start = Offset(centerX + armGap, centerY), end = Offset(centerX + armLength, centerY), strokeWidth = 1.5f)
+                                drawLine(color = reticleColor, start = Offset(centerX - armGap, centerY), end = Offset(centerX - armLength, centerY), strokeWidth = 1.5f)
+                                drawLine(color = reticleColor, start = Offset(centerX, centerY + armGap), end = Offset(centerX, centerY + armLength), strokeWidth = 1.5f)
+                                drawLine(color = reticleColor, start = Offset(centerX, centerY - armGap), end = Offset(centerX, centerY - armLength), strokeWidth = 1.5f)
+                            }
+
                             ReticleType.NONE -> {}
+                        }
+
+                        // Optical Filter Canvas Effect Layer
+                        when (activeFilterMode) {
+                            CameraFilterMode.NORMAL -> {}
+                            CameraFilterMode.HIGH_CONTRAST -> {
+                                drawRect(
+                                    color = Color.Black.copy(alpha = 0.22f),
+                                    size = size
+                                )
+                            }
+                            CameraFilterMode.INVERTED -> {
+                                drawRect(
+                                    color = Color(0xFF00E5FF).copy(alpha = 0.18f),
+                                    size = size,
+                                    blendMode = BlendMode.ColorDodge
+                                )
+                            }
+                            CameraFilterMode.EDGE_HIGHLIGHT -> {
+                                var y = 0f
+                                while (y < size.height) {
+                                    drawLine(
+                                        color = CncCyberCyan.copy(alpha = 0.12f),
+                                        start = Offset(0f, y),
+                                        end = Offset(size.width, y),
+                                        strokeWidth = 1f
+                                    )
+                                    y += 8f
+                                }
+                            }
                         }
                     }
 
@@ -654,16 +854,132 @@ fun IndustrialCameraView(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                // Bottom Control Toolbar: Reticle Selector, Color, Zoom Slider & Direct Micro-Jogging
+                // Protractor Angle Control Bar (when Angular Protractor reticle is active)
+                if (selectedReticle == ReticleType.ANGULAR_PROTRACTOR) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(CncSurfaceVariant)
+                            .border(1.dp, CncCardBorder, RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 3.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Icon(imageVector = Icons.Default.CropRotate, contentDescription = null, tint = CncWarningAmber, modifier = Modifier.size(14.dp))
+                            Text(
+                                text = stringResource(R.string.camera_angle_label, protractorAngleDeg),
+                                color = CncWarningAmber,
+                                fontSize = 8.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                            listOf(-10f, -1f, -0.1f, 0f, 0.1f, 1f, 10f).forEach { delta ->
+                                Button(
+                                    onClick = {
+                                        if (delta == 0f) {
+                                            protractorAngleDeg = 0f
+                                        } else {
+                                            protractorAngleDeg = ((protractorAngleDeg + delta) % 360f + 360f) % 360f
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
+                                    shape = RoundedCornerShape(3.dp),
+                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 1.dp),
+                                    modifier = Modifier.height(22.dp)
+                                ) {
+                                    Text(
+                                        text = if (delta == 0f) "0°" else if (delta > 0) "+$delta°" else "$delta°",
+                                        fontSize = 7.5.sp,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Optical Filters and Reticle Colors Bar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Reticle Type Selector Chips
+                    // Optical Filter Mode Selector Chips
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.camera_optical_filters),
+                            color = CncTextSecondary,
+                            fontSize = 7.5.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        CameraFilterMode.entries.forEach { fMode ->
+                            val isSel = activeFilterMode == fMode
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(3.dp))
+                                    .background(if (isSel) CncCyberCyan else CncSurfaceVariant)
+                                    .border(1.dp, if (isSel) CncCyberCyan else CncCardBorder, RoundedCornerShape(3.dp))
+                                    .clickable { activeFilterMode = fMode }
+                                    .padding(horizontal = 6.dp, vertical = 2.5.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(fMode.labelRes),
+                                    color = if (isSel) Color.Black else CncTextSecondary,
+                                    fontSize = 7.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    // Reticle Colors
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        listOf(CncCyberCyan, CncActiveGreen, CncWarningAmber, Color.Red, Color.White).forEach { c ->
+                            Box(
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .clip(CircleShape)
+                                    .background(c)
+                                    .border(if (reticleColor == c) 2.dp else 0.5.dp, if (reticleColor == c) Color.White else Color.DarkGray, CircleShape)
+                                    .clickable { reticleColor = c }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Reticle Carousel with Navigation Buttons < >
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CarouselNavButton(
+                        direction = "<",
+                        height = 26.dp,
+                        onClick = {
+                            coroutineScope.launch {
+                                reticleListState.animateScrollBy(-220f)
+                            }
+                        }
+                    )
+
                     LazyRow(
+                        state = reticleListState,
                         modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -675,59 +991,39 @@ fun IndustrialCameraView(
                                     .background(if (isSel) CncCyberCyan else CncSurfaceVariant)
                                     .border(1.dp, if (isSel) CncCyberCyan else CncCardBorder, RoundedCornerShape(4.dp))
                                     .clickable { selectedReticle = rType }
-                                    .padding(horizontal = 8.dp, vertical = 5.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
                                 Text(
                                     text = stringResource(rType.labelRes),
                                     color = if (isSel) CncBackground else CncTextSecondary,
-                                    fontSize = 8.5.sp,
+                                    fontSize = 8.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                         }
                     }
 
-                    // Color Switcher
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Edge Filter Toggle
-                        IconButton(
-                            onClick = { showEdgeDetectionFilter = !showEdgeDetectionFilter },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (showEdgeDetectionFilter) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                contentDescription = "Edge Filter",
-                                tint = if (showEdgeDetectionFilter) CncCyberCyan else CncTextMuted,
-                                modifier = Modifier.size(16.dp)
-                            )
+                    CarouselNavButton(
+                        direction = ">",
+                        height = 26.dp,
+                        onClick = {
+                            coroutineScope.launch {
+                                reticleListState.animateScrollBy(220f)
+                            }
                         }
-
-                        listOf(CncCyberCyan, CncActiveGreen, CncWarningAmber, Color.Red, Color.White).forEach { c ->
-                            Box(
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clip(CircleShape)
-                                    .background(c)
-                                    .border(if (reticleColor == c) 2.dp else 0.5.dp, if (reticleColor == c) Color.White else Color.DarkGray, CircleShape)
-                                    .clickable { reticleColor = c }
-                            )
-                        }
-                    }
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-                // Micro-Jogging for Optical Part Edge Alignment
+                // Micro-Jogging for Optical Part Edge Alignment and Spindle Offset Zeroing
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(6.dp))
                         .background(CncSurfaceVariant)
                         .border(1.dp, CncCardBorder, RoundedCornerShape(6.dp))
-                        .padding(6.dp),
+                        .padding(4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -741,9 +1037,9 @@ fun IndustrialCameraView(
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(stringResource(R.string.camera_micro_alignment_label), color = CncTextSecondary, fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.camera_micro_alignment_label), color = CncTextSecondary, fontSize = 8.sp, fontWeight = FontWeight.Bold)
 
                         // X Axis Micro Steps
                         Button(
@@ -751,10 +1047,10 @@ fun IndustrialCameraView(
                             enabled = isEnabled,
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
-                            modifier = Modifier.height(26.dp)
+                            contentPadding = PaddingValues(horizontal = 5.dp, vertical = 2.dp),
+                            modifier = Modifier.height(24.dp)
                         ) {
-                            Text("X $microLabelNeg", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+                            Text("X $microLabelNeg", fontSize = 7.5.sp, fontFamily = FontFamily.Monospace)
                         }
 
                         Button(
@@ -762,10 +1058,10 @@ fun IndustrialCameraView(
                             enabled = isEnabled,
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
-                            modifier = Modifier.height(26.dp)
+                            contentPadding = PaddingValues(horizontal = 5.dp, vertical = 2.dp),
+                            modifier = Modifier.height(24.dp)
                         ) {
-                            Text("X $microLabelPos", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+                            Text("X $microLabelPos", fontSize = 7.5.sp, fontFamily = FontFamily.Monospace)
                         }
 
                         // Y Axis Micro Steps
@@ -774,10 +1070,10 @@ fun IndustrialCameraView(
                             enabled = isEnabled,
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
-                            modifier = Modifier.height(26.dp)
+                            contentPadding = PaddingValues(horizontal = 5.dp, vertical = 2.dp),
+                            modifier = Modifier.height(24.dp)
                         ) {
-                            Text("Y $microLabelNeg", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+                            Text("Y $microLabelNeg", fontSize = 7.5.sp, fontFamily = FontFamily.Monospace)
                         }
 
                         Button(
@@ -785,25 +1081,25 @@ fun IndustrialCameraView(
                             enabled = isEnabled,
                             colors = ButtonDefaults.buttonColors(containerColor = CncSurface, contentColor = CncDroDigits),
                             shape = RoundedCornerShape(4.dp),
-                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
-                            modifier = Modifier.height(26.dp)
+                            contentPadding = PaddingValues(horizontal = 5.dp, vertical = 2.dp),
+                            modifier = Modifier.height(24.dp)
                         ) {
-                            Text("Y $microLabelPos", fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+                            Text("Y $microLabelPos", fontSize = 7.5.sp, fontFamily = FontFamily.Monospace)
                         }
                     }
 
-                    // Zero X/Y from Camera crosshair center
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    // Zero X/Y and Spindle Offset Zero
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                         OutlinedButton(
                             onClick = { onZeroAxis("X") },
                             enabled = isEnabled,
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = CncCyberCyan),
                             border = androidx.compose.foundation.BorderStroke(1.dp, CncCyberCyan),
                             shape = RoundedCornerShape(4.dp),
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                            modifier = Modifier.height(26.dp)
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                            modifier = Modifier.height(24.dp)
                         ) {
-                            Text(stringResource(R.string.camera_zero_x), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.camera_zero_x), fontSize = 7.5.sp, fontWeight = FontWeight.Bold)
                         }
 
                         OutlinedButton(
@@ -812,14 +1108,99 @@ fun IndustrialCameraView(
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = CncCyberCyan),
                             border = androidx.compose.foundation.BorderStroke(1.dp, CncCyberCyan),
                             shape = RoundedCornerShape(4.dp),
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                            modifier = Modifier.height(26.dp)
+                            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                            modifier = Modifier.height(24.dp)
                         ) {
-                            Text(stringResource(R.string.camera_zero_y), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.camera_zero_y), fontSize = 7.5.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        if (onZeroWithOffset != null) {
+                            Button(
+                                onClick = {
+                                    onZeroWithOffset(cameraSpindleOffsetX, cameraSpindleOffsetY)
+                                    lastCapturedSnapshotMessage = String.format(Locale.US, "Cero G54 fijado con offset: X=%.2f, Y=%.2f", cameraSpindleOffsetX, cameraSpindleOffsetY)
+                                },
+                                enabled = isEnabled,
+                                colors = ButtonDefaults.buttonColors(containerColor = CncWarningAmber, contentColor = Color.Black),
+                                shape = RoundedCornerShape(4.dp),
+                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
+                                modifier = Modifier.height(24.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.GpsFixed, contentDescription = null, modifier = Modifier.size(11.dp))
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(stringResource(R.string.camera_zero_with_offset), fontSize = 7.5.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    // Camera to Spindle Offset Calibration Dialog
+    if (showSpindleOffsetDialog) {
+        var tempOffsetX by remember { mutableStateOf(cameraSpindleOffsetX.toString()) }
+        var tempOffsetY by remember { mutableStateOf(cameraSpindleOffsetY.toString()) }
+
+        AlertDialog(
+            onDismissRequest = { showSpindleOffsetDialog = false },
+            containerColor = CncSurface,
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Default.Tune, contentDescription = null, tint = CncCyberCyan, modifier = Modifier.size(20.dp))
+                    Text(stringResource(R.string.camera_spindle_offset_title), color = CncTextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(R.string.camera_spindle_offset_desc),
+                        color = CncTextSecondary,
+                        fontSize = 9.sp
+                    )
+                    OutlinedTextField(
+                        value = tempOffsetX,
+                        onValueChange = { tempOffsetX = it },
+                        label = { Text("Offset X (mm)", fontSize = 8.5.sp) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CncCyberCyan,
+                            unfocusedBorderColor = CncCardBorder,
+                            focusedTextColor = CncDroDigits,
+                            unfocusedTextColor = CncDroDigits
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = tempOffsetY,
+                        onValueChange = { tempOffsetY = it },
+                        label = { Text("Offset Y (mm)", fontSize = 8.5.sp) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CncCyberCyan,
+                            unfocusedBorderColor = CncCardBorder,
+                            focusedTextColor = CncDroDigits,
+                            unfocusedTextColor = CncDroDigits
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        cameraSpindleOffsetX = tempOffsetX.toDoubleOrNull() ?: cameraSpindleOffsetX
+                        cameraSpindleOffsetY = tempOffsetY.toDoubleOrNull() ?: cameraSpindleOffsetY
+                        showSpindleOffsetDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = CncCyberCyan, contentColor = Color.Black)
+                ) {
+                    Text("GUARDAR", fontWeight = FontWeight.Bold, fontSize = 9.5.sp)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSpindleOffsetDialog = false }) {
+                    Text("CANCELAR", color = CncTextMuted, fontSize = 9.5.sp)
+                }
+            }
+        )
     }
 }

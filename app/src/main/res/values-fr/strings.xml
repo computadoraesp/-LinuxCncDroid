@@ -424,4 +424,55 @@
     <string-array name="manual_sec7_safety">
         <item>If the master enters INIT or PRE-OP state during machining, the machine will execute an instantaneous safety stop.</item>
     </string-array>
+
+    <!-- In-App Manual Sections 8, 9, 10, 11 (French) -->
+    <string name="manual_sec8_title">8. Alimentation, Écran &amp; Sécurité Réseau</string>
+    <string name="manual_sec8_summary">Politiques de sécurité pour batterie faible, signal réseau et prévention de mise en veille.</string>
+    <string name="manual_sec8_content" formatted="false">Pour éviter les collisions d\'outils et maintenir l\'accès direct à l\'arrêt d\'urgence (E-STOP):\n\n• ÉCRAN ACTIF (WAKE LOCK): Maintient l\'écran allumé en continu pendant l\'usinage.\n• ALARME BATTERIE: Avertissement à &lt;= 20% et alarme critique à &lt;= 10%.\n• RECONNEXION AUTOMATIQUE: Rétablissement avec temporisation exponentielle en cas de perte de réseau.</string>
+    <string-array name="manual_sec8_sop">
+        <item>1. Gardez la tablette connectée à son chargeur pendant le fraisage.</item>
+        <item>2. Surveillez la latence et le débit dans la barre d\'état supérieure.</item>
+    </string-array>
+    <string-array name="manual_sec8_safety">
+        <item>En cas de batterie critique (&lt; 10%), activez Feed Hold et branchez l\'alimentation.</item>
+    </string-array>
+
+    <string name="manual_sec9_title">09. Caméra Optique Industrielle &amp; Métrologie</string>
+    <string name="manual_sec9_summary">Alignement de pièces sans contact, détection d\'arêtes, réticules, compensation d\'offset et filtres.</string>
+    <string name="manual_sec9_content" formatted="false">La caméra industrielle permet l\'alignement sans contact et la définition des origines WCS:\n\n• RÉTICULES DE HAUTE PRÉCISION: Filaire 0,01 mm, cercles concentriques, grille métrologique, viseur d\'angle 90°, cible Bulls-Eye et rapporteur rotatif.\n• ZOOM MACRO (1X, 2X, 4X, 8X): Boutons tactiles directs pour gants d\'atelier.\n• FILTRES OPTIQUES: Normal, Contraste élevé, Négatif, Détection de contours.\n• OFFSET CAMÉRA-BROCHE: Compensation automatique de la distance lentille-outil avec \'ZÉRO G54 AVEC OFFSET\'.\n• CONTRÔLE QUALITÉ (QC): Captures horodatées avec coordonnées DRO et système WCS actif.</string>
+    <string-array name="manual_sec9_sop">
+        <item>1. Montez la caméra sur son support calibré et activez l\'éclairage LED.</item>
+        <item>2. Sélectionnez le réticule approprié et réglez le zoom macro à 4X ou 8X.</item>
+        <item>3. Déplacez les axes en micro-pas (±0,05 mm) et appuyez sur \'ZÉRO G54 AVEC OFFSET\'.</item>
+    </string-array>
+    <string-array name="manual_sec9_safety">
+        <item>Le moteur de broche DOIT impérativement être arrêté (M5) lors de l\'inspection visuelle.</item>
+    </string-array>
+
+    <string name="manual_sec10_title">10. Centre de Contrôle de Simulation &amp; Tests</string>
+    <string name="manual_sec10_summary">Plateforme unifiée pour simulation cinématique, injection d\'alarmes, batterie et palpeur 3D.</string>
+    <string name="manual_sec10_content" formatted="false">Le centre de simulation dans l\'onglet CONFIG rassemble les outils d\'apprentissage et de test:\n\n• SIMULATEUR LINUXCNC: Bascule entre machine physique et moteur cinématique émulé.\n• SIMULATION DE BATTERIE: Vérification des seuils d\'alarme à 15% et 8%.\n• SIMULATION DE LATENCE: Injection de délais (380 ms) pour valider la robustesse réseau.\n• INJECTION DE PANNES: Déclenchement contrôlé d\'erreurs EtherCAT AL.006, fins de course et surchauffe broche.\n• PALPEUR 3D VIRTUEL (G38.2): Validation des cycles sans risque de bris de stylet.</string>
+    <string-array name="manual_sec10_sop">
+        <item>1. Pour la formation, activez \'Simulation Contrôleur LinuxCNC\' dans CONFIG.</item>
+        <item>2. Testez les réactions de l\'opérateur en injectant des alarmes industrielles.</item>
+        <item>3. Après les tests, cliquez sur \'RESTAURER CAPTEUR RÉEL\' avant l\'usinage.</item>
+    </string-array>
+    <string-array name="manual_sec10_safety">
+        <item>DANGER: Vérifiez toujours l\'indicateur \'RÉEL\' avant de démarrer la broche sur une vraie machine.</item>
+    </string-array>
+
+    <string name="manual_sec11_title">11. Trajectoire 3D &amp; Simulateur Dry-Run</string>
+    <string name="manual_sec11_summary">Aperçu interactif du G-Code 3D, historique chromatique, brut filaire, repère WCS et simulation tactile.</string>
+    <string name="manual_sec11_content" formatted="false">Le visualiseur 3D combine des graphismes FAO de pointe avec un moteur basse consommation pour tablettes et smartphones:\n\n• HISTORIQUE CHROMATIQUE DYNAMIQUE:\n  – Vert Forêt Atténué: Passes d\'usinage déjà exécutées par la fraise.\n  – Vert Néon avec Halo: Bloc G-Code actif en prise avec la matière.\n  – Cyan Industriel: Trajectoires de coupe linéaire à venir (G1).\n  – Magenta Électrique: Arcs d\'interpolation circulaire et hélicoïdale (G2/G3).\n  – Ambre Tireté: Déplacements rapides de positionnement (G0).\n\n• BRUT 3D FILAIRE &amp; TRIPODE WCS:\n  – Boîte Englobante: Dimensions du brut (ΔX, ΔY, ΔZ) et marges de sécurité.\n  – Triade WCS (0,0,0): Flèches RGB (Rouge=X, Vert=Y, Bleu=Z) indiquant l\'origine pièce active.\n\n• SIMULATEUR DRY-RUN &amp; SCRUBBING TACTILE:\n  – Curseur d\'inspection: Déplacez le curseur pour explorer le programme avant la mise sous tension des moteurs.\n  – Lecture Virtuelle: Simulation à 1X, 2X, 5X ou 10X sans mouvement machine.\n\n• FILTRES DE COUCHES MOBILES:\n  – Masquer Rapides G0: Allège l\'affichage des programmes complexes en un clic.\n  – Suivi d\'Outil (Follow Tool): Maintient la caméra centrée sur la fraise.\n  – Ajustement Automatique (Auto-Fit): Calcule le centrage et le zoom idéal pour chaque pièce.\n  – Inspecteur G-Code: Volet rétractable pour libérer tout l\'espace de l\'écran.</string>
+    <string-array name="manual_sec11_sop">
+        <item>1. Cliquez sur \'CHARGER / SCANNER\' ou l\'onglet TOOLPATH pour vérifier l\'enveloppe du fichier G-Code.</item>
+        <item>2. Comparez les cotes du brut (ΔX, ΔY, ΔZ) avec les dimensions de la matière brute montée en machine.</item>
+        <item>3. Appuyez sur \'AUTO-FIT\' et choisissez la vue (ISO 3D, DESSUS, FACE ou CÔTÉ).</item>
+        <item>4. Utilisez le curseur de scrubbing ou appuyez sur PLAY (2X/5X) pour contrôler la trajectoire et éviter toute collision.</item>
+        <item>5. Vérifiez les hauteurs de dégagement Z avant d\'appuyer sur \'DÉPART CYCLE\'.</item>
+    </string-array>
+    <string-array name="manual_sec11_safety">
+        <item>Vérifiez toujours les points de plongée et les déplacements en Z négatif en vue de FACE avant d\'usiner.</item>
+        <item>Assurez-vous que l\'origine WCS (G54-G59) a été mesurée avec un palpeur réel avant d\'exécuter le programme.</item>
+    </string-array>
 </resources>

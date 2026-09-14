@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,10 +19,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.CheckCircle
@@ -76,6 +80,8 @@ fun AppManualDialog(
     val sections = remember { getManualSections() }
     var selectedSectionId by remember { mutableStateOf(sections.first().id) }
     var searchQuery by remember { mutableStateOf("") }
+    val manualTabsState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
     val filteredSections = remember(searchQuery) {
@@ -201,32 +207,67 @@ fun AppManualDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Horizontal Section Navigator Tabs
-                LazyRow(
+                // Horizontal Section Navigator Tabs with Carousel Controls
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    items(filteredSections) { sec ->
-                        val isSelected = sec.id == activeSection.id
-                        val bg = if (isSelected) CncCyberCyan else CncSurfaceVariant
-                        val textColor = if (isSelected) Color.Black else CncTextPrimary
+                    CarouselNavButton(
+                        direction = "<",
+                        enabled = manualTabsState.canScrollBackward,
+                        height = 30.dp,
+                        width = 22.dp,
+                        onClick = {
+                            coroutineScope.launch {
+                                manualTabsState.animateScrollBy(-180f)
+                            }
+                        }
+                    )
 
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(bg)
-                                .border(1.dp, if (isSelected) CncCyberCyan else CncCardBorder, RoundedCornerShape(6.dp))
-                                .clickable { selectedSectionId = sec.id }
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = stringResource(sec.titleRes),
-                                color = textColor,
-                                fontSize = 9.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                            )
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    LazyRow(
+                        state = manualTabsState,
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        items(filteredSections) { sec ->
+                            val isSelected = sec.id == activeSection.id
+                            val bg = if (isSelected) CncCyberCyan else CncSurfaceVariant
+                            val textColor = if (isSelected) Color.Black else CncTextPrimary
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(bg)
+                                    .border(1.dp, if (isSelected) CncCyberCyan else CncCardBorder, RoundedCornerShape(6.dp))
+                                    .clickable { selectedSectionId = sec.id }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(sec.titleRes),
+                                    color = textColor,
+                                    fontSize = 9.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
                         }
                     }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    CarouselNavButton(
+                        direction = ">",
+                        enabled = manualTabsState.canScrollForward,
+                        height = 30.dp,
+                        width = 22.dp,
+                        onClick = {
+                            coroutineScope.launch {
+                                manualTabsState.animateScrollBy(180f)
+                            }
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -450,6 +491,50 @@ private fun getManualSections(): List<DocSectionItem> {
             detailedContentRes = R.string.manual_sec7_content,
             standardStepsRes = R.array.manual_sec7_sop,
             safetyTipsRes = R.array.manual_sec7_safety,
+        ),
+
+        DocSectionItem(
+            id = "power_screen_network",
+            titleRes = R.string.manual_sec8_title,
+            category = "FAIL-SAFE",
+            iconName = "ic_security",
+            summaryRes = R.string.manual_sec8_summary,
+            detailedContentRes = R.string.manual_sec8_content,
+            standardStepsRes = R.array.manual_sec8_sop,
+            safetyTipsRes = R.array.manual_sec8_safety,
+        ),
+
+        DocSectionItem(
+            id = "camera_metrology",
+            titleRes = R.string.manual_sec9_title,
+            category = "VISIÓN Y METROLOGÍA",
+            iconName = "ic_camera",
+            summaryRes = R.string.manual_sec9_summary,
+            detailedContentRes = R.string.manual_sec9_content,
+            standardStepsRes = R.array.manual_sec9_sop,
+            safetyTipsRes = R.array.manual_sec9_safety,
+        ),
+
+        DocSectionItem(
+            id = "simulation_center",
+            titleRes = R.string.manual_sec10_title,
+            category = "SIMULACIÓN Y PRUEBAS",
+            iconName = "ic_simulation",
+            summaryRes = R.string.manual_sec10_summary,
+            detailedContentRes = R.string.manual_sec10_content,
+            standardStepsRes = R.array.manual_sec10_sop,
+            safetyTipsRes = R.array.manual_sec10_safety,
+        ),
+
+        DocSectionItem(
+            id = "toolpath_visualizer",
+            titleRes = R.string.manual_sec11_title,
+            category = "TRAYECTORIA 3D Y SIMULACIÓN",
+            iconName = "ic_toolpath",
+            summaryRes = R.string.manual_sec11_summary,
+            detailedContentRes = R.string.manual_sec11_content,
+            standardStepsRes = R.array.manual_sec11_sop,
+            safetyTipsRes = R.array.manual_sec11_safety,
         ),
     )
 }

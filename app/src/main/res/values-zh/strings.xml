@@ -423,4 +423,55 @@
     <string-array name="manual_sec7_safety">
         <item>If the master enters INIT or PRE-OP state during machining, the machine will execute an instantaneous safety stop.</item>
     </string-array>
+
+    <!-- In-App Manual Sections 8, 9, 10, 11 (Chinese) -->
+    <string name="manual_sec8_title">8. 电源、屏幕常亮与网络安全防护策略</string>
+    <string name="manual_sec8_summary">低电量警告、网络断开防护、屏幕常亮防止急停（E-STOP）按键不可达策略。</string>
+    <string name="manual_sec8_content" formatted="false">为防止加工过程中发生机床碰撞或无法即时按下急停（E-STOP）：\n\n• 屏幕常亮（WAKE LOCK）：加工过程中防止平板电脑自动休眠锁屏。\n• 电池安全预警：电量低于20%发出警告，低于10%发出严重告警。\n• 指数退避自动重连：工业局域网瞬断时提供毫秒级智能重连。</string>
+    <string-array name="manual_sec8_sop">
+        <item>1. 加工过程中请务必连接平板电脑USB-C供电线缆。</item>
+        <item>2. 密切监控顶部状态栏的网络延迟（Ping）与抖动指标。</item>
+    </string-array>
+    <string-array name="manual_sec8_safety">
+        <item>若电池达到严重告警阈值（&lt; 10%），请立即点击进给暂停（Feed Hold）并充电。</item>
+    </string-array>
+
+    <string name="manual_sec9_title">09. 工业光学相机与非接触式光学精密对刀系统</string>
+    <string name="manual_sec9_summary">非接触式工件寻边、角点对齐、高精度分划板标线、主轴偏置自动补偿及光学滤镜。</string>
+    <string name="manual_sec9_content" formatted="false">工业相机专用于非接触式工件对齐和工件坐标系（WCS）原点设定：\n\n• 超精密分划板：0.01毫米极细十字线、同心圆测距环、公差网格、90°角落对齐、靶心标线及旋转量角器。\n• 宏观数字变焦（1X, 2X, 4X, 8X）：车间手套操作专属大尺寸快捷按钮。\n• 光学图像滤镜：标准、高对比度、负片反转、边缘锐化轮廓滤镜。\n• 镜头主轴偏置补偿：点击“应用偏置并设定G54为零”，系统自动计算并写入对齐坐标。\n• 品质检验快照存档：保存带有DRO实时坐标与WCS系统水印的高清图片。</string>
+    <string-array name="manual_sec9_sop">
+        <item>1. 将相机固定于测量支架并开启环形LED补光灯。</item>
+        <item>2. 选择合适分划标线并将变焦倍率调至4X或8X。</item>
+        <item>3. 利用微步寸动（±0.05mm）对齐工件边缘，随后点击“应用偏置并设定G54为零”。</item>
+    </string-array>
+    <string-array name="manual_sec9_safety">
+        <item>在进行光学对准与测量期间，主轴电机必须处于完全停止状态（M5）。</item>
+    </string-array>
+
+    <string name="manual_sec10_title">10. 综合仿真与工业故障诊断测试中心</string>
+    <string name="manual_sec10_summary">机床运动学仿真、工业故障注入、平板电池及3D测头虚拟校验环境。</string>
+    <string name="manual_sec10_content" formatted="false">CONFIG设置选项卡中的仿真控制中心集成了完备的诊断与教学工具：\n\n• LINUXCNC仿真器：在真实物理硬件机床与本地运动学仿真引擎间无缝切换。\n• 平板电池模拟：测试15%及8%电量警报下的应急机制。\n• 网络延迟及断网模拟：注入380毫秒高延迟，验证重连与安全刹车算法。\n• 工业级故障注入：可控触发EtherCAT跟随误差AL.006、限位开关、主轴过温和冷却液压力报警。\n• 3D测头仿真（G38.2）：安全模拟探针接触，防止意外折断红宝石测针。</string>
+    <string-array name="manual_sec10_sop">
+        <item>1. 在进行操作员培训时，可在CONFIG选项卡中启用“LinuxCNC控制器模拟”。</item>
+        <item>2. 通过故障注入面板触发报警以演练紧急应对规程。</item>
+        <item>3. 测试完毕后，点击“恢复真实传感器”解除仿真，然后再启动实际切削。</item>
+    </string-array>
+    <string-array name="manual_sec10_safety">
+        <item>危险警告：在物理机床上启动主轴或运行加工前，务必确认顶部状态指示为“REAL”。</item>
+    </string-array>
+
+    <string name="manual_sec11_title">11. 3D刀具路径可视化与空运行（Dry-Run）模拟器</string>
+    <string name="manual_sec11_summary">交互式3D G代码预览、动态加工色谱历程、3D毛坯线框、WCS三维基准轴及触控拖拽模拟。</string>
+    <string name="manual_sec11_content" formatted="false">3D刀具路径可视化引擎兼具高品质工业CAM渲染与移动端低功耗极致流畅：\n\n• 动态色谱加工历程：\n  – 森林绿（浅淡）：铣刀已切削完成并排屑的成型轨迹。\n  – 荧光亮绿（带切削光晕）：当前正在切削加工的实时G代码程序段。\n  – 工业青色：后续待加工的直线切削路径（G1）。\n  – 电光洋红：圆弧及螺旋插补切削轨迹（G2/G3）。\n  – 虚线琥珀色：刀具空载快速定位移动（G0）。\n\n• 3D毛坯线框与WCS工件原点三维轴：\n  – 3D外包络线框：直观显示毛坯长宽高总尺寸（ΔX, ΔY, ΔZ）及加工安全裕量。\n  – WCS原点三联基准轴（0,0,0）：RGB空间箭头（红=X、绿=Y、蓝=Z）标明活动工件坐标系。\n\n• 触控拖拽式空运行模拟器：\n  – 检验滑动条：在电机通电前，轻拖滑动条即可步进预览任意位置的刀尖位置。\n  – 虚拟播放（1X, 2X, 5X, 10X）：无需实际移动机床即可极速验证加工全流程。\n\n• 移动端轻量化图层过滤控制：\n  – 隐藏快速移动（G0）：一键关闭空走线，提升复杂数控程序的加载响应。\n  – 刀具追踪（Follow Tool）：动态将相机视角平滑锁定在铣刀刀尖。\n  – 自动适屏（Auto-Fit）：智能计算全屏最佳缩放比例与中心对齐。\n  – G代码代码面板切换：可随时收起或展开侧边代码窗，充分利用手机或平板屏幕。</string>
+    <string-array name="manual_sec11_sop">
+        <item>1. 点击“加载/扫描”或切换至TOOLPATH选项卡，验证G代码边界是否正常。</item>
+        <item>2. 核对毛坯总尺寸（ΔX, ΔY, ΔZ）与工作台夹持的实际工件毛坯大小。</item>
+        <item>3. 点击“自动适屏”并在ISO 3D、俯视、正视或侧视视角间自由切换。</item>
+        <item>4. 拖动模拟滑动条或点击播放按钮（2X/5X），全流程排除刀具与夹具碰撞隐患。</item>
+        <item>5. 确认Z轴安全抬刀高度后，方可在机床上按下“循环启动”。</item>
+    </string-array>
+    <string-array name="manual_sec11_safety">
+        <item>在金属加工前，务必在正视图或侧视图中严格检查Z轴负向垂直下刀深度与进给轨迹。</item>
+        <item>切勿仅依赖3D视觉对齐，启动加工前必须使用物理寻边器或测头标定WCS（G54）。</item>
+    </string-array>
 </resources>
